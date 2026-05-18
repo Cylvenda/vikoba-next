@@ -29,6 +29,7 @@ import type {
   MeetingChatMessage,
   MeetingParticipantSignalState,
   MeetingSidebarTab,
+  ParticipantRoleMap,
 } from "@/components/meeting-room/types"
 
 type MeetingRoomProps = {
@@ -44,6 +45,7 @@ type MeetingRoomProps = {
   minutesContent?: string | null
   headerActions?: ReactNode
   onLeaveRequested: () => Promise<void> | void
+  participantRoles?: ParticipantRoleMap
 }
 
 function createMessageId() {
@@ -52,17 +54,17 @@ function createMessageId() {
 
 type MeetingSignalPayload =
   | {
-      type: "hand"
-      senderId: string
-      raisedHand: boolean
-      createdAt: string
-    }
+    type: "hand"
+    senderId: string
+    raisedHand: boolean
+    createdAt: string
+  }
   | {
-      type: "reaction"
-      senderId: string
-      emoji: string
-      createdAt: string
-    }
+    type: "reaction"
+    senderId: string
+    emoji: string
+    createdAt: string
+  }
 
 function getAgendaStatus(index: number, total: number, selectedId: string | null | undefined, agendaId: string) {
   if (agendaId === selectedId) return "Ongoing"
@@ -135,6 +137,7 @@ export function MeetingRoom({
   minutesContent,
   headerActions,
   onLeaveRequested,
+  participantRoles = {},
 }: MeetingRoomProps) {
   const connectionState = useConnectionState()
   const room = useRoomContext()
@@ -338,7 +341,7 @@ export function MeetingRoom({
         totalDurationMinutes: record.total_duration_minutes,
         joinCount: userSessions.length,
         status: liveParticipants.has(record.user) ? "online" : "offline",
-        badge: record.user === hostIdentity || email === hostEmail ? "Host" : "Member",
+        badge: participantRoles[email] || participantRoles[record.user] || "MEMBER",
         isCurrentUser: record.user === currentUserId,
         sessions: userSessions.map((session) => ({
           id: session.id,
@@ -372,7 +375,7 @@ export function MeetingRoom({
         totalDurationMinutes: existing?.totalDurationMinutes || 0,
         joinCount: existing?.joinCount || userSessions.length,
         status: liveParticipants.has(userId) ? "online" : "offline",
-        badge: userId === hostIdentity || email === hostEmail ? "Host" : "Member",
+        badge: participantRoles[email] || participantRoles[userId] || "MEMBER",
         isCurrentUser: userId === currentUserId,
         sessions: existing?.sessions || userSessions.map((session) => ({
           id: session.id,
@@ -395,18 +398,28 @@ export function MeetingRoom({
         totalDurationMinutes: 0,
         joinCount: 0,
         status: "online",
-        badge: participant.identity === hostIdentity || email === hostEmail ? "Host" : "Member",
+        badge: participantRoles[email] || participantRoles[participant.identity] || "MEMBER",
         isCurrentUser: participant.identity === currentUserId,
         sessions: [],
       })
     })
 
     return [...items.values()].sort((left, right) => {
-      if (left.badge !== right.badge) return left.badge === "Host" ? -1 : 1
+      // Sort by role priority: CHAIRPERSON > SECRETARY > TREASURER > MEMBER
+      const rolePriority: Record<string, number> = {
+        CHAIRPERSON: 0,
+        SECRETARY: 1,
+        TREASURER: 2,
+        MEMBER: 3,
+      }
+      const leftPriority = rolePriority[left.badge] ?? 3
+      const rightPriority = rolePriority[right.badge] ?? 3
+
+      if (leftPriority !== rightPriority) return leftPriority - rightPriority
       if (left.status !== right.status) return left.status === "online" ? -1 : 1
       return left.name.localeCompare(right.name)
     })
-  }, [attendanceRecords, currentUserId, hostEmail, hostIdentity, participantSessions, participants])
+  }, [attendanceRecords, currentUserId, hostEmail, hostIdentity, participantSessions, participants, participantRoles])
 
   const handleSendMessage = async (text: string) => {
     const nextMessage: MeetingChatMessage = {

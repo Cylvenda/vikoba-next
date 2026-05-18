@@ -26,7 +26,7 @@ export function AdminAccessState({
         </CardHeader>
         <CardContent>
           <Button asChild>
-            <Link href="/dashboard">Back to dashboard</Link>
+            <Link href="/home">Back to Home</Link>
           </Button>
         </CardContent>
       </Card>

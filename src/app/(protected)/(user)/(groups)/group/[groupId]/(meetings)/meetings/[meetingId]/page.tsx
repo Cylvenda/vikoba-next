@@ -12,6 +12,7 @@ import { useMeetingStore } from "@/store/meeting/meeting.store"
 import { useAuthUserStore } from "@/store/auth/userAuth.store"
 import { toast } from "react-toastify"
 import type { AttendanceRecord, ParticipantSession } from "@/store/meeting/meeting.types"
+import { getMeetingSessionHref } from "@/lib/meeting-routes"
 
 export default function MeetingPage() {
   const params = useParams<{ meetingId: string }>()
@@ -27,7 +28,6 @@ export default function MeetingPage() {
     fetchParticipants,
     addAgendaItem,
     removeAgendaItem,
-    startMeeting,
   } = useMeetingStore()
 
   const [agendaTitle, setAgendaTitle] = useState("")
@@ -47,7 +47,7 @@ export default function MeetingPage() {
   }, [meetingId, fetchMeetingById, fetchAttendance, fetchParticipants])
 
   const isHost = user?.email === selectedMeeting?.host_email
-  const sessionHref = meetingId ? `/meeting/${meetingId}/session` : "#"
+  const sessionHref = meetingId ? getMeetingSessionHref(meetingId, selectedMeeting?.group ?? params?.groupId) : "#"
   const canCreateAgenda = isHost
 
   const scheduledStart = selectedMeeting?.scheduled_start
@@ -76,7 +76,7 @@ export default function MeetingPage() {
       setAgendaDescription("")
       setShowAgendaForm(false)
       toast.success("Agenda item added")
-    } catch (error: unknown) {
+    } catch {
       toast.error("Failed to add agenda item")
     }
   }
@@ -87,7 +87,7 @@ export default function MeetingPage() {
     try {
       await removeAgendaItem(itemId)
       toast.success("Agenda item removed")
-    } catch (error: unknown) {
+    } catch {
       toast.error("Failed to remove agenda item")
     }
   }
@@ -96,7 +96,7 @@ export default function MeetingPage() {
     if (!meetingId) return
 
     // Navigate to session page for device testing
-    window.location.href = `/meeting/${meetingId}/session`
+    window.location.href = getMeetingSessionHref(meetingId, selectedMeeting?.group ?? params?.groupId)
   }
 
   const attendanceHistory = useMemo(() => {
@@ -142,7 +142,7 @@ export default function MeetingPage() {
       const date = new Date(value)
       if (isNaN(date.getTime())) return "Invalid date"
       return date.toLocaleString()
-    } catch (error) {
+    } catch {
       return "Date error"
     }
   }

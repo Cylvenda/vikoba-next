@@ -37,7 +37,7 @@ export type MeetingAttendanceItem = {
   totalDurationMinutes: number
   joinCount: number
   status: "online" | "offline"
-  badge: "Host" | "Member"
+  badge: "CHAIRPERSON" | "SECRETARY" | "TREASURER" | "MEMBER"
   isCurrentUser: boolean
   sessions: Array<{
     id: string
@@ -45,3 +45,5 @@ export type MeetingAttendanceItem = {
     leftAt: string | null
   }>
 }
+
+export type ParticipantRoleMap = Record<string, "CHAIRPERSON" | "SECRETARY" | "TREASURER" | "MEMBER">

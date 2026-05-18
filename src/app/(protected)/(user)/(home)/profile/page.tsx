@@ -47,7 +47,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-6 p-6 md:p-10">
+    <div className="w-full p-4 md:p-6 lg:p-8">
+      <div className="mx-auto w-full max-w-screen-2xl space-y-6">
       <Card className="border-none bg-accent shadow-sm">
          <CardHeader>
           <CardTitle className="text-3xl">Profile</CardTitle>
@@ -57,7 +58,7 @@ export default function ProfilePage() {
         </CardHeader>
       </Card>
 
-      <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.1fr)]">
         <Card className="border-none bg-card shadow-sm">
           <CardContent className="flex flex-col items-center p-8 text-center">
             <div className="flex size-24 items-center justify-center rounded-full bg-chart-2/15 text-chart-3">
@@ -173,6 +174,7 @@ export default function ProfilePage() {
             </form>
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   )

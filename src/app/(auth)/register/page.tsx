@@ -62,7 +62,7 @@ const Register = () => {
                <div className="w-full ">
                     <FormInput
                          title="Create Account"
-                         description="Join Meeting Hub and start collaborating"
+                          description="Join Community Hub and start collaborating"
                          className="border-0! shadow-none! ring-0! bg-transparent"
                     >
                          <form

@@ -10,6 +10,7 @@ import { useMeetingLiveSync } from "@/hooks/use-meeting-live-sync"
 import { useMeetingStore } from "@/store/meeting/meeting.store"
 import { useAuthUserStore } from "@/store/auth/userAuth.store"
 import { toast } from "react-toastify"
+import { getMeetingDetailHref } from "@/lib/meeting-routes"
 
 export default function MeetingSessionPage() {
   const params = useParams<{ meetingId: string }>()
@@ -57,7 +58,7 @@ export default function MeetingSessionPage() {
   const isMeetingOngoing = selectedMeeting?.status === "ongoing"
   const activeParticipants = participants.filter((participant) => participant.left_at === null)
   const isConnectedParticipant = activeParticipants.some((participant) => participant.user_email === user?.email)
-  const detailsHref = meetingId ? `/meeting/${meetingId}` : "/dashboard"
+  const detailsHref = meetingId ? getMeetingDetailHref(meetingId, selectedMeeting?.group ?? params?.groupId) : "/home"
 
   const handleStart = async () => {
     if (!meetingId) return

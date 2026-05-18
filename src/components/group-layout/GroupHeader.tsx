@@ -10,6 +10,7 @@ import { toast } from 'react-toastify'
 import { useMeetingStore } from '@/store/meeting/meeting.store'
 import { useRouter } from 'next/navigation'
 import { useAuthUserStore } from '@/store/auth/userAuth.store'
+import { getMeetingDetailHref, getMeetingSessionHref } from '@/lib/meeting-routes'
 
 export default function GroupHeader() {
      const [isInviteOpen, setIsInviteOpen] = useState(false)
@@ -27,9 +28,13 @@ export default function GroupHeader() {
      const router = useRouter()
      const { user } = useAuthUserStore()
 
-     const { selectedGroup, invitationLoading, sendGroupInvitation } = useGroupStore()
+     const { selectedGroup, invitationLoading, sendGroupInvitation, selectedGroupMembers } = useGroupStore()
      const { meetings, createMeeting, createInstantMeeting, loading } = useMeetingStore()
-     const isHost = user?.email === selectedGroup?.created_by
+
+     // Check if current user has CHAIRPERSON role in the group
+     const currentUserMembership = selectedGroupMembers.find(m => m.user_id === user?.email)
+     const isChairperson = currentUserMembership?.role === "CHAIRPERSON" && currentUserMembership?.is_verified && currentUserMembership?.is_active
+
      const memberCount = selectedGroup?.members_count ?? 0
      const groupMeetings = meetings.filter((meeting) => meeting.group === selectedGroup?.id)
      const liveMeeting = groupMeetings.find((meeting) => meeting.status === "ongoing")
@@ -127,29 +132,29 @@ export default function GroupHeader() {
                setInstantTitle("")
                setInstantDescription("")
                setIsInstantOpen(false)
-               router.push(`/meeting/${result.meeting.id}/session`)
+               router.push(getMeetingSessionHref(result.meeting.id, result.meeting.group))
                return
           }
 
           toast.error(result.message)
      }
 
-return (
-           <>
-                <div className="flex flex-col justify-between rounded-2xl bg-card p-4 shadow md:flex-row md:items-center">
-                     <div className="flex items-center gap-3">
-                          <Link href="/dashboard">
-                               <Button variant="ghost" size="icon">
-                                    <ArrowLeft className="w-5 h-5" />
-                               </Button>
-                          </Link>
-                          <div>
-                               <h1 className="text-2xl font-bold">{selectedGroup?.name}</h1>
-                               <p className="text-sm text-muted-foreground">
-                                    {selectedGroup?.is_private ? "Private" : "Public"} Group • {memberCount} Members •
-                                    Created {formatUTCDate(selectedGroup?.created_at || "")}</p>
-                          </div>
-                     </div>
+     return (
+          <>
+               <div className="flex flex-col justify-between rounded-2xl bg-card p-4 shadow md:flex-row md:items-center">
+                    <div className="flex items-center gap-3">
+                         <Link href="/home">
+                              <Button variant="ghost" size="icon">
+                                   <ArrowLeft className="w-5 h-5" />
+                              </Button>
+                         </Link>
+                         <div>
+                              <h1 className="text-2xl font-bold">{selectedGroup?.name}</h1>
+                              <p className="text-sm text-muted-foreground">
+                                   {selectedGroup?.is_private ? "Private" : "Public"} Group • {memberCount} Members •
+                                   Created {formatUTCDate(selectedGroup?.created_at || "")}</p>
+                         </div>
+                    </div>
                     <div className="flex gap-3 mt-3 md:mt-0">
                          <Button
                               className="bg-chart-3"
@@ -158,18 +163,7 @@ return (
                          >
                               <Users /> Invite New Members
                          </Button>
-                         {liveMeeting || nextMeeting ? (
-                              <Button asChild className="bg-chart-3">
-                                   <Link href={liveMeeting ? `/meeting/${liveMeeting.id}/session` : `/meeting/${nextMeeting!.id}`}>
-                                        <Play /> {liveMeeting ? "Open Live Session" : "Open Meeting Details"}
-                                   </Link>
-                              </Button>
-                         ) : (
-                              <Button className="bg-chart-3" disabled>
-                                   <Play /> Open Meeting Details
-                              </Button>
-                         )}
-                         {isHost ? (
+                         {isChairperson ? (
                               <>
                                    <Button className="bg-chart-2" onClick={() => setIsInstantOpen(true)} disabled={!selectedGroup?.id}>
                                         <Play /> Start Instant Meeting

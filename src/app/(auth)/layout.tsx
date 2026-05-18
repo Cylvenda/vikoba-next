@@ -30,9 +30,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                                         href="/"
                                         className="inline-flex flex-col rounded-xl px-1 py-1 transition hover:opacity-85"
                                    >
-                                        <span className="text-xs font-semibold uppercase tracking-[0.28em] text-chart-4">
-                                             Meeting Hub
-                                        </span>
+                                         <span className="text-xs font-semibold uppercase tracking-[0.28em] text-chart-4">
+                                              Community Hub
+                                         </span>
                                         <span className="text-sm text-muted-foreground">
                                              Return to home
                                         </span>
@@ -42,14 +42,14 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                               {children}
 
 
-                              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                              {/* <div className="flex items-center gap-3 text-sm text-muted-foreground">
                                    <Separator className="flex-1 bg-accent" />
                                    <span>or continue with</span>
                                    <Separator className="flex-1 bg-accent" />
                               </div>
 
-                              {/*  Google / GitHub / Apple buttons */}
-                              <div className="grid grid-cols-3 gap-3">
+                              {/*  Google / GitHub / Apple buttons 
+                              {/* <div className="grid grid-cols-3 gap-3">
 
                                    <button className="flex items-center justify-center gap-2 border rounded-md py-2 text-sm hover:bg-muted transition">
                                         <Image src="/google.png" alt="Google" width={18} height={18} />
@@ -66,7 +66,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                                         GitHub
                                    </button>
 
-                              </div>
+                              </div>  */}
 
                          </div>
                     </div>

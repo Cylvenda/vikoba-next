@@ -12,11 +12,11 @@ interface MenuItemsProps {
 const MenuItems = ({ isMobile = false }: MenuItemsProps) => {
      const { user } = useAuthUserStore()
      const items = [
-          { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
-          { icon: BellRing, label: "Notifications", href: "/notifications" },
-          { icon: UserRound, label: "Profile", href: "/profile" },
+          { icon: LayoutDashboard, label: "Home", href: "/home" },
+          { icon: BellRing, label: "Notifications", href: "/home/notifications" },
+          { icon: UserRound, label: "Profile", href: "/home/profile" },
           ...(user?.isAdmin ? [{ icon: ShieldCheck, label: "Admin", href: "/admin" }] : []),
-          { icon: Settings, label: "Settings", href: "/settings" },
+          { icon: Settings, label: "Settings", href: "/home/settings" },
      ]
 
      return (

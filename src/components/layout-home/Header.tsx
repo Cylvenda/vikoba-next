@@ -31,7 +31,7 @@ const Header = ({ showMenu, setShowMenu }: HeaderProps) => {
                     <div>
                          <h1 className='font-semibold text-2xl flex gap-3 items-center'>
                               <LayoutDashboard />
-                              <Link href={user?.isAdmin ? "/admin" : "/dashboard"}>Meeting Hub</Link>
+                               <Link href={user?.isAdmin ? "/admin" : "/home"}>Community Hub</Link>
                          </h1>
                          <h2 className='text-sm'>
                               {

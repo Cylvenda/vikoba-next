@@ -3,6 +3,7 @@ import { Play } from "lucide-react";
 import { Button } from "../ui/button";
 import { useMeetingStore } from "@/store/meeting/meeting.store";
 import { useGroupStore } from "@/store/group/groupUser.store";
+import { getMeetingSessionHref } from "@/lib/meeting-routes";
 
 export default function MeetingInProgress() {
      const { meetings } = useMeetingStore()
@@ -32,7 +33,7 @@ export default function MeetingInProgress() {
                </div>
                <div className="flex items-center gap-4 mt-4 md:mt-0">
                     <Button asChild variant={"outline"} className="text-black" > 
-                         <Link href={`/meeting/${activeMeeting.id}/session`}><Play /> Join Now</Link>
+                         <Link href={getMeetingSessionHref(activeMeeting.id, activeMeeting.group)}><Play /> Join Now</Link>
                     </Button>
                </div>
           </div>

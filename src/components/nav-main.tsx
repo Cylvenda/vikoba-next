@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import {
   Collapsible,
   CollapsibleContent,
@@ -21,6 +22,7 @@ import { ChevronRight } from "lucide-react"
 
 export function NavMain({
   items,
+  label = "Platform",
 }: {
   items: {
     title: string
@@ -33,10 +35,13 @@ export function NavMain({
       url?: string
     }[]
   }[]
+  label?: string
 }) {
+  const pathname = usePathname()
+
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>{label}</SidebarGroupLabel>
 
       <SidebarMenu>
         {items.map((item) => (
@@ -55,10 +60,17 @@ export function NavMain({
                   !item.items ? (
 
                     <SidebarMenuButton tooltip={item.title}>
-                      <Link className="flex flex-row gap-2 items-center" href={`${item.url}`}>
-                        {item.icon}
-                        <span>{item.title}</span>
-                      </Link>
+                      {pathname === item.url ? (
+                        <span className="flex flex-row items-center gap-2">
+                          {item.icon}
+                          <span>{item.title}</span>
+                        </span>
+                      ) : (
+                        <Link className="flex flex-row gap-2 items-center" href={item.url} prefetch={false}>
+                          {item.icon}
+                          <span>{item.title}</span>
+                        </Link>
+                      )}
 
                       {/* Show arrow only if submenu exists */}
                       {item.items && (
@@ -92,10 +104,17 @@ export function NavMain({
                       <SidebarMenuSubItem key={subItem.title}>
                         <SidebarMenuSubButton asChild>
                           <div>
-                            <Link className="flex flex-row gap-2 items-center" href={`${subItem.url}`}>
-                              {subItem.icon}
-                              <span>{subItem.title}</span>
-                            </Link>
+                            {pathname === subItem.url ? (
+                              <span className="flex flex-row items-center gap-2">
+                                {subItem.icon}
+                                <span>{subItem.title}</span>
+                              </span>
+                            ) : (
+                              <Link className="flex flex-row gap-2 items-center" href={subItem.url || "#"} prefetch={false}>
+                                {subItem.icon}
+                                <span>{subItem.title}</span>
+                              </Link>
+                            )}
                           </div>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>

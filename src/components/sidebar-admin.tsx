@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Separator } from "./ui/separator"
 import { useAuthUserStore } from "@/store/auth/userAuth.store"
-import { BellRing, GroupIcon, LayoutDashboard, LogOut, Monitor, Settings, User, Users } from "lucide-react"
+import { BellRing, GroupIcon, LayoutDashboard, Monitor, Settings, User, Users } from "lucide-react"
 
 const navMain = [
   {
@@ -39,21 +39,21 @@ const navMain = [
   },
   {
     title: "Profile",
-    url: "/profile",
+    url: "/home/profile",
     icon: (
       <User />
     )
   },
   {
     title: "Notifications",
-    url: "/notifications",
+    url: "/home/notifications",
     icon: (
       <BellRing />
     )
   },
   {
     title: "Settings",
-    url: "/settings",
+    url: "/home/settings",
     icon: (
       <Settings />
     )
@@ -71,7 +71,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <TeamSwitcher
           teams={{
-            name: "Meeting Hub",
+            name: "Community Hub",
             logo: <Monitor />,
             role: roleLabel,
           }}

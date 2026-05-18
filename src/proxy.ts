@@ -24,27 +24,28 @@ function hasValidAccessToken(token?: string): boolean {
 
 export function proxy(request: NextRequest) {
      const accessToken = request.cookies.get("access")?.value;
+     const refreshToken = request.cookies.get("refresh")?.value;
+     const hasRefreshToken = Boolean(refreshToken);
      const isAuthenticated = hasValidAccessToken(accessToken);
 
      const pathname = request.nextUrl.pathname;
 
      const isProtected =
-          pathname.startsWith("/dashboard") ||
-          pathname.startsWith("/group");
+          pathname.startsWith("/admin") ||
+          pathname.startsWith("/home") ||
+          pathname.startsWith("/group") ||
+          pathname.startsWith("/meeting");
 
-     const isAuthRoute =
-          pathname === "/login" ||
-          pathname === "/register" ||
-          pathname.startsWith("/reset");
+     const isAuthPage = pathname === "/login" || pathname === "/register";
 
-     // Not logged in
-     if (isProtected && !isAuthenticated) {
-          return NextResponse.redirect(new URL("/login", request.url));
+     // Already logged in — bounce away from auth pages
+     if (isAuthPage && (isAuthenticated || hasRefreshToken)) {
+          return NextResponse.redirect(new URL("/home", request.url));
      }
 
-     // Logged in users should not stay on auth pages
-     if (isAuthRoute && isAuthenticated) {
-          return NextResponse.redirect(new URL("/dashboard", request.url));
+     // Not logged in — protect private routes
+     if (isProtected && !isAuthenticated && !hasRefreshToken) {
+          return NextResponse.redirect(new URL("/login", request.url));
      }
 
      return NextResponse.next();
@@ -52,8 +53,10 @@ export function proxy(request: NextRequest) {
 
 export const config = {
      matcher: [
-          "/dashboard/:path*",
+          "/admin/:path*",
+          "/home/:path*",
           "/group/:path*",
+          "/meeting/:path*",
           "/login",
           "/register",
           "/reset/:path*",

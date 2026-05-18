@@ -17,8 +17,8 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: {
-    default: "Meeting Hub",
-    template: "%s | Meeting Hub",
+    default: "Community Hub",
+    template: "%s | Community Hub",
   },
   description: "Secure web-based virtual meeting system",
 };

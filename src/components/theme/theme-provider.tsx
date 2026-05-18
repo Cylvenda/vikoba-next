@@ -10,7 +10,7 @@ interface ThemeContextValue {
   toggleTheme: () => void
 }
 
-const THEME_STORAGE_KEY = "meeting-hub-theme"
+const THEME_STORAGE_KEY = "community-hub-theme"
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
 

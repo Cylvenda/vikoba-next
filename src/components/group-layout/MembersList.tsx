@@ -9,7 +9,10 @@ import { toast } from "react-toastify";
 export default function MembersList() {
      const { user } = useAuthUserStore()
      const { selectedGroupMembers, selectedGroup, loading, invitationLoading, verifyGroupMember, toggleGroupMember } = useGroupStore()
-     const isHost = user?.email === selectedGroup?.created_by
+
+     // Check if current user has CHAIRPERSON role in the group
+     const currentUserMembership = selectedGroupMembers.find(m => m.user_id === user?.email)
+     const isChairperson = currentUserMembership?.role === "CHAIRPERSON" && currentUserMembership?.is_verified && currentUserMembership?.is_active
 
      const handleVerify = async (membershipId: string) => {
           if (!selectedGroup?.id) return
@@ -80,7 +83,7 @@ export default function MembersList() {
                                    <p className={`text-sm ${member.is_active ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
                                         {member.is_active ? "active" : "inactive"}
                                    </p>
-                                   {isHost && member.role !== "HOST" && (
+                                   {isChairperson && member.role !== "CHAIRPERSON" && (
                                         <div className="flex gap-2">
                                              {!member.is_verified && (
                                                   <Button size="sm" className="bg-chart-3" disabled={invitationLoading} onClick={() => handleVerify(member.membership_id)}>

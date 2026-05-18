@@ -1,4 +1,3 @@
-// src/store/group/group.store.ts
 
 import { create } from "zustand"
 import { Group, GroupInvitation, GroupMembership } from './group.types';

@@ -45,7 +45,8 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-6 p-6 md:p-10">
+    <div className="w-full p-4 md:p-6 lg:p-8">
+      <div className="mx-auto w-full max-w-screen-2xl space-y-6">
       <Card className="border-none bg-accent shadow-sm">
         <CardHeader>
           <CardTitle className="text-3xl">Settings</CardTitle>
@@ -59,7 +60,7 @@ export default function SettingsPage() {
         <Card className="border-none bg-card shadow-sm">
           <CardHeader>
             <CardTitle>Account overview</CardTitle>
-            <CardDescription>Your current account identity inside Meeting Hub.</CardDescription>
+            <CardDescription>Your current account identity inside Community Hub.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-2xl bg-muted p-4">
@@ -82,7 +83,7 @@ export default function SettingsPage() {
 
             <div className="flex flex-wrap gap-3">
               <Button asChild>
-                <Link href="/profile">Open profile</Link>
+                <Link href="/home/profile">Open profile</Link>
               </Button>
               {user?.isAdmin && (
                 <Button asChild variant="outline">
@@ -157,6 +158,7 @@ export default function SettingsPage() {
             <ThemeToggle />
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   )

@@ -585,14 +585,16 @@ export function AgendaMinutesPanel({
 
                 setLoading(true)
                 try {
-                  const notesArray = Object.values(minuteNotes).map(note => ({
-                    agenda_item_id: note.agendaItemId,
-                    notes: note.notes,
-                    host_notes: note.hostNotes,
-                    status: note.status,
-                    start_time: note.startTime,
-                    end_time: note.endTime
-                  }))
+                  const notesArray = Object.values(minuteNotes)
+                    .filter((note): note is AgendaMinuteNote & { agendaItemId: string } => Boolean(note.agendaItemId))
+                    .map((note) => ({
+                      agenda_item_id: note.agendaItemId,
+                      notes: note.notes,
+                      host_notes: note.hostNotes,
+                      status: note.status,
+                      start_time: note.startTime,
+                      end_time: note.endTime,
+                    }))
 
                   const response = await meetingServices.saveAllAgendaMinuteNotes(meetingId, notesArray)
                   if (response.status >= 200 && response.status < 300) {

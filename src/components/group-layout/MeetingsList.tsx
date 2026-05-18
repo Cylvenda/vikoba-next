@@ -3,6 +3,7 @@ import { Separator } from "../ui/separator";
 import { CalendarDays } from "lucide-react";
 import { useGroupStore } from "@/store/group/groupUser.store";
 import { useMeetingStore } from "@/store/meeting/meeting.store";
+import { getMeetingDetailHref, getMeetingSessionHref } from "@/lib/meeting-routes";
 
 
 
@@ -21,7 +22,9 @@ const MeetingsList = () => {
                     {groupMeetings.map((m) => (
                          <div key={m.id} className="flex items-center gap-6 py-3">
                               {(() => {
-                                   const meetingHref = m.status === "ongoing" ? `/meeting/${m.id}/session` : `/meeting/${m.id}`
+                                   const meetingHref = m.status === "ongoing"
+                                        ? getMeetingSessionHref(m.id, m.group)
+                                        : getMeetingDetailHref(m.id, m.group)
                                    const meetingLabel = m.status === "ongoing" ? "Join Session" : "Open Details"
 
                                    return (

@@ -102,7 +102,7 @@ const UserInfo = () => {
 
                          <div className='mt-2 space-y-1'>
                               <Link
-                                   href="/profile"
+                                   href="/home/profile"
                                    role='menuitem'
                                    onClick={() => setIsOpen(false)}
                                    className='flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition-colors hover:bg-muted'
@@ -112,7 +112,7 @@ const UserInfo = () => {
                               </Link>
 
                               <Link
-                                   href="/settings"
+                                   href="/home/settings"
                                    role='menuitem'
                                    onClick={() => setIsOpen(false)}
                                    className='flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition-colors hover:bg-muted'

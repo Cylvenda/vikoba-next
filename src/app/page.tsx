@@ -65,7 +65,7 @@ export default function Home() {
           <header className="sticky top-4 z-30 rounded-full border border-border/70 bg-background/75 px-4 py-3 shadow-lg shadow-chart-2/10 backdrop-blur md:px-6">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-chart-4">Meeting Hub</p>
+                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-chart-4">Community Hub</p>
                 <p className="text-sm text-muted-foreground">Secure Virtual Private Meeting</p>
               </div>
 
@@ -108,7 +108,7 @@ export default function Home() {
               </h1>
 
               <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-                Meeting Hub combines access control, scheduling, live participation, and follow-up so your group can move through every meeting in one calm system.
+                 Community Hub combines access control, scheduling, live participation, and follow-up so your group can move through every meeting in one calm system.
               </p>
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -150,7 +150,7 @@ export default function Home() {
                   <div className="mt-4 overflow-hidden rounded-[1.4rem] border border-border bg-card">
                     <Image
                       src="/meet.png"
-                      alt="Meeting Hub product preview"
+                       alt="Community Hub product preview"
                       width={1536}
                       height={1024}
                       className="h-auto w-full object-cover"
@@ -232,7 +232,7 @@ export default function Home() {
               <p className="text-sm font-semibold uppercase tracking-[0.28em] text-chart-4">Why it works</p>
               <h2 className="mt-4 text-3xl font-semibold tracking-tight">Designed for meetings that carry responsibility.</h2>
               <p className="mt-4 leading-8 text-muted-foreground">
-                When decisions matter, the system around the conversation matters too. Meeting Hub gives admins control and gives members a clearer, lighter experience.
+                 When decisions matter, the system around the conversation matters too. Community Hub gives admins control and gives members a clearer, lighter experience.
               </p>
             </div>
 
@@ -278,7 +278,7 @@ export default function Home() {
         <footer className="border-t border-border/80 bg-card/70 backdrop-blur">
           <div className="mx-auto grid max-w-7xl gap-10 px-6 py-10 md:grid-cols-[1.2fr_0.8fr_0.8fr] md:px-10">
             <div className="max-w-md">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-chart-4">Meeting Hub</p>
+               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-chart-4">Community Hub</p>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight">
                 Secure meetings with a clearer flow from invite to follow-up.
               </h2>
@@ -317,7 +317,7 @@ export default function Home() {
 
           <div className="border-t border-border/70">
             <div className="mx-auto flex max-w-7xl flex-col gap-3 px-6 py-4 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between md:px-10">
-              <p>Meeting Hub keeps your team meetings organized and secure.</p>
+               <p>Community Hub keeps your team meetings organized and secure.</p>
               <p>Designed and Developeed by <a href="mailto:brayanmlawa0917@gmail.com">Cylvenda</a> .</p>
             </div>
           </div>

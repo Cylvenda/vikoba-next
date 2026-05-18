@@ -54,8 +54,7 @@ export default function LoginPage() {
                          return
                     }
 
-                    router.replace(currentUser.isAdmin ? "/admin" : "/dashboard")
-                    router.refresh()
+                    router.replace(currentUser.isAdmin ? "/admin" : "/home")
                }
           } catch {
                toast.error("Login failed. Check credentials.")

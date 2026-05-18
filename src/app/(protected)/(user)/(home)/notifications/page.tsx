@@ -87,7 +87,8 @@ export default function Page() {
      ]
 
      return (
-          <div className="w-full max-w-6xl mx-auto p-6 md:p-10 space-y-6">
+          <div className="w-full p-4 md:p-6 lg:p-8">
+               <div className="mx-auto w-full max-w-screen-2xl space-y-6">
                <Card className="border-none bg-accent shadow-sm">
                     <CardHeader>
                          <CardTitle className="text-3xl">Notifications</CardTitle>
@@ -229,6 +230,7 @@ export default function Page() {
                          </CardContent>
                     </Card>
                )}
+               </div>
           </div>
      )
 }
