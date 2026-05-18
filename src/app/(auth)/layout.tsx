@@ -1,77 +1,69 @@
-import type { ReactNode } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { Card } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+import type { ReactNode } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Card } from "@/components/ui/card";
+import { Coins } from "lucide-react";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
-     return (
-          <div className="min-h-screen flex items-center justify-center bg-linear-to-r from-chart-2 to-chart-3 p-4">
+  return (
+    <main className="min-h-screen relative overflow-hidden flex items-center justify-center bg-background text-foreground font-sans p-4 md:p-8">
+      {/* Ambient background glows */}
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,var(--color-chart-1),transparent_45%)] opacity-25 dark:opacity-15" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_bottom_left,var(--color-chart-3),transparent_50%)] opacity-20 dark:opacity-10" />
 
-               <Card className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 overflow-hidden rounded-2xl shadow-xl border-0">
-
-
-                    {/* RIGHT SIDE (IMAGE) */}
-                    <div className="relative left-4  hidden md:block">
-                         <Image
-                              src="/meet.png"
-                              alt="Meeting Background"
-                              fill
-                              className="object-cover rounded-2xl "
-                              priority
-                         />
-                    </div>
-
-                    {/* LEFT SIDE (FORM) */}
-                    <div className="flex items-center justify-center p-10">
-                         <div className="w-full max-w-md space-y-6">
-                              <div className="flex justify-center md:justify-start">
-                                   <Link
-                                        href="/"
-                                        className="inline-flex flex-col rounded-xl px-1 py-1 transition hover:opacity-85"
-                                   >
-                                         <span className="text-xs font-semibold uppercase tracking-[0.28em] text-chart-4">
-                                              Community Hub
-                                         </span>
-                                        <span className="text-sm text-muted-foreground">
-                                             Return to home
-                                        </span>
-                                   </Link>
-                              </div>
-
-                              {children}
-
-
-                              {/* <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                                   <Separator className="flex-1 bg-accent" />
-                                   <span>or continue with</span>
-                                   <Separator className="flex-1 bg-accent" />
-                              </div>
-
-                              {/*  Google / GitHub / Apple buttons 
-                              {/* <div className="grid grid-cols-3 gap-3">
-
-                                   <button className="flex items-center justify-center gap-2 border rounded-md py-2 text-sm hover:bg-muted transition">
-                                        <Image src="/google.png" alt="Google" width={18} height={18} />
-                                        Google
-                                   </button>
-
-                                   <button className="flex items-center justify-center gap-2 border rounded-md py-2 text-sm hover:bg-muted transition">
-                                        <Image src="/apple.svg" alt="Apple" width={18} height={18} />
-                                        Apple
-                                   </button>
-
-                                   <button className="flex items-center justify-center gap-2 border rounded-md py-2 text-sm hover:bg-muted transition">
-                                        <Image src="/github.png" alt="GitHub" width={18} height={18} />
-                                        GitHub
-                                   </button>
-
-                              </div>  */}
-
-                         </div>
-                    </div>
-
-               </Card>
+      {/* Glassmorphic Auth Card Wrapper */}
+      <Card className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 overflow-hidden rounded-[2rem] border border-border/80 bg-card/60 shadow-2xl shadow-chart-3/5 backdrop-blur-md">
+        
+        {/* LEFT COLUMN: Framing Product View Bento-Style */}
+        <div className="hidden md:block relative p-4 pr-0 h-full min-h-[560px]">
+          <div className="relative h-full w-full overflow-hidden rounded-[1.6rem] border border-border/60 bg-muted/30 shadow-inner group">
+            <Image
+              src="/meet.png"
+              alt="Community Hub VICOBA Meeting Dashboard"
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-102"
+              priority
+            />
+            {/* Soft overlay gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
           </div>
-     )
+        </div>
+
+        {/* RIGHT COLUMN: The Auth Form Side */}
+        <div className="flex items-center justify-center p-8 lg:p-12">
+          <div className="w-full max-w-md space-y-6">
+            
+            {/* Integrated Branding Header Logo */}
+            <div className="flex justify-center md:justify-start">
+              <Link
+                href="/"
+                className="inline-flex flex-col gap-2 rounded-xl transition hover:opacity-85"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-chart-3 text-primary-foreground shadow-inner">
+                    <Coins size={16} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-extrabold uppercase tracking-[0.25em] text-chart-4 leading-none">
+                      Community Hub
+                    </p>
+                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1">
+                      Return to landing page
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            </div>
+
+            {/* Render Nested Page Form (children) */}
+            <div className="pt-2">
+              {children}
+            </div>
+
+          </div>
+        </div>
+
+      </Card>
+    </main>
+  );
 }

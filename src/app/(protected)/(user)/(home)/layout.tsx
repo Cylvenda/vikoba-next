@@ -43,7 +43,7 @@ export default function ProtectedLayout({
         if (!isAuthenticated) {
           if (!cancelled) {
             redirecting = true;
-            router.replace("/login");
+            router.replace("/");
           }
           return;
         }
@@ -59,7 +59,7 @@ export default function ProtectedLayout({
         console.error("Dashboard bootstrap error:", error);
         if (!cancelled) {
           redirecting = true;
-          router.replace("/login");
+          router.replace("/");
         }
       } finally {
         // Only unhide the layout when we are staying on the page.
@@ -86,10 +86,10 @@ export default function ProtectedLayout({
               Community Hub
             </p>
             <p className="mt-3 text-lg font-medium text-foreground">
-              Loading your Home workspace...
+              Authenticating your session...
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              We are checking your session and preparing your dashboard.
+              Please wait while we verify your access to the workspace.
             </p>
             <div className="flex justify-center items-center">
               <Spinner />

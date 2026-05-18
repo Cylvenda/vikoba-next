@@ -91,7 +91,7 @@ export const FieldInput = <T extends FieldValues>({
                               required={required}
                               autoComplete={name}
                               aria-invalid={fieldState.invalid}
-                              className="focus-visible:ring-2 focus-visible:ring-blue-500 p-5 "
+                              className="focus-visible:ring-2 focus-visible:ring-chart-3/40 focus-visible:border-chart-3 p-5 transition-all"
                          />
 
                          {fieldState.invalid && (
@@ -195,7 +195,7 @@ export const FieldSelect = <T extends FieldValues>({ label, name, options, contr
                                    onValueChange?.(value)     // call parent callback if provided
                               }}
                          >
-                              <SelectTrigger className="focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500">
+                              <SelectTrigger className="focus-visible:ring-2 focus-visible:ring-chart-3/40 focus-visible:border-chart-3 transition-all">
                                    <SelectValue placeholder={placeHolder} />
                               </SelectTrigger>
                               <SelectContent>
