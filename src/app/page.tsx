@@ -4,27 +4,32 @@ import {
   ArrowRight,
   CalendarRange,
   CheckCircle2,
-  MenuSquare,
   ShieldCheck,
   Users2,
+  Coins,
+  HandCoins,
+  FileText,
+  Play,
+  Sparkles,
+  Gavel,
 } from "lucide-react";
 import ThemeToggle from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 
 const highlights = [
   {
-    title: "Member-only spaces",
-    description: "Run private groups with invitations, approvals, and role-aware access from day one.",
-    icon: Users2,
+    title: "Synchronous Savings (Hisa)",
+    description: "Members buy shares and log savings contributions live during structured meetings. Treasurers verify transaction references on the spot.",
+    icon: Coins,
   },
   {
-    title: "Meetings with structure",
-    description: "Move from scheduling to live attendance, minutes, and wrap-up without scattered tools.",
-    icon: CalendarRange,
+    title: "Structured Live Loan Desk",
+    description: "Submit loan applications live during virtual sessions. Chairpersons approve or reject requests with real-time interest calculation.",
+    icon: HandCoins,
   },
   {
-    title: "Security built in",
-    description: "Email activation, authenticated sessions, and protected routes keep participation controlled.",
+    title: "Granular Role-Based Spaces",
+    description: "Run secure VICOBA groups with dedicated interfaces and permissions for Chairperson, Treasurer, Secretary, and Members.",
     icon: ShieldCheck,
   },
 ];
@@ -32,147 +37,184 @@ const highlights = [
 const workflow = [
   {
     step: "01",
-    title: "Create the room around the team",
-    description: "Set up a group, invite members, and keep access limited to the people who should be in the conversation.",
+    title: "Schedule & Convene Sessions",
+    description: "The Chairperson schedules recurring savings and loan meetings. Members receive instant email invites with custom calendar links.",
+    icon: CalendarRange,
   },
   {
     step: "02",
-    title: "Run the meeting while it is happening",
-    description: "Track attendance, watch live participation, and keep agenda items visible instead of buried in chat.",
+    title: "Transact & Collaborate Live",
+    description: "Meet via high-fidelity audio/video. Record contributions, request emergency loans, pay outstanding fines, and log roll-call in one view.",
+    icon: Play,
   },
   {
     step: "03",
-    title: "Leave with clear follow-through",
-    description: "Capture minutes, action points, and the meeting record so the next step is obvious after everyone leaves.",
+    title: "Ledger Audit & Session Wrap",
+    description: "The Treasurer audits payment references, the Secretary publishes live meeting minutes, and the group balance sheet updates automatically.",
+    icon: FileText,
   },
 ];
 
 const metrics = [
-  { label: "From invite to live session", value: "One flow" },
-  { label: "Agenda, attendance, and notes", value: "In one place" },
-  { label: "Built for admins and members", value: "Role-aware" },
+  { label: "Village Banking Capital Pools", value: "TSh 4,850,000" },
+  { label: "Active Loan Disbursement", value: "TSh 1,200,000" },
+  { label: "Live Meeting Attendance", value: "96% Present" },
 ];
 
 export default function Home() {
   return (
-    <main className="min-h-screen overflow-hidden bg-background text-foreground">
+    <main className="min-h-screen overflow-hidden bg-background text-foreground font-sans selection:bg-chart-3/30 selection:text-chart-4">
+      {/* Background Gradients */}
       <div className="relative isolate">
-        <div className="absolute inset-0 -z-20 " />
-        <div className="absolute inset-x-0 top-0 -z-10 h-144  " />
+        <div className="absolute inset-0 -z-20 bg-[radial-gradient(ellipse_at_top_right,var(--color-chart-1),transparent_35%)] opacity-30 dark:opacity-15" />
+        <div className="absolute inset-0 -z-20 bg-[radial-gradient(ellipse_at_bottom_left,var(--color-chart-3),transparent_40%)] opacity-20 dark:opacity-10" />
 
-        <section className="mx-auto  max-w-8xl px-6 pb-14 pt-6 md:px-10 md:pb-24">
-
-          <header className="sticky top-4 z-30 rounded-full border border-border/70 bg-background/75 px-4 py-3 shadow-lg shadow-chart-2/10 backdrop-blur md:px-6">
+        <section className="mx-auto max-w-8xl px-4 pb-14 pt-6 md:px-10 md:pb-24">
+          {/* Header */}
+          <header className="sticky top-4 z-30 rounded-full border border-border/80 bg-background/80 px-4 py-3 shadow-lg shadow-chart-3/5 backdrop-blur-md md:px-6">
             <div className="flex items-center justify-between gap-4">
-              <div>
-                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-chart-4">Community Hub</p>
-                <p className="text-sm text-muted-foreground">Secure Virtual Private Meeting</p>
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-chart-3 text-primary-foreground shadow-inner">
+                  <Coins size={18} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.28em] text-chart-4">Community Hub</p>
+                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-[0.05em]">VICOBA Virtual Banking Platform</p>
+                </div>
               </div>
 
-              <nav className="hidden items-center gap-6 text-sm text-muted-foreground lg:flex">
+              <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground lg:flex">
                 <a href="#features" className="transition hover:text-foreground">
-                  Features
+                  Platform Features
                 </a>
                 <a href="#workflow" className="transition hover:text-foreground">
-                  Workflow
+                  Meeting Flow
                 </a>
-                <a href="#proof" className="transition hover:text-foreground">
-                  Why it works
+                <a href="#transparency" className="transition hover:text-foreground">
+                  Trust & Safety
                 </a>
               </nav>
 
               <div className="flex items-center gap-2">
                 <ThemeToggle compact />
-                <Button asChild variant="ghost" className="hidden rounded-full px-4 sm:inline-flex">
+                <Button asChild variant="ghost" className="hidden rounded-full px-4 font-medium sm:inline-flex">
                   <Link href="/login">Sign in</Link>
                 </Button>
-                <Button asChild size="lg" className="rounded-full bg-chart-3 px-5 text-primary-foreground hover:bg-chart-2">
+                <Button asChild size="lg" className="rounded-full bg-chart-3 px-5 text-primary-foreground font-semibold hover:bg-chart-2 transition-all duration-300 shadow-md hover:shadow-chart-3/20">
                   <Link href="/register">
-                    Start free
-                    <ArrowRight />
+                    Start Platform
+                    <ArrowRight className="ml-1 h-4 w-4" />
                   </Link>
                 </Button>
               </div>
             </div>
           </header>
 
-          <div className="grid items-center justify-center gap-5 pt-10 lg:grid-cols-[1.02fr_0.98fr] lg:pt-20">
+          {/* Hero Section */}
+          <div className="grid items-center justify-center gap-10 pt-10 lg:grid-cols-[1.05fr_0.95fr] lg:pt-16">
             <div className="max-w-4xl">
-              <p className="inline-flex items-center gap-2 rounded-full border border-border bg-card/80 px-4 py-2 text-sm font-medium text-chart-4 shadow-sm backdrop-blur">
-                <CheckCircle2 size={16} />
-                Built for private groups, councils, teams, and internal ops
+              <p className="inline-flex items-center gap-2 rounded-full border border-chart-3/20 bg-chart-3/10 px-4 py-2 text-xs md:text-sm font-semibold text-chart-4 shadow-sm backdrop-blur">
+                <Sparkles size={14} className="animate-pulse" />
+                Collaborative Banking Meets Structured Group Video
               </p>
 
-              <h1 className="mt-6 text-5xl font-bold leading-[0.95] tracking-tight md:text-8xl">
-                 Meetings that need order, not chaos.
+              <h1 className="mt-6 text-4xl font-extrabold leading-[1.0] tracking-tight text-foreground md:text-7xl lg:text-8xl">
+                Cooperative banking that runs on <span className="bg-gradient-to-r from-chart-3 to-chart-1 bg-clip-text text-transparent">structured meetings</span>.
               </h1>
 
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-                 Community Hub combines access control, scheduling, live participation, and follow-up so your group can move through every meeting in one calm system.
+              <p className="mt-6 max-w-2xl text-base leading-8 text-muted-foreground md:text-lg">
+                Community Hub combines secure video-conferencing with real-time VICOBA banking operations—letting groups save, borrow, fine, and record verified minutes inside a single secure virtual space.
               </p>
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                <Button asChild size="lg" className="rounded-full bg-chart-3 px-6 text-primary-foreground hover:bg-chart-2">
+                <Button asChild size="lg" className="rounded-full bg-chart-3 px-8 text-primary-foreground font-semibold hover:bg-chart-2 transition-all duration-300 shadow-lg shadow-chart-3/25">
                   <Link href="/register">
-                    Create account
-                    <ArrowRight />
+                    Create VICOBA Group
+                    <ArrowRight className="ml-1 h-5 w-5" />
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="rounded-full border-border bg-card/75 px-6 hover:bg-accent">
-                  <Link href="/login">Explore your dashboard</Link>
+                <Button asChild variant="outline" size="lg" className="rounded-full border-border bg-card/70 px-8 font-medium hover:bg-accent backdrop-blur transition-all duration-300">
+                  <Link href="/login">Access Dashboard</Link>
                 </Button>
               </div>
 
-              <div className="mt-10 grid gap-4 sm:grid-cols-3">
+              {/* VICOBA Metric Cards */}
+              <div className="mt-12 grid gap-4 sm:grid-cols-3">
                 {metrics.map((item) => (
-                  <div key={item.label} className="rounded-3xl border border-border/80 bg-card/75 p-5 shadow-sm backdrop-blur">
-                    <p className="text-2xl font-semibold text-card-foreground">{item.value}</p>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.label}</p>
+                  <div key={item.label} className="rounded-2xl border border-border/80 bg-card/60 p-5 shadow-sm backdrop-blur-md transition-all duration-300 hover:border-chart-3/30 hover:shadow-md">
+                    <p className="text-xl font-bold bg-gradient-to-r from-chart-4 to-chart-3 bg-clip-text text-transparent md:text-2xl">{item.value}</p>
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{item.label}</p>
                   </div>
                 ))}
               </div>
             </div>
 
+            {/* Interactive VICOBA Meeting Mockup */}
             <div className="relative">
-
-              <div className="overflow-hidden rounded-[2rem] border border-border/80 bg-card/80 p-3 shadow-2xl shadow-chart-2/10 backdrop-blur">
-                <div className="rounded-[1.6rem] border border-border/80 bg-background/75 p-4">
-                  <div className="flex items-center justify-between rounded-[1.4rem] bg-accent px-5 py-4 ">
+              <div className="absolute -inset-1 rounded-[2.1rem] bg-gradient-to-tr from-chart-3 to-chart-1 opacity-20 blur-xl dark:opacity-10" />
+              <div className="relative overflow-hidden rounded-[2rem] border border-border/80 bg-card/70 p-3 shadow-2xl shadow-chart-3/10 backdrop-blur-md">
+                <div className="rounded-[1.6rem] border border-border/80 bg-background/80 p-4 shadow-inner">
+                  
+                  {/* Mockup Session Header */}
+                  <div className="flex items-center justify-between rounded-[1.4rem] bg-accent px-5 py-4 shadow-sm border border-border/40">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.28em] text-chart-3">Live workspace</p>
-                      <h2 className="mt-2 text-2xl font-semibold">Wednesday operations review</h2>
+                      <div className="flex items-center gap-2">
+                        <span className="relative flex h-2.5 w-2.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-chart-3 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-chart-3"></span>
+                        </span>
+                        <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-chart-3">Live Session #24</p>
+                      </div>
+                      <h2 className="mt-1 text-lg font-bold text-foreground">Upendo VICOBA Weekly Meeting</h2>
                     </div>
-                    <div className="rounded-full bg-chart-3 px-3 py-1 text-sm font-medium text-muted">
-                      13 joined
+                    <div className="rounded-full bg-chart-3/15 px-3 py-1 text-xs font-bold text-chart-4 border border-chart-3/25">
+                      18 Joined
                     </div>
                   </div>
 
-                  <div className="mt-4 overflow-hidden rounded-[1.4rem] border border-border bg-card">
+                  {/* Product View Mockup */}
+                  <div className="mt-4 overflow-hidden rounded-[1.4rem] border border-border/80 bg-card/50 shadow-md relative group">
                     <Image
                       src="/meet.png"
-                       alt="Community Hub product preview"
+                      alt="Community Hub VICOBA Meeting Dashboard Preview"
                       width={1536}
                       height={1024}
-                      className="h-auto w-full object-cover"
+                      className="h-auto w-full object-cover transition-transform duration-700 group-hover:scale-102"
                       priority
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-4">
+                      <p className="text-xs text-white/90 font-medium flex items-center gap-2 drop-shadow-sm">
+                        <Users2 size={12} className="text-chart-1" />
+                        Live VICOBA video stream active
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="mt-4 grid gap-4 md:grid-cols-3">
-                    <div className="rounded-[1.4rem] bg-muted p-4">
-                      <p className="text-sm text-muted-foreground">Attendance</p>
-                      <p className="mt-2 text-2xl font-semibold">94%</p>
-                      <p className="mt-1 text-sm text-muted-foreground">Verified members recorded live</p>
+                  {/* Live Banking Actions Simulation */}
+                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-[1.4rem] bg-muted/80 p-4 border border-border/40 hover:bg-muted transition-all">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                        <Coins size={12} className="text-chart-3" />
+                        Savings (Hisa)
+                      </p>
+                      <p className="mt-2 text-lg font-bold text-foreground">TSh 840,000</p>
+                      <p className="mt-1 text-[10px] text-muted-foreground leading-snug">Recorded & Treasurer verified live</p>
                     </div>
-                    <div className="rounded-[1.4rem] bg-chart-1/20 p-4">
-                      <p className="text-sm text-muted-foreground">Minutes</p>
-                      <p className="mt-2 text-2xl font-semibold">Ready</p>
-                      <p className="mt-1 text-sm text-muted-foreground">Action points captured during session</p>
+                    <div className="rounded-[1.4rem] bg-chart-1/10 p-4 border border-chart-1/25 hover:bg-chart-1/15 transition-all">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-chart-4 flex items-center gap-1.5">
+                        <HandCoins size={12} className="text-chart-4" />
+                        Loans Desk
+                      </p>
+                      <p className="mt-2 text-lg font-bold text-chart-4">3 Raised</p>
+                      <p className="mt-1 text-[10px] text-muted-foreground leading-snug">Awaiting digital approval tags</p>
                     </div>
-                    <div className="rounded-[1.4rem] bg-chart-2/10 p-4">
-                      <p className="text-sm text-muted-foreground">Next step</p>
-                      <p className="mt-2 text-2xl font-semibold">Assigned</p>
-                      <p className="mt-1 text-sm text-muted-foreground">Owners leave with clear follow-up</p>
+                    <div className="rounded-[1.4rem] bg-chart-2/10 p-4 border border-chart-2/20 hover:bg-chart-2/15 transition-all">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-chart-3 flex items-center gap-1.5">
+                        <Gavel size={12} className="text-chart-3" />
+                        Fines Log
+                      </p>
+                      <p className="mt-2 text-lg font-bold text-chart-3">2 Resolved</p>
+                      <p className="mt-1 text-[10px] text-muted-foreground leading-snug">Instant ledger adjustments</p>
                     </div>
                   </div>
                 </div>
@@ -181,144 +223,163 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="features" className="mx-auto max-w-7xl px-6 py-6 md:px-10 md:py-10">
-          <div className="flex max-w-2xl flex-col gap-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-chart-4">What the product covers</p>
-            <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
-              Built around the full meeting lifecycle instead of a single video screen.
+        {/* Platform Features Section */}
+        <section id="features" className="mx-auto max-w-7xl px-4 py-16 md:px-10 md:py-24">
+          <div className="flex max-w-3xl flex-col gap-4 text-left">
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-chart-3">Engineered for Micro-Finance Groups</p>
+            <h2 className="text-3xl font-extrabold tracking-tight text-foreground md:text-5xl leading-tight">
+              Moving the entire VICOBA book-keeping ledger directly into your virtual meeting workspace.
             </h2>
+            <p className="text-muted-foreground max-w-2xl text-sm md:text-base leading-relaxed">
+              Traditional micro-banking depends on everyone showing up in a room to reconcile cash boxes and paper books. Community Hub replaces this offline dependency with robust WebRTC conference channels mapped to a shared digital ledger.
+            </p>
           </div>
 
-          <div className="mt-8 grid gap-5 lg:grid-cols-3">
+          <div className="mt-12 grid gap-6 lg:grid-cols-3">
             {highlights.map(({ title, description, icon: Icon }) => (
-              <article key={title} className="rounded-[2rem] border border-border/80 bg-card/80 p-6 shadow-sm backdrop-blur">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-chart-2/15 text-chart-4">
+              <article key={title} className="group relative rounded-[2rem] border border-border/80 bg-card/60 p-8 shadow-sm backdrop-blur-md transition-all duration-300 hover:scale-102 hover:border-chart-3/20 hover:shadow-xl">
+                <div className="absolute -inset-px rounded-[2rem] bg-gradient-to-tr from-chart-3 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-10" />
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-chart-3/15 text-chart-4 border border-chart-3/25 shadow-inner">
                   <Icon size={24} />
                 </div>
-                <h3 className="mt-5 text-xl font-semibold">{title}</h3>
+                <h3 className="mt-6 text-xl font-bold text-foreground">{title}</h3>
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">{description}</p>
               </article>
             ))}
           </div>
         </section>
 
-        <section id="workflow" className="mx-auto max-w-7xl px-6 py-14 md:px-10 md:py-20">
-          <div className="rounded-[2.25rem] border border-border/70 bg-card/80 px-6 py-8  shadow-2xl shadow-chart-5/10 md:px-10 md:py-12">
-            <div className="flex max-w-2xl flex-col gap-4">
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-chart-1">Workflow</p>
-              <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
-                From setup to follow-up, every step stays visible.
+        {/* VICOBA Lifecycle / Meeting Flow */}
+        <section id="workflow" className="mx-auto max-w-7xl px-4 py-8 md:px-10">
+          <div className="rounded-[2.5rem] border border-border/70 bg-card/50 px-6 py-10 shadow-2xl shadow-chart-3/5 backdrop-blur-md md:px-12 md:py-16">
+            <div className="flex max-w-3xl flex-col gap-4">
+              <p className="text-xs font-bold uppercase tracking-[0.28em] text-chart-4">Structured Session Flow</p>
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground md:text-5xl leading-tight">
+                From scheduling session start to signing off the ledger.
               </h2>
-              <p className="">
-                The product works best for teams that need more than a meeting link. It gives shape to who joins, what gets discussed, and what happens next.
+              <p className="text-muted-foreground text-sm md:text-base max-w-2xl leading-relaxed">
+                We make VICOBA management bulletproof. Our layout ensures that no member saves or borrows outside of a transparent, recordable, and democratic group session.
               </p>
             </div>
 
-            <div className="mt-8 grid gap-4 lg:grid-cols-3">
+            <div className="mt-12 grid gap-6 lg:grid-cols-3">
               {workflow.map((item) => (
-                <article key={item.step} className="rounded-[1.8rem] border border-bg-card  p-6">
-                  <p className="text-sm font-semibold tracking-[0.24em] text-chart-1">{item.step}</p>
-                  <h3 className="mt-4 text-xl font-semibold">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-7 ">{item.description}</p>
+                <article key={item.step} className="group relative rounded-2xl border border-border/40 bg-background/50 p-6 shadow-sm hover:border-chart-3/20 transition-all">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm font-extrabold tracking-widest text-chart-3/40 group-hover:text-chart-3 transition-colors">{item.step}</span>
+                    <div className="h-8 w-8 rounded-full bg-chart-3/10 text-chart-4 flex items-center justify-center border border-chart-3/20">
+                      <item.icon size={16} />
+                    </div>
+                  </div>
+                  <h3 className="mt-5 text-lg font-bold text-foreground">{item.title}</h3>
+                  <p className="mt-2 text-xs leading-6 text-muted-foreground">{item.description}</p>
                 </article>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="proof" className="mx-auto max-w-7xl px-6 pb-16 md:px-10 md:pb-24">
-          <div className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
-            <div className="rounded-[2rem] border border-border/80 bg-card/80 p-7 shadow-sm backdrop-blur">
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-chart-4">Why it works</p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight">Designed for meetings that carry responsibility.</h2>
-              <p className="mt-4 leading-8 text-muted-foreground">
-                 When decisions matter, the system around the conversation matters too. Community Hub gives admins control and gives members a clearer, lighter experience.
+        {/* Transparency and Safety Proof */}
+        <section id="transparency" className="mx-auto max-w-7xl px-4 py-16 md:px-10 md:py-24">
+          <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] items-center">
+            <div className="rounded-[2rem] border border-border/80 bg-card/60 p-8 shadow-sm backdrop-blur-md">
+              <p className="text-xs font-bold uppercase tracking-[0.28em] text-chart-4">Guaranteed Trust & Integrity</p>
+              <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">Designed for communities that carry mutual responsibility.</h2>
+              <p className="mt-4 text-sm leading-8 text-muted-foreground md:text-base">
+                When financial decisions involve friends and local communities, security and absolute transparency are paramount. Community Hub removes administrative vulnerabilities by combining video-verified attendance with immutable digital logs.
               </p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <article className="rounded-[2rem] border border-border/80 bg-card/75 p-6 shadow-sm backdrop-blur">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-foreground">
-                  <MenuSquare size={22} />
+            <div className="grid gap-6 md:grid-cols-2">
+              <article className="rounded-2xl border border-border/80 bg-card/50 p-6 shadow-sm backdrop-blur-sm transition-all hover:border-chart-3/30">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted border border-border/60 text-foreground">
+                  <CheckCircle2 size={22} className="text-chart-4" />
                 </div>
-                <h3 className="mt-4 text-lg font-semibold">Less tool switching</h3>
-                <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                  Planning, attendance, and records live together, which reduces the friction around every recurring meeting.
+                <h3 className="mt-4 text-base font-bold text-foreground">Verification Ledger</h3>
+                <p className="mt-2 text-xs leading-6 text-muted-foreground">
+                  Every savings contribution requires payment reference keys, which must be cross-checked and verified live by the Treasurer.
                 </p>
               </article>
-              <article className="rounded-[2rem] border border-border/80 bg-card/75 p-6 shadow-sm backdrop-blur">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-chart-2/12 text-chart-4">
+              <article className="rounded-2xl border border-border/80 bg-card/50 p-6 shadow-sm backdrop-blur-sm transition-all hover:border-chart-3/30">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-chart-3/10 border border-chart-3/20 text-chart-4">
                   <ShieldCheck size={22} />
                 </div>
-                <h3 className="mt-4 text-lg font-semibold">Access with guardrails</h3>
-                <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                  Invitations, activation, and protected views help keep sensitive group spaces private and intentional.
+                <h3 className="mt-4 text-base font-bold text-foreground">Absolute Access Guards</h3>
+                <p className="mt-2 text-xs leading-6 text-muted-foreground">
+                  Strict email confirmation, cryptographically signed video streams, and protected routes safeguard group capital logs.
                 </p>
               </article>
             </div>
           </div>
 
-          <div className="mt-8 flex flex-col items-start justify-between gap-6 rounded-[2rem] border border-border/80 bg-card/80 px-6 py-7 shadow-sm backdrop-blur md:flex-row md:items-center md:px-8">
+          {/* CTA Box */}
+          <div className="mt-16 flex flex-col items-start justify-between gap-6 rounded-[2.5rem] border border-border/80 bg-card/80 px-6 py-8 shadow-xl backdrop-blur-md md:flex-row md:items-center md:px-10">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-chart-4">Ready to launch</p>
-              <h2 className="mt-3 text-2xl font-semibold tracking-tight md:text-3xl">
-                Bring your next team, board, or working group into one meeting home.
+              <p className="text-xs font-bold uppercase tracking-[0.28em] text-chart-3">Start Secure Group Banking</p>
+              <h2 className="mt-3 text-xl font-bold tracking-tight text-foreground md:text-3xl leading-snug">
+                Bring your next cooperative group, VICOBA, or board into a secure meeting workspace.
               </h2>
             </div>
 
-            <Button asChild size="lg" className="rounded-full bg-chart-3 px-6 text-primary-foreground hover:bg-chart-2">
+            <Button asChild size="lg" className="rounded-full bg-chart-3 px-8 text-primary-foreground font-semibold hover:bg-chart-2 transition-all duration-300 shadow-md">
               <Link href="/register">
-                Open your workspace
-                <ArrowRight />
+                Open Your Space
+                <ArrowRight className="ml-1 h-5 w-5" />
               </Link>
             </Button>
           </div>
         </section>
 
-        <footer className="border-t border-border/80 bg-card/70 backdrop-blur">
-          <div className="mx-auto grid max-w-7xl gap-10 px-6 py-10 md:grid-cols-[1.2fr_0.8fr_0.8fr] md:px-10">
+        {/* Footer */}
+        <footer className="border-t border-border/80 bg-card/50 backdrop-blur-md">
+          <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 md:grid-cols-[1.3fr_0.8fr_0.9fr] md:px-10">
             <div className="max-w-md">
-               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-chart-4">Community Hub</p>
-              <h2 className="mt-3 text-2xl font-semibold tracking-tight">
-                Secure meetings with a clearer flow from invite to follow-up.
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-chart-3 text-primary-foreground shadow-sm">
+                  <Coins size={16} />
+                </div>
+                <p className="text-sm font-bold uppercase tracking-[0.28em] text-chart-4">Community Hub</p>
+              </div>
+              <h2 className="mt-4 text-lg font-bold tracking-tight text-foreground">
+                Collaborative virtual meetings with a transparent micro-banking flow.
               </h2>
-              <p className="mt-4 text-sm leading-7 text-muted-foreground">
-                Built for teams, boards, councils, and working groups that need structure, privacy, and a calmer meeting experience.
+              <p className="mt-3 text-xs leading-6 text-muted-foreground">
+                The secure web-based system that powers Village Community Banking and structured cooperative groups. Experience transparent banking and seamless virtual meetings in one elegant platform.
               </p>
             </div>
 
-            <div>
-              <p className="text-sm font-semibold text-foreground">Navigation</p>
-              <div className="mt-4 flex flex-col gap-3 text-sm text-muted-foreground">
+            <div className="md:ml-auto">
+              <p className="text-xs font-bold uppercase tracking-wider text-foreground">Quick Navigation</p>
+              <div className="mt-4 flex flex-col gap-2.5 text-xs text-muted-foreground">
                 <a href="#features" className="transition hover:text-foreground">
-                  Features
+                  Platform Features
                 </a>
                 <a href="#workflow" className="transition hover:text-foreground">
-                  Workflow
+                  Meeting Flow
                 </a>
-                <a href="#proof" className="transition hover:text-foreground">
-                  Why it works
+                <a href="#transparency" className="transition hover:text-foreground">
+                  Trust & Safety
                 </a>
               </div>
             </div>
 
-            <div>
-              <p className="text-sm font-semibold text-foreground">Get started</p>
-              <div className="mt-4 flex flex-col gap-3 text-sm text-muted-foreground">
+            <div className="md:ml-auto">
+              <p className="text-xs font-bold uppercase tracking-wider text-foreground">Member Portal</p>
+              <div className="mt-4 flex flex-col gap-2.5 text-xs text-muted-foreground">
                 <Link href="/register" className="transition hover:text-foreground">
-                  Create account
+                  Register VICOBA Group
                 </Link>
                 <Link href="/login" className="transition hover:text-foreground">
-                  Sign in
+                  Sign In to Space
                 </Link>
               </div>
             </div>
           </div>
 
-          <div className="border-t border-border/70">
-            <div className="mx-auto flex max-w-7xl flex-col gap-3 px-6 py-4 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between md:px-10">
-               <p>Community Hub keeps your team meetings organized and secure.</p>
-              <p>Designed and Developeed by <a href="mailto:brayanmlawa0917@gmail.com">Cylvenda</a> .</p>
+          <div className="border-t border-border/40 py-6">
+            <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between md:px-10">
+              <p>&copy; {new Date().getFullYear()} Community Hub. All cooperative banking transactions are verified synchronously.</p>
+              <p>Designed and Developed by <a href="mailto:brayanmlawa0917@gmail.com" className="hover:text-chart-3 font-medium transition-colors">Cylvenda</a>.</p>
             </div>
           </div>
         </footer>
