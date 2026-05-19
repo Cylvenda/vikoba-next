@@ -1,6 +1,6 @@
 # VICOBA Collaborative Banking & Secure Meeting Frontend
 
-A modern, highly responsive Next.js 16 and React 19 web application serving as the user interface for the **VICOBA (Village Community Banking) & Virtual Private Meeting Platform**. Built with Tailwind CSS v4, Zustand, and LiveKit WebRTC, this frontend delivers a premium, secure, and responsive dashboard for collaborative micro-banking and encrypted virtual group meetings.
+A modern, highly responsive Next.js 16 and React 19 web application serving as the user interface for the **VICOBA (Village Community Banking) & Virtual Private Meeting Platform**. Built with Tailwind CSS v4, Zustand, and Live Sessions WebRTC, this frontend delivers a premium, secure, and responsive dashboard for collaborative micro-banking and encrypted virtual group meetings.
 
 ---
 
@@ -29,7 +29,7 @@ A modern, highly responsive Next.js 16 and React 19 web application serving as t
 - **Meeting Center**:
   - Schedule and list upcoming virtual banking meetings.
   - Review archived meetings, attendee stats, and historical meeting minutes.
-- **Active Video Conference**: High-fidelity WebRTC meeting room using LiveKit. Includes real-time audio/video stream controls, screen sharing, automatic presence/attendance logs, and collaborative live minutes logging.
+- **Active Video Conference**: High-fidelity Live Session meeting room. Includes real-time audio/video stream controls, screen sharing, automatic presence/attendance logs, and collaborative live minutes logging.
 - **Members Ledger**: Member list showing active status, verified state, and role assignments (Chairperson, Treasurer, Secretary, Member).
 - **Settings**: Administrative settings for the Chairperson to customize group metadata or dissolve the group.
 
@@ -48,7 +48,7 @@ A modern, highly responsive Next.js 16 and React 19 web application serving as t
 | **React 19.2.4** | UI Runtime | State, effects, and modern hooks integration. |
 | **Tailwind CSS v4** | Style Engine | Dynamic variables, glassmorphism, premium typography, and theme scaling. |
 | **Zustand 5.0.12** | State Manager | Decoupled client-side data stores for auth, group state, and notifications. |
-| **LiveKit SDK** | Real-time WebRTC | High-performance audio, video, and screen-sharing client components. |
+| **Live Sessions SDK** | Real-time WebRTC | High-performance audio, video, and screen-sharing client components. |
 | **Axios** | HTTP Client | Network layer with custom interceptors for CSRF handling and auth token refreshing. |
 | **React Hook Form + Zod** | Form Validation | Strict schema validation and performance-optimized input structures. |
 | **Radix UI** | Accessible Primitives | Keyboard-accessible, robust components (Dialogs, Dropdowns, Sheets). |

@@ -245,7 +245,7 @@ export const useMeetingStore = create<MeetingState>((set) => ({
         realtimeConnection: null,
         loading: false,
       })
-      return { success: true, message: "Leave requested. Presence will finish updating after the LiveKit disconnect completes." }
+      return { success: true, message: "Leave requested. Presence will finish updating after the live session disconnect completes." }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to leave meeting"
       set({ loading: false, error: message })

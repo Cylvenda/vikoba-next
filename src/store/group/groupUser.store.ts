@@ -25,6 +25,8 @@ type GroupState = {
      respondToInvitation: (invitationUuid: string, action: "accept" | "decline") => Promise<{ success: boolean; message: string }>
      verifyGroupMember: (groupUuid: string, membershipUuid: string) => Promise<{ success: boolean; message: string }>
      toggleGroupMember: (groupUuid: string, membershipUuid: string) => Promise<{ success: boolean; message: string }>
+     removeGroupMember: (groupUuid: string, membershipUuid: string) => Promise<{ success: boolean; message: string }>
+     changeGroupMemberRole: (groupUuid: string, membershipUuid: string, role: string) => Promise<{ success: boolean; message: string }>
      sendGroupInvitation: (groupUuid: string, email: string, message?: string) => Promise<{ success: boolean; message: string }>
      clearSelectedGroup: () => void
 }
@@ -201,6 +203,42 @@ export const useGroupStore = create<GroupState>((set) => ({
                return { success: true, message: res.data.detail }
           } catch (err: unknown) {
                const message = err instanceof Error ? err.message : "Failed to update member"
+               set({ invitationLoading: false, error: message })
+               return { success: false, message }
+          }
+     },
+
+     removeGroupMember: async (groupUuid, membershipUuid) => {
+          set({ invitationLoading: true, error: null })
+          try {
+               const res = await groupServices.removeGroupMember(groupUuid, membershipUuid)
+               set((state) => ({
+                    selectedGroupMembers: state.selectedGroupMembers.filter(
+                         (member) => member.membership_id !== membershipUuid
+                    ),
+                    invitationLoading: false,
+               }))
+               return { success: true, message: res.data.detail }
+          } catch (err: unknown) {
+               const message = err instanceof Error ? err.message : "Failed to remove member"
+               set({ invitationLoading: false, error: message })
+               return { success: false, message }
+          }
+     },
+
+     changeGroupMemberRole: async (groupUuid, membershipUuid, role) => {
+          set({ invitationLoading: true, error: null })
+          try {
+               const res = await groupServices.changeGroupMemberRole(groupUuid, membershipUuid, role)
+               set((state) => ({
+                    selectedGroupMembers: state.selectedGroupMembers.map((member) =>
+                         member.membership_id === membershipUuid ? res.data.data : member
+                    ),
+                    invitationLoading: false,
+               }))
+               return { success: true, message: res.data.detail }
+          } catch (err: unknown) {
+               const message = err instanceof Error ? err.message : "Failed to change role"
                set({ invitationLoading: false, error: message })
                return { success: false, message }
           }

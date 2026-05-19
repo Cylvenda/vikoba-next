@@ -16,7 +16,6 @@ import {
   Play,
   Download,
   FileText,
-  FileSpreadsheet,
   ChevronDown,
 } from "lucide-react";
 import { toast } from "react-toastify";
@@ -42,6 +41,7 @@ export interface AgendaMinuteNote {
 
 interface AgendaMinutesHistoryProps {
   meetingId?: string;
+  meetingTitle?: string;
   agendaItems: AgendaItem[];
   isHost?: boolean;
   minuteNotes?: HistoryAgendaMinuteNote[];
@@ -60,6 +60,7 @@ type AgendaMinuteNoteApi = {
 
 export function AgendaMinutesHistory({
   meetingId,
+  meetingTitle = "Meeting",
   agendaItems,
   isHost = false,
   minuteNotes: initialMinuteNotes,
@@ -171,151 +172,188 @@ export function AgendaMinutesHistory({
     return new Date(dateString).toLocaleString();
   };
 
-  const cleanMarkdown = (text: string): string => {
-    // Remove markdown formatting
-    return text
-      .replace(/^#{1,6}\s+/gm, "") // Remove headers (# ## ### etc.)
-      .replace(/\*\*(.*?)\*\*/g, "$1") // Remove bold (text)
-      .replace(/\*(.*?)\*/g, "$1") // Remove italic (*text*)
-      .replace(/_(.*?)_/g, "$1") // Remove italic (_text_)
-      .replace(/~~(.*?)~~/g, "$1") // Remove strikethrough
-      .replace(/`(.*?)`/g, "$1") // Remove inline code
-      .replace(/\[(.*?)\]\(.*?\)/g, "$1") // Remove links, keep text
-      .replace(/^\s*[-*+]\s+/gm, "• ") // Convert list items to bullets
-      .replace(/^\s*\d+\.\s+/gm, "• ") // Convert numbered lists to bullets
-      .replace(/^\s*>\s+/gm, "") // Remove blockquote
-      .replace(/---+/g, "") // Remove horizontal rules
-      .replace(/\n{3,}/g, "\n\n") // Reduce multiple newlines to max 2
-      .trim();
-  };
-
-  const generateMinutesText = (includeMarkdown: boolean = true) => {
-    const formatFunc = includeMarkdown ? (text: string) => text : cleanMarkdown;
-
-    const minutesText = minuteNotes
-      .map((note) => {
-        const status =
-          note.status.charAt(0).toUpperCase() + note.status.slice(1);
-        const duration = formatDuration(note.startTime, note.endTime);
-
-        let section = includeMarkdown
-          ? `\n## ${note.agendaItemTitle}\n`
-          : `\n${formatFunc(note.agendaItemTitle)}\n`;
-
-        section += includeMarkdown
-          ? `Status: ${status} | Duration: ${duration} | Allocated: ${note.allocatedMinutes} min\n`
-          : `Status: ${status} | Duration: ${duration} | Allocated: ${note.allocatedMinutes} min\n`;
-
-        if (note.agendaItemDescription) {
-          section += includeMarkdown
-            ? `Description: ${note.agendaItemDescription}\n`
-            : `Description: ${formatFunc(note.agendaItemDescription)}\n`;
-        }
-
-        if (note.startTime) {
-          section += includeMarkdown
-            ? `Started: ${formatDateTime(note.startTime)}\n`
-            : `Started: ${formatDateTime(note.startTime)}\n`;
-        }
-
-        if (note.endTime) {
-          section += includeMarkdown
-            ? `Ended: ${formatDateTime(note.endTime)}\n`
-            : `Ended: ${formatDateTime(note.endTime)}\n`;
-        }
-
-        if (note.notes) {
-          section += includeMarkdown
-            ? `\nMinutes:\n${note.notes}\n`
-            : `\nMinutes:\n${formatFunc(note.notes)}\n`;
-        }
-
-        if (isHost && note.hostNotes) {
-          section += includeMarkdown
-            ? `\nHost Notes:\n${note.hostNotes}\n`
-            : `\nHost Notes:\n${formatFunc(note.hostNotes)}\n`;
-        }
-
-        section += includeMarkdown ? `\n---\n` : `\n${"=".repeat(50)}\n`;
-        return section;
-      })
-      .join("");
-
-    const additionalNotesText = additionalNotes
-      .map((note) => {
-        let section = includeMarkdown
-          ? `\n## ${note.title}\n`
-          : `\n${formatFunc(note.title)}\n`;
-
-        section += includeMarkdown
-          ? `Created: ${formatDateTime(note.created_at)}\n`
-          : `Created: ${formatDateTime(note.created_at)}\n`;
-
-        if (note.notes) {
-          section += includeMarkdown
-            ? `\nNotes:\n${note.notes}\n`
-            : `\nNotes:\n${formatFunc(note.notes)}\n`;
-        }
-
-        if (isHost && note.host_notes) {
-          section += includeMarkdown
-            ? `\nHost Notes:\n${note.host_notes}\n`
-            : `\nHost Notes:\n${formatFunc(note.host_notes)}\n`;
-        }
-
-        if (note.created_by_name || note.created_by_email) {
-          const creator = note.created_by_name || note.created_by_email || "";
-          section += includeMarkdown
-            ? `\nCreated By: ${creator}\n`
-            : `\nCreated By: ${formatFunc(creator)}\n`;
-        }
-
-        section += includeMarkdown ? `\n---\n` : `\n${"=".repeat(50)}\n`;
-        return section;
-      })
-      .join("");
-
-    const header = includeMarkdown
-      ? `# Meeting Minutes - ${new Date().toLocaleDateString()}\n\n`
-      : `Meeting Minutes - ${new Date().toLocaleDateString()}\n\n`;
-
-    const additionalSection = additionalNotesText
-      ? includeMarkdown
-        ? `\n# Additional Notes\n${additionalNotesText}`
-        : `\nAdditional Notes\n${additionalNotesText}`
-      : "";
-
-    return `${header}${minutesText}${additionalSection}`;
-  };
-
-  const exportMinutes = (format: "txt" | "docx" = "txt") => {
+  // ==========================================
+  // EXPORT FUNCTIONS
+  // ==========================================
+  const exportMinutesPdf = () => {
     try {
-      const includeMarkdown = format === "txt";
-      const exportText = generateMinutesText(includeMarkdown);
+      if (minuteNotes.length === 0 && additionalNotes.length === 0) {
+        toast.error("No minutes to export.");
+        return;
+      }
 
-      const mimeType =
-        format === "docx"
-          ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-          : "text/plain";
+      const htmlContent = `
+        <html>
+        <head>
+          <title>Minutes_${meetingTitle}</title>
+          <style>
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; line-height: 1.6; max-width: 800px; margin: 0 auto; }
+            h1 { color: #111; text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 5px; }
+            h3 { color: #555; text-align: center; margin-top: 0; }
+            .meta-header { text-align: center; color: #777; font-size: 14px; margin-bottom: 30px; }
+            
+            .agenda-section { margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #ddd; }
+            .agenda-title { color: #2c3e50; font-size: 20px; margin-bottom: 5px; }
+            .agenda-meta { color: #7f8c8d; font-size: 13px; margin-top: 0; margin-bottom: 15px; }
+            .agenda-meta strong { color: #555; }
+            
+            .minutes-box { background-color: #f9f9f9; padding: 15px; border-left: 4px solid #3498db; white-space: pre-wrap; font-size: 15px; margin-top: 10px; }
+            .host-notes-box { background-color: #fdf2e9; padding: 15px; border-left: 4px solid #e67e22; white-space: pre-wrap; font-size: 14px; color: #d35400; margin-top: 10px; }
+            
+            .additional-title { color: #2c3e50; font-size: 22px; margin-top: 40px; border-bottom: 2px solid #ccc; padding-bottom: 5px; }
+            .desc { font-style: italic; color: #666; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+            <h1>Official Meeting Minutes</h1>
+            <h3>Session: ${meetingTitle}</h3>
+            <div class="meta-header">Date Exported: ${new Date().toLocaleDateString()}</div>
+            
+            ${minuteNotes.map(note => `
+                <div class="agenda-section">
+                    <h2 class="agenda-title">${note.agendaItemTitle}</h2>
+                    <p class="agenda-meta">
+                        <strong>Status:</strong> <span style="text-transform: uppercase;">${note.status}</span> &nbsp;|&nbsp; 
+                        <strong>Allocated:</strong> ${note.allocatedMinutes} min &nbsp;|&nbsp; 
+                        <strong>Actual Time:</strong> ${formatDuration(note.startTime, note.endTime)}
+                    </p>
+                    ${note.agendaItemDescription ? `<p class="desc">${note.agendaItemDescription}</p>` : ''}
+                    
+                    <h4 style="margin-bottom: 5px; color: #34495e;">Minutes:</h4>
+                    <div class="minutes-box">
+                        ${note.notes || "<em>No official minutes recorded for this point.</em>"}
+                    </div>
 
-      const fileExtension = format === "docx" ? "docx" : "txt";
+                    ${isHost && note.hostNotes ? `
+                        <h4 style="margin-bottom: 5px; color: #c0392b;">Host Notes (Private):</h4>
+                        <div class="host-notes-box">
+                            ${note.hostNotes}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('')}
 
-      const blob = new Blob([exportText], { type: mimeType });
+            ${additionalNotes.length > 0 ? `
+                <h2 class="additional-title">Additional Notes & Action Items</h2>
+                ${additionalNotes.map(note => `
+                    <div class="agenda-section" style="border: none;">
+                        <h3 style="color: #34495e; font-size: 18px; margin-bottom: 5px;">${note.title}</h3>
+                        <p class="agenda-meta" style="margin-bottom: 10px;">
+                            <strong>Created:</strong> ${formatDateTime(note.created_at)}
+                            ${note.created_by_name || note.created_by_email ? `by ${note.created_by_name || note.created_by_email}` : ''}
+                        </p>
+                        <div class="minutes-box" style="border-left-color: #9b59b6;">
+                            ${note.notes}
+                        </div>
+                        ${isHost && note.host_notes ? `
+                            <h4 style="margin-bottom: 5px; color: #c0392b; margin-top: 15px;">Host Notes (Private):</h4>
+                            <div class="host-notes-box">
+                                ${note.host_notes}
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('')}
+            ` : ''}
+
+            <script>
+                window.onload = () => { window.print(); }
+            </script>
+        </body>
+        </html>
+      `;
+
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+      } else {
+        toast.error("Please allow popups to export as PDF.");
+      }
+    } catch (error) {
+      console.error("Export PDF failed:", error);
+      toast.error("Failed to export to PDF");
+    }
+  };
+
+  const exportMinutesWord = () => {
+    try {
+      if (minuteNotes.length === 0 && additionalNotes.length === 0) {
+        toast.error("No minutes to export.");
+        return;
+      }
+
+      const htmlContent = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head><meta charset='utf-8'><title>Meeting Minutes</title></head>
+        <body style="font-family: Arial, sans-serif;">
+            <h1 style="color: #333; text-align: center;">Official Meeting Minutes</h1>
+            <h3 style="color: #555; text-align: center;">Session: ${meetingTitle}</h3>
+            <p style="text-align: center;"><strong>Date Exported:</strong> ${new Date().toLocaleDateString()}</p>
+            <hr style="margin: 20px 0; border: 1px solid #ddd;"/>
+            
+            ${minuteNotes.map(note => `
+                <div style="margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+                    <h2 style="color: #2c3e50; font-size: 18px; margin-bottom: 5px;">${note.agendaItemTitle}</h2>
+                    <p style="color: #7f8c8d; font-size: 12px; margin-top: 0;">
+                        <strong>Status:</strong> <span style="text-transform: uppercase;">${note.status}</span> &nbsp;|&nbsp; 
+                        <strong>Allocated:</strong> ${note.allocatedMinutes} min &nbsp;|&nbsp; 
+                        <strong>Actual Time:</strong> ${formatDuration(note.startTime, note.endTime)}
+                    </p>
+                    ${note.agendaItemDescription ? `<p style="font-style: italic; color: #555; font-size: 13px;">${note.agendaItemDescription}</p>` : ''}
+                    
+                    <h4 style="margin-bottom: 5px; color: #34495e;">Minutes:</h4>
+                    <div style="background-color: #f9f9f9; padding: 10px; border-left: 4px solid #3498db; white-space: pre-wrap; font-size: 14px;">
+                        ${note.notes || "<em>No official minutes recorded for this point.</em>"}
+                    </div>
+
+                    ${isHost && note.hostNotes ? `
+                        <h4 style="margin-bottom: 5px; color: #c0392b;">Host Notes (Private):</h4>
+                        <div style="background-color: #fdf2e9; padding: 10px; border-left: 4px solid #e67e22; white-space: pre-wrap; font-size: 14px; color: #d35400;">
+                            ${note.hostNotes}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('')}
+
+            ${additionalNotes.length > 0 ? `
+                <h2 style="color: #2c3e50; font-size: 20px; margin-top: 30px; border-bottom: 2px solid #ccc; padding-bottom: 5px;">Additional Notes & Action Items</h2>
+                ${additionalNotes.map(note => `
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: #34495e; font-size: 16px;">${note.title}</h3>
+                        <p style="color: #7f8c8d; font-size: 12px; margin-top: 0;">
+                            <strong>Created:</strong> ${formatDateTime(note.created_at)}
+                            ${note.created_by_name || note.created_by_email ? `by ${note.created_by_name || note.created_by_email}` : ''}
+                        </p>
+                        <div style="background-color: #f9f9f9; padding: 10px; border-left: 4px solid #9b59b6; white-space: pre-wrap; font-size: 14px;">
+                            ${note.notes}
+                        </div>
+                        ${isHost && note.host_notes ? `
+                            <h4 style="margin-bottom: 5px; color: #c0392b;">Host Notes (Private):</h4>
+                            <div style="background-color: #fdf2e9; padding: 10px; border-left: 4px solid #e67e22; white-space: pre-wrap; font-size: 14px; color: #d35400;">
+                                ${note.host_notes}
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('')}
+            ` : ''}
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `meeting-minutes-${new Date().toISOString().split("T")[0]}.${fileExtension}`;
+      a.download = `Minutes_${meetingTitle}.doc`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast.success(
-        `Meeting minutes exported as ${format.toUpperCase()} successfully`,
-      );
+      toast.success("Meeting minutes exported to Word");
     } catch (error) {
-      console.error("Export failed:", error);
-      toast.error("Failed to export meeting minutes");
+      console.error("Export Word failed:", error);
+      toast.error("Failed to export to Word");
     }
   };
 
@@ -389,20 +427,19 @@ export function AgendaMinutesHistory({
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="outline">
-              <Download className="w-4 h-4 mr-2" />
+            <Button size="sm" variant="outline" className="rounded-full shadow-sm font-bold border-border/80 hover:bg-chart-3/10 hover:text-chart-3 transition-colors">
+              <Download className="w-4 h-4 mr-1.5" />
               Export
-              <ChevronDown className="w-4 h-4 ml-2" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => exportMinutes("txt")}>
-              <FileText className="w-4 h-4 mr-2" />
-              Export as TXT (with Markdown)
+          <DropdownMenuContent align="end" className="rounded-xl">
+            <DropdownMenuItem onClick={exportMinutesWord} className="font-medium cursor-pointer">
+              <FileText className="w-4 h-4 mr-2 text-blue-500" />
+              Export as Word (.doc)
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => exportMinutes("docx")}>
-              <FileText className="w-4 h-4 mr-2" />
-              Export as DOCX (clean format)
+            <DropdownMenuItem onClick={exportMinutesPdf} className="font-medium cursor-pointer">
+              <FileText className="w-4 h-4 mr-2 text-red-500" />
+              Export as PDF (.pdf)
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -423,7 +460,7 @@ export function AgendaMinutesHistory({
           .map((note) => (
             <Card
               key={note.id}
-              className={`${getAgendaStatusColor(note.status)}`}
+              className={`${getAgendaStatusColor(note.status)} shadow-sm border-border/60`}
             >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
@@ -433,16 +470,16 @@ export function AgendaMinutesHistory({
                       <CardTitle className="text-base font-medium">
                         {note.agendaItemTitle}
                       </CardTitle>
-                      <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground font-medium uppercase tracking-wide">
                         <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
+                          <Clock className="w-3.5 h-3.5" />
                           <span>
                             {formatDuration(note.startTime, note.endTime)}
                           </span>
                         </div>
                         <span>Allocated: {note.allocatedMinutes} min</span>
                         {note.startTime && (
-                          <span>Started: {formatDateTime(note.startTime)}</span>
+                          <span>Started: {new Date(note.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                         )}
                       </div>
                     </div>
@@ -453,19 +490,19 @@ export function AgendaMinutesHistory({
               <CardContent className="pt-0 space-y-4">
                 {note.agendaItemDescription && (
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">
-                      Description:
+                    <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground mb-1">
+                      Description
                     </p>
-                    <p className="text-sm">{note.agendaItemDescription}</p>
+                    <p className="text-sm bg-background/50 p-3 rounded-xl border border-border/40">{note.agendaItemDescription}</p>
                   </div>
                 )}
 
                 {note.notes && (
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-2">
-                      Meeting Minutes:
+                    <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground mb-1">
+                      Meeting Minutes
                     </p>
-                    <div className="bg-white dark:bg-gray-800 p-3 rounded border text-sm whitespace-pre-wrap">
+                    <div className="bg-background border border-border/60 p-4 rounded-xl text-sm whitespace-pre-wrap leading-relaxed">
                       {note.notes}
                     </div>
                   </div>
@@ -473,18 +510,18 @@ export function AgendaMinutesHistory({
 
                 {isHost && note.hostNotes && (
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-2">
-                      Host Notes:
+                    <p className="text-xs uppercase tracking-widest font-bold text-orange-500 mb-1">
+                      Host Notes (Private)
                     </p>
-                    <div className="bg-blue-50 dark:bg-blue-950/50 p-3 rounded border border-blue-200 dark:border-blue-800 text-sm whitespace-pre-wrap text-blue-800 dark:text-blue-300">
+                    <div className="bg-orange-500/10 p-4 rounded-xl border border-orange-500/30 text-sm whitespace-pre-wrap text-orange-700 dark:text-orange-300">
                       {note.hostNotes}
                     </div>
                   </div>
                 )}
 
                 {!note.notes && !note.hostNotes && (
-                  <div className="text-center py-4 text-muted-foreground text-sm">
-                    No notes recorded for this agenda item
+                  <div className="text-center py-4 bg-background/50 rounded-xl border border-dashed border-border/60 text-muted-foreground text-sm">
+                    No notes recorded for this agenda item.
                   </div>
                 )}
               </CardContent>
@@ -493,29 +530,30 @@ export function AgendaMinutesHistory({
       </div>
 
       {additionalNotes.length > 0 ? (
-        <Card>
+        <Card className="shadow-sm border-border/80">
           <CardHeader>
             <CardTitle>Additional Notes</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {additionalNotes.map((note) => (
-              <div key={note.id} className="rounded-lg border bg-card p-4">
+              <div key={note.id} className="rounded-xl border bg-card/60 p-4 shadow-sm">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h4 className="font-medium">{note.title}</h4>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <h4 className="font-bold text-base">{note.title}</h4>
+                    <p className="mt-1 text-xs font-medium text-muted-foreground uppercase tracking-widest">
                       {formatDateTime(note.created_at)}
                       {note.created_by_name || note.created_by_email
-                        ? ` by ${note.created_by_name || note.created_by_email}`
+                        ? ` • By ${note.created_by_name || note.created_by_email}`
                         : ""}
                     </p>
                   </div>
                 </div>
-                <div className="mt-3 whitespace-pre-wrap text-sm">
+                <div className="mt-3 bg-background border border-border/60 p-4 rounded-xl whitespace-pre-wrap text-sm leading-relaxed">
                   {note.notes}
                 </div>
                 {isHost && note.host_notes ? (
-                  <div className="mt-3 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/50 p-3 text-sm text-blue-800 dark:text-blue-300 whitespace-pre-wrap">
+                  <div className="mt-3 rounded-xl border border-orange-500/30 bg-orange-500/10 p-4 text-sm text-orange-700 dark:text-orange-300 whitespace-pre-wrap">
+                    <p className="text-[10px] uppercase tracking-widest font-bold mb-1 opacity-70">Private Host Note</p>
                     {note.host_notes}
                   </div>
                 ) : null}

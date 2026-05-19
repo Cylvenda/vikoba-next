@@ -67,7 +67,7 @@ export default function GroupMeetingsPage() {
   }, [groupMeetings]);
 
   const concludedMeetings = useMemo(() => {
-    return groupMeetings.filter(m => m.status === 'ended' || m.status === 'completed');
+    return groupMeetings.filter(m => m.status === 'ended');
   }, [groupMeetings]);
 
   const nextMeeting = useMemo(() => {

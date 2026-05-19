@@ -100,4 +100,32 @@ export const groupServices = {
                data: response.data,
           }
      },
+
+     async removeGroupMember(
+          groupUuid: string,
+          membershipUuid: string
+     ): Promise<ApiResponse<{ detail: string }>> {
+          const response = await api.delete<{ detail: string }>(
+               `${API_ENDPOINTS.GET_GROUP}${groupUuid}/members/${membershipUuid}/remove/`
+          )
+          return {
+               status: response.status,
+               data: response.data,
+          }
+     },
+
+     async changeGroupMemberRole(
+          groupUuid: string,
+          membershipUuid: string,
+          role: string
+     ): Promise<ApiResponse<{ detail: string; data: GroupMembership }>> {
+          const response = await api.patch<{ detail: string; data: GroupMembership }>(
+               `${API_ENDPOINTS.GET_GROUP}${groupUuid}/members/${membershipUuid}/change-role/`,
+               { role }
+          )
+          return {
+               status: response.status,
+               data: response.data,
+          }
+     },
 }

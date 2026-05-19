@@ -24,40 +24,12 @@ import {
   Settings,
   PiggyBank,
   User,
-  Users,
   WalletCards,
   FileText,
+  Users
 } from "lucide-react";
 import Link from "next/link";
 import { getGroupMeetingsHref } from "@/lib/meeting-routes";
-
-const platformNavItems = [
-  {
-    title: "Home",
-    url: "/home",
-    icon: <House />,
-  },
-    {
-    title: "My Groups",
-    url: "/groups",
-    icon: <User />,
-  },
-  {
-    title: "Notifications",
-    url: "/notifications",
-    icon: <BellRing />,
-  },
-  {
-    title: "Profile",
-    url: "/profile",
-    icon: <User />,
-  },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: <Cog />,
-  },
-];
 
 const navMain = (groupId: string) => [
   {
@@ -100,6 +72,12 @@ const navMain = (groupId: string) => [
 export function GroupSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = useAuthUserStore((state) => state.user);
   const selectedGroup = useGroupStore((state) => state.selectedGroup);
+  const groups = useGroupStore((state) => state.groups);
+  const fetchGroups = useGroupStore((state) => state.fetchGroups);
+
+  React.useEffect(() => {
+    void fetchGroups();
+  }, [fetchGroups]);
 
   const displayName =
     `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "User";
@@ -107,14 +85,47 @@ export function GroupSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
 
   const groupNavItems = selectedGroup ? navMain(selectedGroup.id) : [];
 
+  const platformNavItems = [
+    {
+      title: "Home",
+      url: "/home",
+      icon: <House />,
+    },
+    {
+      title: "My Groups",
+      url: "/groups",
+      icon: <Users />,
+      items: groups.map(g => ({
+        title: g.name,
+        url: `/group/${g.id}`,
+        icon: <BarChart3 className="w-4 h-4" />
+      }))
+    },
+    {
+      title: "Notifications",
+      url: "/notifications",
+      icon: <BellRing />,
+    },
+    {
+      title: "Profile",
+      url: "/profile",
+      icon: <User />,
+    },
+    {
+      title: "Settings",
+      url: "/settings",
+      icon: <Cog />,
+    },
+  ];
+
   return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
+    <Sidebar collapsible="icon" className="border-r border-border/60" {...props}>
+      <SidebarHeader className="p-4 pb-2">
         <Link href="/home">
           <TeamSwitcher
             teams={{
-              name: selectedGroup?.name || "Group",
-              logo: <BarChart3 />,
+              name: selectedGroup?.name || "Group Dashboard",
+              logo: <BarChart3 className="text-chart-3" />,
               role: roleLabel,
             }}
           />
@@ -125,8 +136,8 @@ export function GroupSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
         <NavMain items={platformNavItems} label="Platform" />
         {groupNavItems.length > 0 ? (
           <>
-            <Separator className="my-1" />
-            <NavMain items={groupNavItems} label="Group" />
+            <Separator className="my-1 opacity-50" />
+            <NavMain items={groupNavItems} label="Current Group" />
           </>
         ) : null}
       </SidebarContent>

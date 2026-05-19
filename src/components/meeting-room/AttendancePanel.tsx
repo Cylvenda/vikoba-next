@@ -39,7 +39,9 @@ export function AttendancePanel({ items }: AttendancePanelProps) {
                 <span
                   className={[
                     "rounded-full px-3 py-1 text-[11px] font-semibold",
-                    item.badge === "Host" ? "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200" : "bg-muted text-muted-foreground",
+                    (item.badge === "CHAIRPERSON" || item.badge === "SECRETARY")
+                      ? "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200"
+                      : "bg-muted text-muted-foreground",
                   ].join(" ")}
                 >
                   {item.badge}
