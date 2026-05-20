@@ -35,7 +35,7 @@ export default function GroupMembersPage() {
         
         {/* Header Ribbon */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-[2rem] border border-border/80 bg-card/60 backdrop-blur-md p-6 shadow-sm relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--color-chart-4),transparent_30%)] opacity-[0.05] pointer-events-none" />
+
           
           <div className="flex items-center gap-4 relative z-10">
             <div className="w-12 h-12 bg-chart-4/15 text-chart-4 rounded-2xl flex items-center justify-center shadow-sm">

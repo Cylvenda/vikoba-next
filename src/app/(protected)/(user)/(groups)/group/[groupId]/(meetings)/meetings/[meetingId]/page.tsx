@@ -361,7 +361,7 @@ export default function MeetingPage() {
         
         {/* Header Ribbon */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-[2rem] border border-border/80 bg-card/60 backdrop-blur-md p-6 shadow-sm relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--color-chart-3),transparent_30%)] opacity-[0.05] pointer-events-none" />
+
           
           <div className="flex items-center gap-4 relative z-10">
             <Button asChild variant="outline" size="icon" className="rounded-full shadow-sm hover:border-chart-3/40 transition-colors">

@@ -23,6 +23,7 @@ export const API_ENDPOINTS = {
 
      // Groups
      USER_GROUPS: "groups/", // get & post
+     JOIN_GROUP_BY_CODE: "groups/join/", // post join code
      GET_GROUP: "groups/", // get group by id
      GET_GROUP_MEMBERS: "groups/", // ==> {uuid}/members/ To add group uuid to get members
      MY_GROUP_INVITATIONS: "groups/invitations/my/",
@@ -34,7 +35,13 @@ export const API_ENDPOINTS = {
      AGENDA_ITEMS: "agenda-items/",
      REALTIME: "realtime/",
 
+     // Finance
+     FINANCE_CONTRIBUTIONS: "finance/contributions/",
+     FINANCE_LOAN_CATEGORIES: "finance/loan-categories/",
+     FINANCE_LOAN_REQUESTS: "finance/loans/request/",
+
      // Admin
      ADMIN_USERS: "admin/users/",
      ADMIN_GROUPS: "admin/groups/",
+     ADMIN_RESPOND_JOIN_REQUEST: "groups/", // groups/{groupUuid}/join-requests/{invitationUuid}/respond/
 }

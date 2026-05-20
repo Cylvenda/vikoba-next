@@ -26,6 +26,17 @@ export const groupServices = {
           }
      },
 
+     async joinGroupByCode(join_code: string): Promise<ApiResponse<{ detail: string; membership: GroupMembership }>> {
+          const response = await api.post<{ detail: string; membership: GroupMembership }>(
+               API_ENDPOINTS.JOIN_GROUP_BY_CODE,
+               { join_code }
+          )
+          return {
+               status: response.status,
+               data: response.data,
+          }
+     },
+
      async getGroupById(uuid: string): Promise<ApiResponse<Group>> {
           const response = await api.get<Group>(`${API_ENDPOINTS.GET_GROUP}${uuid}/`)
           return {
@@ -58,6 +69,29 @@ export const groupServices = {
 
      async getMyGroupInvitations(): Promise<ApiResponse<GroupInvitation[]>> {
           const response = await api.get<GroupInvitation[]>(API_ENDPOINTS.MY_GROUP_INVITATIONS)
+          return {
+               status: response.status,
+               data: response.data,
+          }
+     },
+
+     async getGroupInvitations(groupUuid: string): Promise<ApiResponse<GroupInvitation[]>> {
+          const response = await api.get<GroupInvitation[]>(`${API_ENDPOINTS.GET_GROUP}${groupUuid}/invitations/`)
+          return {
+               status: response.status,
+               data: response.data,
+          }
+     },
+
+     async adminRespondJoinRequest(
+          groupUuid: string,
+          invitationUuid: string,
+          action: "accept" | "decline"
+     ): Promise<ApiResponse<{ detail: string }>> {
+          const response = await api.post<{ detail: string }>(
+               `${API_ENDPOINTS.ADMIN_RESPOND_JOIN_REQUEST}${groupUuid}/join-requests/${invitationUuid}/respond/`,
+               { action }
+          )
           return {
                status: response.status,
                data: response.data,

@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { List, Plus, Search } from "lucide-react";
+import { List, Plus, Search, UserPlus } from "lucide-react";
 import Link from "next/link";
 import GroupItem from "./GroupItem";
 import type { Group } from "@/store/group/group.types";
@@ -24,7 +24,11 @@ const GroupList = ({ groups, limit, hideSearch = false }: GroupListProps) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isPrivate, setIsPrivate] = useState(true);
-  const { setSelectedGroup, createGroup, loading } = useGroupStore();
+  
+  const [isJoinOpen, setIsJoinOpen] = useState(false);
+  const [joinCode, setJoinCode] = useState("");
+
+  const { setSelectedGroup, createGroup, joinGroupByCode, loading } = useGroupStore();
 
   const displayedGroups = useMemo(() => {
     let result = groups;
@@ -54,6 +58,25 @@ const GroupList = ({ groups, limit, hideSearch = false }: GroupListProps) => {
       setDescription("");
       setIsPrivate(true);
       setIsCreateOpen(false);
+      return;
+    }
+
+    toast.error(result.message);
+  };
+
+  const handleJoinGroup = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (joinCode.length !== 6) {
+      toast.error("Join code must be 6 characters long.");
+      return;
+    }
+
+    const result = await joinGroupByCode(joinCode.toUpperCase());
+
+    if (result.success) {
+      toast.success(result.message);
+      setJoinCode("");
+      setIsJoinOpen(false);
       return;
     }
 
@@ -93,6 +116,14 @@ const GroupList = ({ groups, limit, hideSearch = false }: GroupListProps) => {
                 </Link>
               </Button>
             )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1.5"
+              onClick={() => setIsJoinOpen(true)}
+            >
+              <UserPlus size={16} /> <span className="hidden sm:inline">Join Group</span>
+            </Button>
             <Button
               size="sm"
               className="flex items-center gap-1.5"
@@ -196,6 +227,50 @@ const GroupList = ({ groups, limit, hideSearch = false }: GroupListProps) => {
                 </Button>
                 <Button type="submit" disabled={loading}>
                   {loading ? "Creating..." : "Create Group"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isJoinOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-card p-6 shadow-xl border border-border">
+            <h2 className="text-xl font-semibold">Join a Group</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Enter the 6-character short code to request access.
+            </p>
+
+            <form className="mt-6 space-y-4" onSubmit={handleJoinGroup}>
+              <div>
+                <label
+                  htmlFor="join-code"
+                  className="mb-1.5 block text-sm font-medium text-foreground"
+                >
+                  Join Code
+                </label>
+                <Input
+                  id="join-code"
+                  value={joinCode}
+                  onChange={(event) => setJoinCode(event.target.value.toUpperCase())}
+                  placeholder="e.g., A1B2C3"
+                  className="bg-background uppercase"
+                  maxLength={6}
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setIsJoinOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Sending Request..." : "Join Group"}
                 </Button>
               </div>
             </form>

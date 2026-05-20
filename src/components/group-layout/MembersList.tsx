@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { useAuthUserStore } from "@/store/auth/userAuth.store"
 import { useGroupStore } from "@/store/group/groupUser.store"
@@ -57,7 +57,7 @@ function InviteModal({ groupId, onClose }: { groupId: string; onClose: () => voi
       <div className="relative w-full max-w-md rounded-3xl border border-border/80 bg-card shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="relative p-6 pb-4 border-b border-border/50">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,var(--color-chart-3),transparent_60%)] opacity-[0.06] pointer-events-none" />
+
           <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-chart-3/15 text-chart-3 rounded-2xl flex items-center justify-center">
@@ -220,11 +220,20 @@ export default function MembersList() {
     toggleGroupMember,
     removeGroupMember,
     changeGroupMemberRole,
+    groupInvitations,
+    fetchGroupInvitations,
+    adminRespondToJoinRequest,
   } = useGroupStore()
 
   const [showInvite, setShowInvite] = useState(false)
   const [removeTarget, setRemoveTarget] = useState<{ id: string; name: string } | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+
+  useEffect(() => {
+    if (selectedGroup?.id) {
+      fetchGroupInvitations(selectedGroup.id)
+    }
+  }, [selectedGroup?.id, fetchGroupInvitations])
 
   // Determine current user's role
   const currentMembership = selectedGroupMembers.find((m) => m.user_id === user?.uuid)
@@ -242,7 +251,10 @@ export default function MembersList() {
     const name = [m.first_name, m.last_name].join(" ").toLowerCase()
     const email = (m.email ?? "").toLowerCase()
     return name.includes(searchQuery.toLowerCase()) || email.includes(searchQuery.toLowerCase())
-  })
+  }).sort((a, b) => {
+    if (a.is_verified === b.is_verified) return 0;
+    return a.is_verified ? 1 : -1;
+  });
 
   const handleVerify = async (membershipId: string) => {
     if (!selectedGroup?.id) return
@@ -252,6 +264,16 @@ export default function MembersList() {
       return
     }
     toast.error(result.message)
+  }
+
+  const handleRespondToJoinRequest = async (invitationId: string, action: "accept" | "decline") => {
+    if (!selectedGroup?.id) return
+    const result = await adminRespondToJoinRequest(selectedGroup.id, invitationId, action)
+    if (result.success) {
+      toast.success(result.message)
+    } else {
+      toast.error(result.message)
+    }
   }
 
   const handleToggle = async (membershipId: string) => {
@@ -352,7 +374,65 @@ export default function MembersList() {
         <span>{selectedGroupMembers.filter((m) => m.is_verified).length} verified</span>
         <span>·</span>
         <span>{selectedGroupMembers.filter((m) => m.is_active).length} active</span>
+        {selectedGroupMembers.some((m) => !m.is_verified) && (
+          <>
+            <span>·</span>
+            <span className="text-chart-4 flex items-center gap-1">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              {selectedGroupMembers.filter((m) => !m.is_verified).length} pending approval
+            </span>
+          </>
+        )}
       </div>
+
+      {/* Pending Join Requests (for Leaders) */}
+      {isLeader && groupInvitations.filter(inv => inv.status === "PENDING").length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-chart-4" />
+            Pending Join Requests ({groupInvitations.filter(inv => inv.status === "PENDING").length})
+          </h3>
+          <div className="rounded-2xl border border-chart-4/30 overflow-hidden bg-chart-4/5 backdrop-blur-sm">
+            <div className="divide-y divide-border/40">
+              {groupInvitations.filter(inv => inv.status === "PENDING").map((invitation) => (
+                <div
+                  key={invitation.invitation_uuid}
+                  className="flex items-center gap-4 px-4 py-3.5 hover:bg-muted/40 transition-colors"
+                >
+                  <div className="w-9 h-9 rounded-full bg-chart-4/15 text-chart-4 text-sm font-extrabold flex items-center justify-center shrink-0 border border-chart-4/20">
+                    <Mail className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-foreground truncate">{invitation.email}</p>
+                    <p className="text-xs font-medium text-muted-foreground truncate">{invitation.message || "Requested to join via short code"}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => handleRespondToJoinRequest(invitation.invitation_uuid, "accept")}
+                      disabled={invitationLoading}
+                      size="sm"
+                      className="bg-chart-3/15 text-chart-3 hover:bg-chart-3/25 border border-chart-3/20 rounded-xl"
+                    >
+                      <CheckCircle2 className="w-4 h-4 mr-1" />
+                      Approve
+                    </Button>
+                    <Button
+                      onClick={() => handleRespondToJoinRequest(invitation.invitation_uuid, "decline")}
+                      disabled={invitationLoading}
+                      size="sm"
+                      variant="outline"
+                      className="text-destructive hover:bg-destructive/10 border-destructive/20 rounded-xl"
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      Decline
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* List */}
       <div className="rounded-2xl border border-border/50 overflow-hidden bg-card/60 backdrop-blur-sm">

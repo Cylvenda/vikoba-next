@@ -2,8 +2,11 @@
 
 import { useEffect, useState, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { DatePicker } from "@/components/ui/date-picker"
 import { Calendar, Play, CalendarPlus2, Clock, CheckCircle2, ShieldAlert, History, CalendarDays } from "lucide-react"
 import { useGroupStore } from "@/store/group/groupUser.store"
 import { useMeetingStore } from "@/store/meeting/meeting.store"
@@ -27,7 +30,7 @@ export default function GroupMeetingsPage() {
   // Meeting Form States
   const [meetingTitle, setMeetingTitle] = useState("")
   const [meetingDescription, setMeetingDescription] = useState("")
-  const [meetingDate, setMeetingDate] = useState("")
+  const [meetingDate, setMeetingDate] = useState<Date | undefined>(undefined)
   const [meetingStartTime, setMeetingStartTime] = useState("")
   const [meetingEndTime, setMeetingEndTime] = useState("")
   const [instantTitle, setInstantTitle] = useState("")
@@ -94,9 +97,10 @@ export default function GroupMeetingsPage() {
          return
     }
 
-    const startDateTime = new Date(`${meetingDate}T${meetingStartTime}`).toISOString()
+    const dateStr = meetingDate.toISOString().split("T")[0]
+    const startDateTime = new Date(`${dateStr}T${meetingStartTime}`).toISOString()
     const endDateTime = meetingEndTime
-         ? new Date(`${meetingDate}T${meetingEndTime}`).toISOString()
+         ? new Date(`${dateStr}T${meetingEndTime}`).toISOString()
          : undefined
 
     const result = await createMeeting({
@@ -111,7 +115,7 @@ export default function GroupMeetingsPage() {
          toast.success(result.message)
          setMeetingTitle("")
          setMeetingDescription("")
-         setMeetingDate("")
+         setMeetingDate(undefined)
          setMeetingStartTime("")
          setMeetingEndTime("")
          setIsScheduleOpen(false)
@@ -245,9 +249,8 @@ export default function GroupMeetingsPage() {
             
             {/* NEXT HIGHLIGHT CARD */}
             <div className="lg:col-span-1">
-              <Card className="rounded-[2rem] border-0 bg-gradient-to-br from-chart-3/15 to-chart-1/5 shadow-inner p-6 h-full border border-chart-3/20 relative overflow-hidden group">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--color-chart-3),transparent_60%)] opacity-10" />
-                <h3 className="text-sm font-extrabold uppercase tracking-widest text-chart-3 mb-6 relative z-10">Next Up</h3>
+              <Card className="rounded-md border border-border bg-card shadow-sm p-6 h-full relative overflow-hidden">
+                <h3 className="text-sm font-extrabold uppercase tracking-widest text-primary mb-6 relative z-10">Next Up</h3>
                 
                 {nextMeeting ? (
                   <div className="relative z-10 flex flex-col h-[85%] justify-between">
@@ -367,7 +370,7 @@ export default function GroupMeetingsPage() {
       {/* ==================================================== */}
       {isInstantOpen && isLeader && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-xl rounded-3xl bg-card border border-border/80 p-6 sm:p-8 shadow-2xl">
+          <div className="w-full max-w-xl rounded-md bg-card border border-border p-6 sm:p-8 shadow-2xl">
             <h2 className="text-xl font-extrabold">Launch Instant Session</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Start a live VICOBA meeting now. Members will receive instant email notifications.
@@ -376,38 +379,32 @@ export default function GroupMeetingsPage() {
             <form className="mt-6 space-y-4" onSubmit={handleInstantMeeting}>
               <div>
                 <label htmlFor="instant-title" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Title</label>
-                <input
+                <Input
                   id="instant-title"
                   type="text"
                   value={instantTitle}
                   onChange={(event) => setInstantTitle(event.target.value)}
                   placeholder={`Instant Session - ${selectedGroup?.name || "Group"}`}
-                  className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none focus:border-chart-3 focus:ring-2 focus:ring-chart-3/40 transition-all"
+                  className="rounded-md"
                 />
               </div>
 
               <div>
                 <label htmlFor="instant-description" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Agenda / Context</label>
-                <textarea
+                <Textarea
                   id="instant-description"
                   value={instantDescription}
                   onChange={(event) => setInstantDescription(event.target.value)}
-                  className="min-h-24 w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none focus:border-chart-3 focus:ring-2 focus:ring-chart-3/40 transition-all"
+                  className="min-h-24 rounded-md"
                   placeholder="Quick context for members joining now"
                 />
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setIsInstantOpen(false)}
-                  disabled={loading}
-                  className="rounded-xl font-bold"
-                >
+                <Button type="button" variant="ghost" onClick={() => setIsInstantOpen(false)} disabled={loading} className="rounded-md font-bold">
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-chart-4 hover:bg-chart-4/90 rounded-xl font-bold shadow-md text-white" disabled={loading}>
+                <Button type="submit" className="rounded-md font-bold shadow-md" disabled={loading}>
                   {loading ? "Launching..." : "Start Now"}
                 </Button>
               </div>
@@ -421,7 +418,7 @@ export default function GroupMeetingsPage() {
       {/* ==================================================== */}
       {isScheduleOpen && isLeader && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-xl rounded-3xl bg-card border border-border/80 p-6 sm:p-8 shadow-2xl">
+          <div className="w-full max-w-xl rounded-md bg-card border border-border p-6 sm:p-8 shadow-2xl">
             <h2 className="text-xl font-extrabold">Schedule Session</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Define the date and time for the next formal gathering.
@@ -430,76 +427,67 @@ export default function GroupMeetingsPage() {
             <form className="mt-6 space-y-4" onSubmit={handleScheduleMeeting}>
               <div>
                 <label htmlFor="meeting-title" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Title</label>
-                <input
+                <Input
                   id="meeting-title"
                   type="text"
                   value={meetingTitle}
                   onChange={(event) => setMeetingTitle(event.target.value)}
                   placeholder="Weekly Ledger Reconciliation"
-                  className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none focus:border-chart-3 focus:ring-2 focus:ring-chart-3/40 transition-all"
+                  className="rounded-md"
                   required
                 />
               </div>
 
               <div>
                 <label htmlFor="meeting-description" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Description</label>
-                <textarea
+                <Textarea
                   id="meeting-description"
                   value={meetingDescription}
                   onChange={(event) => setMeetingDescription(event.target.value)}
-                  className="min-h-24 w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none focus:border-chart-3 focus:ring-2 focus:ring-chart-3/40 transition-all"
+                  className="min-h-24 rounded-md"
                   placeholder="Agenda summary"
                 />
               </div>
 
               <div>
-                <label htmlFor="meeting-date" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Date</label>
-                <input
-                  id="meeting-date"
-                  type="date"
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Date</label>
+                <DatePicker
                   value={meetingDate}
-                  onChange={(event) => setMeetingDate(event.target.value)}
-                  className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none focus:border-chart-3 focus:ring-2 focus:ring-chart-3/40 transition-all"
-                  required
+                  onChange={setMeetingDate}
+                  placeholder="Select meeting date"
                 />
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="meeting-start-time" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Start Time</label>
-                  <input
+                  <Input
                     id="meeting-start-time"
                     type="time"
                     value={meetingStartTime}
                     onChange={(event) => setMeetingStartTime(event.target.value)}
-                    className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none focus:border-chart-3 focus:ring-2 focus:ring-chart-3/40 transition-all"
+                    className="rounded-md"
                     required
                   />
                 </div>
 
                 <div>
                   <label htmlFor="meeting-end-time" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">End Time (Optional)</label>
-                  <input
+                  <Input
                     id="meeting-end-time"
                     type="time"
                     value={meetingEndTime}
                     onChange={(event) => setMeetingEndTime(event.target.value)}
-                    className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none focus:border-chart-3 focus:ring-2 focus:ring-chart-3/40 transition-all"
+                    className="rounded-md"
                   />
                 </div>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setIsScheduleOpen(false)}
-                  disabled={loading}
-                  className="rounded-xl font-bold"
-                >
+                <Button type="button" variant="ghost" onClick={() => setIsScheduleOpen(false)} disabled={loading} className="rounded-md font-bold">
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-chart-3 hover:bg-chart-2 rounded-xl font-bold shadow-md text-primary-foreground" disabled={loading}>
+                <Button type="submit" className="rounded-md font-bold shadow-md" disabled={loading}>
                   {loading ? "Saving..." : "Schedule Session"}
                 </Button>
               </div>

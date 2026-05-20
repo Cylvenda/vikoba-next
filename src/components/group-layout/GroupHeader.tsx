@@ -1,8 +1,11 @@
 "use client"
 
 import Link from 'next/link'
-import { Users, Play, CalendarPlus2, ArrowLeft } from 'lucide-react'
+import { Users, Play, CalendarPlus2, ArrowLeft, Copy } from 'lucide-react'
 import { Button } from '../ui/button'
+import { Input } from '../ui/input'
+import { Textarea } from '../ui/textarea'
+import { DatePicker } from '../ui/date-picker'
 import { useGroupStore } from '@/store/group/groupUser.store'
 import { formatUTCDate } from '@/hooks/formatted-date'
 import { useState } from 'react'
@@ -21,7 +24,7 @@ export default function GroupHeader() {
      
      const [meetingTitle, setMeetingTitle] = useState("")
      const [meetingDescription, setMeetingDescription] = useState("")
-     const [meetingDate, setMeetingDate] = useState("")
+     const [meetingDate, setMeetingDate] = useState<Date | undefined>(undefined)
      const [meetingStartTime, setMeetingStartTime] = useState("")
      const [meetingEndTime, setMeetingEndTime] = useState("")
      
@@ -33,6 +36,13 @@ export default function GroupHeader() {
 
      const { selectedGroup, invitationLoading, sendGroupInvitation, selectedGroupMembers } = useGroupStore()
      const { createMeeting, createInstantMeeting, loading } = useMeetingStore()
+
+     const handleCopyCode = () => {
+          if (selectedGroup?.join_code) {
+               navigator.clipboard.writeText(selectedGroup.join_code)
+               toast.success("Join code copied to clipboard!")
+          }
+     }
 
      // ==========================================
      // Role-Based Access Control
@@ -86,9 +96,9 @@ export default function GroupHeader() {
                return
           }
 
-          const startDateTime = new Date(`${meetingDate}T${meetingStartTime}`).toISOString()
+          const startDateTime = new Date(`${meetingDate.toISOString().split('T')[0]}T${meetingStartTime}`).toISOString()
           const endDateTime = meetingEndTime
-               ? new Date(`${meetingDate}T${meetingEndTime}`).toISOString()
+               ? new Date(`${meetingDate.toISOString().split('T')[0]}T${meetingEndTime}`).toISOString()
                : undefined
 
           const result = await createMeeting({
@@ -103,7 +113,7 @@ export default function GroupHeader() {
                toast.success(result.message)
                setMeetingTitle("")
                setMeetingDescription("")
-               setMeetingDate("")
+               setMeetingDate(undefined)
                setMeetingStartTime("")
                setMeetingEndTime("")
                setIsScheduleOpen(false)
@@ -141,8 +151,7 @@ export default function GroupHeader() {
 
      return (
           <>
-               <div className="flex flex-col justify-between rounded-[2rem] border border-border/80 bg-card/60 backdrop-blur-md p-6 shadow-sm md:flex-row md:items-center relative overflow-hidden">
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--color-chart-3),transparent_40%)] opacity-10 pointer-events-none" />
+               <div className="flex flex-col justify-between rounded-md border border-border bg-card/60 backdrop-blur-md p-6 shadow-sm md:flex-row md:items-center relative overflow-hidden">
                     
                     <div className="flex items-center gap-4 relative z-10">
                          <Link href="/home">
@@ -156,6 +165,16 @@ export default function GroupHeader() {
                                    <span className="uppercase tracking-widest text-[10px] bg-muted px-2 py-0.5 rounded-full mr-2 border border-border/60">
                                         {selectedGroup?.is_private ? "Private" : "Public"} Group
                                    </span>
+                                   {selectedGroup?.join_code && (
+                                        <button 
+                                             onClick={handleCopyCode}
+                                             className="uppercase tracking-widest text-[10px] bg-chart-1/10 text-chart-1 px-2 py-0.5 rounded-full mr-2 border border-chart-1/30 hover:bg-chart-1/20 transition-colors flex items-center gap-1.5 inline-flex"
+                                             title="Click to copy join code"
+                                        >
+                                             Join Code: <span className="font-bold">{selectedGroup.join_code}</span>
+                                             <Copy className="w-3 h-3" />
+                                        </button>
+                                   )}
                                    {memberCount} Members • Created {formatUTCDate(selectedGroup?.created_at || "")}
                               </p>
                          </div>
@@ -189,7 +208,7 @@ export default function GroupHeader() {
                {/* ======================================= */}
                {isInviteOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                         <div className="w-full max-w-md rounded-3xl bg-card border border-border/80 p-6 shadow-2xl">
+                         <div className="w-full max-w-md rounded-md bg-card border border-border p-6 shadow-2xl">
                               <h2 className="text-xl font-extrabold">Invite New Member</h2>
                               <p className="mt-1 text-sm text-muted-foreground">
                                    Send an invitation email to join {selectedGroup?.name}.
@@ -198,39 +217,33 @@ export default function GroupHeader() {
                               <form className="mt-6 space-y-4" onSubmit={handleInviteSubmit}>
                                    <div>
                                         <label htmlFor="invite-email" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Email Address</label>
-                                        <input
+                                        <Input
                                              id="invite-email"
                                              type="email"
                                              value={inviteEmail}
                                              onChange={(event) => setInviteEmail(event.target.value)}
                                              placeholder="member@example.com"
-                                             className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none focus:border-chart-3 focus:ring-2 focus:ring-chart-3/40 transition-all"
+                                             className="rounded-md"
                                              required
                                         />
                                    </div>
 
                                    <div>
                                         <label htmlFor="invite-message" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Message (optional)</label>
-                                        <textarea
+                                        <Textarea
                                              id="invite-message"
                                              value={inviteMessage}
                                              onChange={(event) => setInviteMessage(event.target.value)}
                                              placeholder="Welcome to our group."
-                                             className="min-h-24 w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none focus:border-chart-3 focus:ring-2 focus:ring-chart-3/40 transition-all"
+                                             className="min-h-24 rounded-md"
                                         />
                                    </div>
 
                                    <div className="flex items-center justify-end gap-3 pt-2">
-                                        <Button
-                                             type="button"
-                                             variant="ghost"
-                                             onClick={() => setIsInviteOpen(false)}
-                                             disabled={invitationLoading}
-                                             className="rounded-xl font-bold"
-                                        >
+                                        <Button type="button" variant="ghost" onClick={() => setIsInviteOpen(false)} disabled={invitationLoading} className="rounded-md font-bold">
                                              Cancel
                                         </Button>
-                                        <Button type="submit" className="bg-chart-3 hover:bg-chart-2 rounded-xl shadow-md font-bold text-primary-foreground" disabled={invitationLoading}>
+                                        <Button type="submit" className="rounded-md shadow-md font-bold" disabled={invitationLoading}>
                                              {invitationLoading ? "Sending..." : "Send Invite"}
                                         </Button>
                                    </div>
@@ -241,7 +254,7 @@ export default function GroupHeader() {
 
                {isInstantOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                         <div className="w-full max-w-xl rounded-3xl bg-card border border-border/80 p-6 shadow-2xl">
+                         <div className="w-full max-w-xl rounded-md bg-card border border-border p-6 shadow-2xl">
                               <h2 className="text-xl font-extrabold">Start Instant Session</h2>
                               <p className="mt-1 text-sm text-muted-foreground">
                                    Start a live meeting now for {selectedGroup?.name}. Members will receive an email to join immediately.
@@ -250,38 +263,32 @@ export default function GroupHeader() {
                               <form className="mt-6 space-y-4" onSubmit={handleInstantMeeting}>
                                    <div>
                                         <label htmlFor="instant-title" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Title</label>
-                                        <input
+                                        <Input
                                              id="instant-title"
                                              type="text"
                                              value={instantTitle}
                                              onChange={(event) => setInstantTitle(event.target.value)}
                                              placeholder={`Instant Session - ${selectedGroup?.name || "Group"}`}
-                                             className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none focus:border-chart-3 focus:ring-2 focus:ring-chart-3/40 transition-all"
+                                             className="rounded-md"
                                         />
                                    </div>
 
                                    <div>
                                         <label htmlFor="instant-description" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Agenda / Context</label>
-                                        <textarea
+                                        <Textarea
                                              id="instant-description"
                                              value={instantDescription}
                                              onChange={(event) => setInstantDescription(event.target.value)}
-                                             className="min-h-24 w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none focus:border-chart-3 focus:ring-2 focus:ring-chart-3/40 transition-all"
+                                             className="min-h-24 rounded-md"
                                              placeholder="Quick context for members joining now"
                                         />
                                    </div>
 
                                    <div className="flex items-center justify-end gap-3 pt-2">
-                                        <Button
-                                             type="button"
-                                             variant="ghost"
-                                             onClick={() => setIsInstantOpen(false)}
-                                             disabled={loading}
-                                             className="rounded-xl font-bold"
-                                        >
+                                        <Button type="button" variant="ghost" onClick={() => setIsInstantOpen(false)} disabled={loading} className="rounded-md font-bold">
                                              Cancel
                                         </Button>
-                                        <Button type="submit" className="bg-chart-4 hover:bg-chart-4/90 rounded-xl shadow-md font-bold text-white" disabled={loading}>
+                                        <Button type="submit" className="rounded-md shadow-md font-bold" disabled={loading}>
                                              {loading ? "Starting..." : "Start Now"}
                                         </Button>
                                    </div>
@@ -292,7 +299,7 @@ export default function GroupHeader() {
 
                {isScheduleOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                         <div className="w-full max-w-xl rounded-3xl bg-card border border-border/80 p-6 shadow-2xl">
+                         <div className="w-full max-w-xl rounded-md bg-card border border-border p-6 shadow-2xl">
                               <h2 className="text-xl font-extrabold">Schedule Session</h2>
                               <p className="mt-1 text-sm text-muted-foreground">
                                    Define the date and time for the next formal gathering.
@@ -301,76 +308,67 @@ export default function GroupHeader() {
                               <form className="mt-6 space-y-4" onSubmit={handleScheduleMeeting}>
                                    <div>
                                         <label htmlFor="meeting-title" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Title</label>
-                                        <input
+                                        <Input
                                              id="meeting-title"
                                              type="text"
                                              value={meetingTitle}
                                              onChange={(event) => setMeetingTitle(event.target.value)}
                                              placeholder="Weekly Ledger Reconciliation"
-                                             className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none focus:border-chart-3 focus:ring-2 focus:ring-chart-3/40 transition-all"
+                                             className="rounded-md"
                                              required
                                         />
                                    </div>
 
                                    <div>
                                         <label htmlFor="meeting-description" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Description</label>
-                                        <textarea
+                                        <Textarea
                                              id="meeting-description"
                                              value={meetingDescription}
                                              onChange={(event) => setMeetingDescription(event.target.value)}
-                                             className="min-h-24 w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none focus:border-chart-3 focus:ring-2 focus:ring-chart-3/40 transition-all"
+                                             className="min-h-24 rounded-md"
                                              placeholder="Agenda summary"
                                         />
                                    </div>
 
                                    <div>
-                                        <label htmlFor="meeting-date" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Meeting Date</label>
-                                        <input
-                                             id="meeting-date"
-                                             type="date"
+                                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Meeting Date</label>
+                                        <DatePicker
                                              value={meetingDate}
-                                             onChange={(event) => setMeetingDate(event.target.value)}
-                                             className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none focus:border-chart-3 focus:ring-2 focus:ring-chart-3/40 transition-all"
-                                             required
+                                             onChange={setMeetingDate}
+                                             placeholder="Select meeting date"
                                         />
                                    </div>
 
                                    <div className="grid gap-4 md:grid-cols-2">
                                         <div>
                                              <label htmlFor="meeting-start-time" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Start Time</label>
-                                             <input
+                                             <Input
                                                   id="meeting-start-time"
                                                   type="time"
                                                   value={meetingStartTime}
                                                   onChange={(event) => setMeetingStartTime(event.target.value)}
-                                                  className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none focus:border-chart-3 focus:ring-2 focus:ring-chart-3/40 transition-all"
+                                                  className="rounded-md"
                                                   required
                                              />
                                         </div>
 
                                         <div>
                                              <label htmlFor="meeting-end-time" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">End Time (Optional)</label>
-                                             <input
+                                             <Input
                                                   id="meeting-end-time"
                                                   type="time"
                                                   value={meetingEndTime}
                                                   onChange={(event) => setMeetingEndTime(event.target.value)}
-                                                  className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none focus:border-chart-3 focus:ring-2 focus:ring-chart-3/40 transition-all"
+                                                  className="rounded-md"
                                              />
                                         </div>
                                    </div>
 
                                    <div className="flex items-center justify-end gap-3 pt-2">
-                                        <Button
-                                             type="button"
-                                             variant="ghost"
-                                             onClick={() => setIsScheduleOpen(false)}
-                                             disabled={loading}
-                                             className="rounded-xl font-bold"
-                                        >
+                                        <Button type="button" variant="ghost" onClick={() => setIsScheduleOpen(false)} disabled={loading} className="rounded-md font-bold">
                                              Cancel
                                         </Button>
-                                        <Button type="submit" className="bg-chart-3 hover:bg-chart-2 rounded-xl shadow-md font-bold text-primary-foreground" disabled={loading}>
+                                        <Button type="submit" className="rounded-md shadow-md font-bold" disabled={loading}>
                                              {loading ? "Saving..." : "Schedule Meeting"}
                                         </Button>
                                    </div>

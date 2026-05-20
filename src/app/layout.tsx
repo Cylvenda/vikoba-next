@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Poppins, Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ToastContainer } from "react-toastify";
 import { ThemeProvider, themeScript } from "@/components/theme/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+
+const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+
 
 // Configure Poppins
 const poppins = Poppins({
@@ -29,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn("h-full antialiased", poppins.variable)}>
+    <html lang="en" suppressHydrationWarning className={cn("h-full antialiased", poppins.variable, "font-sans", inter.variable)}>
       <head>
         <Script id="theme-script" strategy="beforeInteractive">
           {themeScript}

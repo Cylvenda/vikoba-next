@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { DatePicker, formatDateToString, parseDateString } from "@/components/ui/date-picker"
 import { meetingServices } from "@/api/services/meeting.service"
 import { MeetingListHistory, MeetingStatus } from "@/store/meeting/meeting.types"
 import {
@@ -146,17 +147,15 @@ export function MeetingHistoryList({ onMeetingSelect, groupId }: MeetingHistoryL
               </SelectContent>
             </Select>
 
-            <Input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+            <DatePicker
+              value={parseDateString(startDate)}
+              onChange={(date) => setStartDate(formatDateToString(date))}
               placeholder="Start date"
             />
 
-            <Input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+            <DatePicker
+              value={parseDateString(endDate)}
+              onChange={(date) => setEndDate(formatDateToString(date))}
               placeholder="End date"
             />
           </div>

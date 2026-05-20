@@ -8,6 +8,7 @@ type GroupState = {
      selectedGroup: Group | null
      selectedGroupMembers: GroupMembership[]
      invitations: GroupInvitation[]
+     groupInvitations: GroupInvitation[] // Invitations sent for the selected group
      loading: boolean
      invitationLoading: boolean
      error: string | null
@@ -22,6 +23,9 @@ type GroupState = {
      setSelectedGroup: (group: Group) => void
      fetchSelectedGroupMembers: (uuid: string) => Promise<void>
      fetchMyInvitations: () => Promise<void>
+     fetchGroupInvitations: (groupUuid: string) => Promise<void>
+     joinGroupByCode: (code: string) => Promise<{ success: boolean; message: string }>
+     adminRespondToJoinRequest: (groupUuid: string, invitationUuid: string, action: "accept" | "decline") => Promise<{ success: boolean; message: string }>
      respondToInvitation: (invitationUuid: string, action: "accept" | "decline") => Promise<{ success: boolean; message: string }>
      verifyGroupMember: (groupUuid: string, membershipUuid: string) => Promise<{ success: boolean; message: string }>
      toggleGroupMember: (groupUuid: string, membershipUuid: string) => Promise<{ success: boolean; message: string }>
@@ -36,6 +40,7 @@ export const useGroupStore = create<GroupState>((set) => ({
      selectedGroup: null,
      selectedGroupMembers: [],
      invitations: [],
+     groupInvitations: [],
      loading: false,
      invitationLoading: false,
      error: null,
@@ -91,6 +96,56 @@ export const useGroupStore = create<GroupState>((set) => ({
                     loading: false,
                     error: err instanceof Error ? err.message : "Failed to fetch invitations",
                })
+          }
+     },
+
+     fetchGroupInvitations: async (groupUuid: string) => {
+          set({ loading: true, error: null })
+          try {
+               const res = await groupServices.getGroupInvitations(groupUuid)
+               set({
+                    groupInvitations: res.data,
+                    loading: false,
+               })
+          } catch (err: unknown) {
+               set({
+                    loading: false,
+                    error: err instanceof Error ? err.message : "Failed to fetch group invitations",
+               })
+          }
+     },
+
+     joinGroupByCode: async (code) => {
+          set({ loading: true, error: null })
+          try {
+               const res = await groupServices.joinGroupByCode(code)
+               set({ loading: false })
+               return { success: true, message: res.data.detail }
+          } catch (err: unknown) {
+               const errorData = (err as any)?.response?.data
+               const errorMessage = errorData?.detail || errorData?.join_code?.[0] || "Failed to join group."
+               set({ loading: false, error: errorMessage })
+               return { success: false, message: errorMessage }
+          }
+     },
+
+     adminRespondToJoinRequest: async (groupUuid, invitationUuid, action) => {
+          set({ invitationLoading: true, error: null })
+          try {
+               const res = await groupServices.adminRespondJoinRequest(groupUuid, invitationUuid, action)
+               
+               // Remove the invitation from the list after successful response
+               set((state) => ({
+                    groupInvitations: state.groupInvitations.filter((inv) => inv.invitation_uuid !== invitationUuid),
+                    invitationLoading: false,
+               }))
+               
+               return { success: true, message: res.data.detail || `Request ${action}ed successfully.` }
+          } catch (err: unknown) {
+               const errorData = (err as any)?.response?.data
+               const errorMessage = errorData?.detail || `Failed to ${action} request.`
+               set({ invitationLoading: false, error: errorMessage })
+               return { success: false, message: errorMessage }
           }
      },
 

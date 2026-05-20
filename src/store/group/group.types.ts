@@ -14,6 +14,7 @@ export type GroupMembership = {
 export type Group = {
   id: string;
   name: string;
+  join_code?: string;
   description: string;
   created_by: string;
   is_active: boolean;

@@ -219,7 +219,7 @@ export default function MeetingSessionPage() {
           {/* Main Video/Join Container */}
           <div className="xl:col-span-2">
             <div className="rounded-[2rem] border border-border/80 bg-card/40 backdrop-blur-sm p-6 shadow-sm overflow-hidden h-full flex flex-col justify-center items-center relative">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--color-chart-4),transparent_50%)] opacity-5 pointer-events-none" />
+
               
               <div className="text-center max-w-md relative z-10 py-10">
                 <div className="mx-auto w-16 h-16 rounded-full bg-chart-4/15 flex items-center justify-center mb-6 border border-chart-4/30 shadow-inner">
