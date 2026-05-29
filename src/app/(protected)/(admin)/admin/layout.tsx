@@ -29,13 +29,15 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     let cancelled = false
 
     const run = async () => {
+      let redirecting = false
+
       try {
         const isAuthenticated = await initAuth()
 
         if (!isAuthenticated) {
           if (!cancelled) {
+            redirecting = true
             router.replace("/login")
-            setIsBootstrapping(false)
           }
           return
         }
@@ -48,7 +50,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
       } catch (error) {
         console.error("Admin bootstrap error:", error)
       } finally {
-        if (!cancelled) {
+        if (!cancelled && !redirecting) {
           setIsBootstrapping(false)
         }
       }

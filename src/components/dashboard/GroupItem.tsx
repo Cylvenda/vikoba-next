@@ -17,9 +17,9 @@ const GroupItem: FC<GroupItemProps> = ({ group, search, onSelect }) => {
      const hasGroupId = Boolean(group.id)
 
      return (
-          <div className="w-full p-4 rounded-xl flex justify-between items-center bg-card border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group">
+          <div className="flex w-full items-center justify-between gap-4 rounded-xl px-4 py-4 transition-colors hover:bg-muted/40 group">
                <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 flex items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-lg group-hover:bg-primary group-hover:text-primary-foreground transition-colors shrink-0">
+                    <div className="h-12 w-12 flex shrink-0 items-center justify-center rounded-xl bg-primary/10 text-lg font-bold text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                          {group.name
                               .split(' ')
                               .filter(Boolean)
@@ -39,7 +39,7 @@ const GroupItem: FC<GroupItemProps> = ({ group, search, onSelect }) => {
                     </div>
                </div>
                <Button asChild variant="ghost" size="icon" className="text-muted-foreground group-hover:text-primary transition-colors shrink-0" disabled={!hasGroupId}>
-                    <Link
+                     <Link
                          href={hasGroupId ? `/group/${group.id}` : "#"}
                          aria-disabled={!hasGroupId}
                          onClick={(event) => {

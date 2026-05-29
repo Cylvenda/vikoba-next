@@ -21,6 +21,7 @@ import {
   Send,
   X,
   Search,
+  Users,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -33,6 +34,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 // ── Invite Modal ──────────────────────────────────────────────────────────────
 function InviteModal({ groupId, onClose }: { groupId: string; onClose: () => void }) {
@@ -53,29 +55,21 @@ function InviteModal({ groupId, onClose }: { groupId: string; onClose: () => voi
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-md rounded-3xl border border-border/80 bg-card shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="relative p-6 pb-4 border-b border-border/50">
-
-          <div className="flex items-center justify-between relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-chart-3/15 text-chart-3 rounded-2xl flex items-center justify-center">
-                <UserPlus className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-foreground">Invite New Member</h2>
-                <p className="text-xs text-muted-foreground font-medium">Send an invitation via email</p>
-              </div>
+    <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="sm:max-w-md p-6 sm:p-8">
+        <DialogHeader>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-chart-3/15 text-chart-3 rounded-2xl flex items-center justify-center">
+              <UserPlus className="w-5 h-5" />
             </div>
-            <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors rounded-xl p-1.5 hover:bg-muted">
-              <X className="w-5 h-5" />
-            </button>
+            <div>
+              <DialogTitle className="text-xl font-extrabold text-left">Invite New Member</DialogTitle>
+              <DialogDescription className="text-xs text-left mt-1">Send an invitation via email</DialogDescription>
+            </div>
           </div>
-        </div>
+        </DialogHeader>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               Email Address *
@@ -106,7 +100,7 @@ function InviteModal({ groupId, onClose }: { groupId: string; onClose: () => voi
             />
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-4 border-t border-border mt-4">
             <Button
               type="button"
               variant="outline"
@@ -125,8 +119,8 @@ function InviteModal({ groupId, onClose }: { groupId: string; onClose: () => voi
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -143,22 +137,28 @@ function ConfirmRemoveModal({
   loading: boolean
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="w-full max-w-sm rounded-3xl border border-destructive/30 bg-card shadow-2xl p-6 space-y-5">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-destructive/10 text-destructive rounded-2xl flex items-center justify-center shrink-0">
-            <UserMinus className="w-5 h-5" />
+    <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="sm:max-w-sm p-6">
+        <DialogHeader>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-destructive/10 text-destructive rounded-2xl flex items-center justify-center shrink-0">
+              <UserMinus className="w-5 h-5" />
+            </div>
+            <div>
+              <DialogTitle className="text-base font-bold text-foreground text-left">Remove Member</DialogTitle>
+              <DialogDescription className="text-xs text-left mt-1">This action cannot be undone</DialogDescription>
+            </div>
           </div>
-          <div>
-            <h2 className="text-base font-bold text-foreground">Remove Member</h2>
-            <p className="text-xs text-muted-foreground">This action cannot be undone</p>
-          </div>
+        </DialogHeader>
+
+        <div className="py-2">
+          <p className="text-sm text-muted-foreground">
+            Are you sure you want to permanently remove{" "}
+            <span className="font-bold text-foreground">{memberName}</span> from the group?
+          </p>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Are you sure you want to permanently remove{" "}
-          <span className="font-bold text-foreground">{memberName}</span> from the group?
-        </p>
-        <div className="flex gap-3">
+
+        <div className="flex gap-3 pt-4 border-t border-border mt-2">
           <Button variant="outline" onClick={onClose} className="flex-1 rounded-xl font-bold border-border/80">
             Cancel
           </Button>
@@ -170,8 +170,8 @@ function ConfirmRemoveModal({
             {loading ? "Removing..." : "Yes, Remove"}
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -341,25 +341,54 @@ export default function MembersList() {
         />
       )}
 
+      {/* Bento Statistics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Users className="w-4 h-4" />
+            <span className="text-xs font-bold uppercase tracking-widest">Total Members</span>
+          </div>
+          <p className="text-2xl font-extrabold text-foreground">{selectedGroupMembers.length}</p>
+        </div>
+        <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-chart-3">
+            <CheckCircle2 className="w-4 h-4" />
+            <span className="text-xs font-bold uppercase tracking-widest">Verified</span>
+          </div>
+          <p className="text-2xl font-extrabold text-foreground">{selectedGroupMembers.filter(m => m.is_verified).length}</p>
+        </div>
+        <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-green-500">
+            <ShieldCheck className="w-4 h-4" />
+            <span className="text-xs font-bold uppercase tracking-widest">Active</span>
+          </div>
+          <p className="text-2xl font-extrabold text-foreground">{selectedGroupMembers.filter(m => m.is_active).length}</p>
+        </div>
+        <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-chart-4">
+            <ShieldAlert className="w-4 h-4" />
+            <span className="text-xs font-bold uppercase tracking-widest">Pending</span>
+          </div>
+          <p className="text-2xl font-extrabold text-foreground">{selectedGroupMembers.filter(m => !m.is_verified).length}</p>
+        </div>
+      </div>
+
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        {/* Search */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6 bg-card/40 p-2 rounded-[1.25rem] border border-border/60">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search by name or email..."
+            placeholder="Search roster..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-card border border-border/60 rounded-xl text-sm font-medium placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-chart-3/30 transition-all"
+            className="w-full pl-10 pr-4 py-2 bg-background border-none rounded-xl text-sm font-medium placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-chart-3/30 transition-all shadow-sm"
           />
         </div>
-
-        {/* Invite button — Chairperson or Secretary only */}
         {isLeader && (
           <Button
             onClick={() => setShowInvite(true)}
-            className="bg-chart-3 hover:bg-chart-3/90 text-primary-foreground rounded-xl font-bold shadow-sm gap-2 shrink-0"
+            className="bg-chart-3 hover:bg-chart-3/90 text-primary-foreground rounded-xl font-bold shadow-sm gap-2 shrink-0 h-9"
           >
             <UserPlus className="w-4 h-4" />
             Invite Member
@@ -367,84 +396,68 @@ export default function MembersList() {
         )}
       </div>
 
-      {/* Member count summary */}
-      <div className="flex items-center gap-4 mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-        <span>{filteredMembers.length} member{filteredMembers.length !== 1 ? "s" : ""}</span>
-        <span>·</span>
-        <span>{selectedGroupMembers.filter((m) => m.is_verified).length} verified</span>
-        <span>·</span>
-        <span>{selectedGroupMembers.filter((m) => m.is_active).length} active</span>
-        {selectedGroupMembers.some((m) => !m.is_verified) && (
-          <>
-            <span>·</span>
-            <span className="text-chart-4 flex items-center gap-1">
-              <ShieldAlert className="w-3.5 h-3.5" />
-              {selectedGroupMembers.filter((m) => !m.is_verified).length} pending approval
-            </span>
-          </>
-        )}
-      </div>
-
       {/* Pending Join Requests (for Leaders) */}
-      {isLeader && groupInvitations.filter(inv => inv.status === "PENDING").length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+      {isLeader && groupInvitations.filter(inv => inv.status === "pending").length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
             <ShieldAlert className="w-4 h-4 text-chart-4" />
-            Pending Join Requests ({groupInvitations.filter(inv => inv.status === "PENDING").length})
+            Pending Join Requests ({groupInvitations.filter(inv => inv.status === "pending").length})
           </h3>
-          <div className="rounded-2xl border border-chart-4/30 overflow-hidden bg-chart-4/5 backdrop-blur-sm">
-            <div className="divide-y divide-border/40">
-              {groupInvitations.filter(inv => inv.status === "PENDING").map((invitation) => (
-                <div
-                  key={invitation.invitation_uuid}
-                  className="flex items-center gap-4 px-4 py-3.5 hover:bg-muted/40 transition-colors"
-                >
-                  <div className="w-9 h-9 rounded-full bg-chart-4/15 text-chart-4 text-sm font-extrabold flex items-center justify-center shrink-0 border border-chart-4/20">
-                    <Mail className="w-4 h-4" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {groupInvitations.filter(inv => inv.status === "pending").map((invitation) => (
+              <div
+                key={invitation.invitation_uuid}
+                className="flex flex-col gap-3 p-4 rounded-2xl border border-chart-4/30 bg-chart-4/5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-background/50 text-chart-4 text-sm font-extrabold flex items-center justify-center shrink-0 border border-chart-4/20">
+                    <Mail className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-foreground truncate">{invitation.email}</p>
-                    <p className="text-xs font-medium text-muted-foreground truncate">{invitation.message || "Requested to join via short code"}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      onClick={() => handleRespondToJoinRequest(invitation.invitation_uuid, "accept")}
-                      disabled={invitationLoading}
-                      size="sm"
-                      className="bg-chart-3/15 text-chart-3 hover:bg-chart-3/25 border border-chart-3/20 rounded-xl"
-                    >
-                      <CheckCircle2 className="w-4 h-4 mr-1" />
-                      Approve
-                    </Button>
-                    <Button
-                      onClick={() => handleRespondToJoinRequest(invitation.invitation_uuid, "decline")}
-                      disabled={invitationLoading}
-                      size="sm"
-                      variant="outline"
-                      className="text-destructive hover:bg-destructive/10 border-destructive/20 rounded-xl"
-                    >
-                      <X className="w-4 h-4 mr-1" />
-                      Decline
-                    </Button>
                   </div>
                 </div>
-              ))}
-            </div>
+                <p className="text-xs font-medium text-muted-foreground line-clamp-2 min-h-[32px] bg-background/40 p-2 rounded-lg">
+                  {invitation.message || "Requested to join via short code"}
+                </p>
+                <div className="flex items-center gap-2 mt-auto pt-2">
+                  <Button
+                    onClick={() => handleRespondToJoinRequest(invitation.invitation_uuid, "accept")}
+                    disabled={invitationLoading}
+                    size="sm"
+                    className="flex-1 bg-chart-3/15 text-chart-3 hover:bg-chart-3/25 border border-chart-3/20 rounded-xl font-bold"
+                  >
+                    <CheckCircle2 className="w-4 h-4 mr-1" />
+                    Approve
+                  </Button>
+                  <Button
+                    onClick={() => handleRespondToJoinRequest(invitation.invitation_uuid, "decline")}
+                    disabled={invitationLoading}
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 text-destructive hover:bg-destructive/10 border-destructive/20 rounded-xl font-bold bg-background/50"
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    Decline
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
 
       {/* List */}
-      <div className="rounded-2xl border border-border/50 overflow-hidden bg-card/60 backdrop-blur-sm">
+      <div className="space-y-4">
         {filteredMembers.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground rounded-2xl border border-border/50 bg-card/60 backdrop-blur-sm">
             <UserX className="w-10 h-10 mb-3 opacity-25" />
             <p className="text-sm font-medium">
               {searchQuery ? "No members match your search." : "No members found for this group."}
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-border/40">
+          <div className="flex flex-col gap-3">
             {filteredMembers.map((member, idx) => {
               const fullName = [member.first_name, member.last_name].join(" ").trim() || member.email
               const initials = fullName
@@ -462,7 +475,7 @@ export default function MembersList() {
               return (
                 <div
                   key={member.membership_id}
-                  className="group flex items-center gap-4 px-4 py-3.5 hover:bg-muted/40 transition-colors"
+                  className="group flex flex-row items-center gap-4 p-4 rounded-2xl border border-border/50 bg-card shadow-sm hover:shadow-md transition-all relative overflow-hidden"
                 >
                   {/* Row number */}
                   <span className="text-xs font-bold text-muted-foreground/40 w-5 text-right shrink-0 tabular-nums">

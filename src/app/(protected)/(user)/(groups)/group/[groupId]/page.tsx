@@ -214,38 +214,6 @@ export default function GroupPage() {
               </div>
             </section>
 
-            {/* <section className="rounded-[2rem] border border-border/60 bg-card/50 p-6 shadow-sm backdrop-blur-sm">
-              <h3 className="text-lg font-bold text-foreground">VICOBA Workspaces</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Jump into the desks that support savings, borrowing, penalties, and member administration.
-              </p>
-              <div className="mt-5 grid gap-3">
-                { quickLinks.map((item) => {
-                  const Icon = item.icon
-                  return (
-                    <Link
-                      key={item.title}
-                      href={item.href}
-                      className="group rounded-2xl border border-border/60 bg-background/70 p-4 transition hover:border-chart-3/30 hover:bg-background"
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className={`flex size-11 shrink-0 items-center justify-center rounded-2xl ${item.bg}`}>
-                          <Icon className={`size-5 ${item.accent}`} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center justify-between gap-3">
-                            <p className="font-semibold text-foreground">{item.title}</p>
-                            <ArrowRight className="size-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-foreground" />
-                          </div>
-                          <p className="mt-1 text-sm leading-6 text-muted-foreground">{item.description}</p>
-                        </div>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
-            </section> */}
-
             <section className="rounded-[2rem] border border-border/60 bg-card/50 p-6 shadow-sm backdrop-blur-sm">
               <h3 className="text-lg font-bold text-foreground">Recent Finance Activity</h3>
               <p className="mt-1 text-sm text-muted-foreground">

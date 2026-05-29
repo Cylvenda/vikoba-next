@@ -14,6 +14,8 @@ import {
 } from "lucide-react"
 import { financeServices, type Contribution } from "@/api/services/finance.service"
 import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { TimePicker } from "@/components/ui/time-picker"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -376,133 +378,123 @@ export default function GroupSavingsPage() {
         </Card>
       </div>
 
-      {isContributionModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-md border border-border bg-card shadow-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-border p-5">
-              <div>
-                <h2 className="text-xl font-bold tracking-tight text-foreground">Record saving</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Add a verified contribution to the group ledger.
-                </p>
-              </div>
-              <Button type="button" variant="ghost" size="icon" onClick={closeContributionModal}>
-                <X className="h-4 w-4" />
+      <Dialog open={isContributionModalOpen} onOpenChange={(open) => { if (!open) closeContributionModal() }}>
+        <DialogContent className="sm:max-w-xl p-6 sm:p-8">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-extrabold">Record saving</DialogTitle>
+            <DialogDescription className="mt-1 text-sm text-muted-foreground">
+              Add a verified contribution to the group ledger.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
+            <FieldGroup>
+              <Field>
+                <FieldLabel>Member</FieldLabel>
+                <FieldContent>
+                  <Select
+                    value={form.membership_id}
+                    onValueChange={(value) => handleInputChange("membership_id", value)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a verified member" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {eligibleMembers.map((member) => (
+                        <SelectItem key={member.membership_id} value={member.membership_id}>
+                          {[member.first_name, member.last_name].filter(Boolean).join(" ") || member.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FieldDescription>Only active and verified members appear here.</FieldDescription>
+                </FieldContent>
+              </Field>
+
+              {selectedMember ? (
+                <div className="rounded-2xl border border-border/80 bg-background/70 p-4">
+                  <p className="text-sm font-semibold text-foreground">
+                    {[selectedMember.first_name, selectedMember.last_name].filter(Boolean).join(" ") || selectedMember.email}
+                  </p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                    {selectedMember.role}
+                  </p>
+                </div>
+              ) : null}
+
+              <Field>
+                <FieldLabel htmlFor="contribution-amount">Amount (TZS)</FieldLabel>
+                <FieldContent>
+                  <Input
+                    id="contribution-amount"
+                    inputMode="decimal"
+                    min="0"
+                    placeholder="25000"
+                    value={form.amount}
+                    onChange={(event) => handleInputChange("amount", event.target.value)}
+                    required
+                  />
+                </FieldContent>
+              </Field>
+
+              <Field>
+                <FieldLabel>Paid at</FieldLabel>
+                <FieldContent>
+                  <div className="flex flex-col gap-2">
+                    <DatePicker
+                      value={form.paid_at_date}
+                      onChange={(date) =>
+                        setForm((current) => ({ ...current, paid_at_date: date }))
+                      }
+                      placeholder="Select date"
+                    />
+                    <TimePicker
+                      value={form.paid_at_time}
+                      onChange={(time) =>
+                        setForm((current) => ({ ...current, paid_at_time: time }))
+                      }
+                    />
+                  </div>
+                </FieldContent>
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="contribution-reference">Payment reference</FieldLabel>
+                <FieldContent>
+                  <Input
+                    id="contribution-reference"
+                    placeholder="M-Pesa / cashbook / receipt number"
+                    value={form.reference}
+                    onChange={(event) => handleInputChange("reference", event.target.value)}
+                  />
+                </FieldContent>
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="contribution-note">Note</FieldLabel>
+                <FieldContent>
+                  <Textarea
+                    id="contribution-note"
+                    placeholder="Add context about this savings payment if needed."
+                    value={form.note}
+                    onChange={(event) => handleInputChange("note", event.target.value)}
+                  />
+                </FieldContent>
+              </Field>
+            </FieldGroup>
+
+            <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-4">
+              <Button type="button" variant="outline" onClick={closeContributionModal}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={submitting || eligibleMembers.length === 0}>
+                <Plus className="h-4 w-4 mr-2" />
+                {submitting ? "Recording..." : "Record contribution"}
               </Button>
             </div>
-
-            <form className="space-y-4 p-5" onSubmit={handleSubmit}>
-              <FieldGroup>
-                <Field>
-                  <FieldLabel>Member</FieldLabel>
-                  <FieldContent>
-                    <Select
-                      value={form.membership_id}
-                      onValueChange={(value) => handleInputChange("membership_id", value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a verified member" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {eligibleMembers.map((member) => (
-                          <SelectItem key={member.membership_id} value={member.membership_id}>
-                            {[member.first_name, member.last_name].filter(Boolean).join(" ") || member.email}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FieldDescription>Only active and verified members appear here.</FieldDescription>
-                  </FieldContent>
-                </Field>
-
-                {selectedMember ? (
-                  <div className="rounded-2xl border border-border/80 bg-background/70 p-4">
-                    <p className="text-sm font-semibold text-foreground">
-                      {[selectedMember.first_name, selectedMember.last_name].filter(Boolean).join(" ") || selectedMember.email}
-                    </p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                      {selectedMember.role}
-                    </p>
-                  </div>
-                ) : null}
-
-                <Field>
-                  <FieldLabel htmlFor="contribution-amount">Amount (TZS)</FieldLabel>
-                  <FieldContent>
-                    <Input
-                      id="contribution-amount"
-                      inputMode="decimal"
-                      min="0"
-                      placeholder="25000"
-                      value={form.amount}
-                      onChange={(event) => handleInputChange("amount", event.target.value)}
-                      required
-                    />
-                  </FieldContent>
-                </Field>
-
-                <Field>
-                  <FieldLabel>Paid at</FieldLabel>
-                  <FieldContent>
-                    <div className="flex flex-col gap-2">
-                      <DatePicker
-                        value={form.paid_at_date}
-                        onChange={(date) =>
-                          setForm((current) => ({ ...current, paid_at_date: date }))
-                        }
-                        placeholder="Select date"
-                      />
-                      <Input
-                        type="time"
-                        value={form.paid_at_time}
-                        onChange={(event) =>
-                          setForm((current) => ({ ...current, paid_at_time: event.target.value }))
-                        }
-                        className="rounded-md"
-                        aria-label="Time"
-                      />
-                    </div>
-                  </FieldContent>
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="contribution-reference">Payment reference</FieldLabel>
-                  <FieldContent>
-                    <Input
-                      id="contribution-reference"
-                      placeholder="M-Pesa / cashbook / receipt number"
-                      value={form.reference}
-                      onChange={(event) => handleInputChange("reference", event.target.value)}
-                    />
-                  </FieldContent>
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="contribution-note">Note</FieldLabel>
-                  <FieldContent>
-                    <Textarea
-                      id="contribution-note"
-                      placeholder="Add context about this savings payment if needed."
-                      value={form.note}
-                      onChange={(event) => handleInputChange("note", event.target.value)}
-                    />
-                  </FieldContent>
-                </Field>
-              </FieldGroup>
-
-              <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-4">
-                <Button type="button" variant="outline" onClick={closeContributionModal}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={submitting || eligibleMembers.length === 0}>
-                  <Plus className="h-4 w-4" />
-                  {submitting ? "Recording..." : "Record contribution"}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      ) : null}
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

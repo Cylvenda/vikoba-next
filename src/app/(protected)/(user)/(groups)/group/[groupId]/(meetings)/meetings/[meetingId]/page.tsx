@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react"
 import Link from "next/link"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { Calendar, Clock, Users, ArrowLeft, Plus, Trash2, LayoutDashboard, CalendarCheck, Download, FileSpreadsheet, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AgendaMinutesHistory } from "@/components/meeting/AgendaMinutesHistory"
@@ -19,6 +19,7 @@ export default function MeetingPage() {
   const params = useParams<{ meetingId: string; groupId: string }>()
   const meetingId = Array.isArray(params?.meetingId) ? params.meetingId[0] : params?.meetingId
   const groupId = Array.isArray(params?.groupId) ? params.groupId[0] : params?.groupId
+  const router = useRouter()
   
   const { user } = useAuthUserStore()
   const { selectedGroupMembers, fetchSelectedGroupMembers } = useGroupStore()
@@ -33,6 +34,7 @@ export default function MeetingPage() {
     fetchParticipants,
     addAgendaItem,
     removeAgendaItem,
+    startMeeting,
   } = useMeetingStore()
 
   const [agendaTitle, setAgendaTitle] = useState("")
@@ -113,7 +115,13 @@ export default function MeetingPage() {
 
   const handleStartMeeting = async () => {
     if (!meetingId) return
-    window.location.href = sessionHref
+    const result = await startMeeting(meetingId)
+    if (result.success) {
+      toast.success(result.message)
+      router.push(sessionHref)
+    } else {
+      toast.error(result.message)
+    }
   }
 
   const attendanceHistory = useMemo(() => {

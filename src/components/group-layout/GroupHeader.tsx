@@ -6,6 +6,8 @@ import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Textarea } from '../ui/textarea'
 import { DatePicker } from '../ui/date-picker'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog'
+import { TimePicker } from '../ui/time-picker'
 import { useGroupStore } from '@/store/group/groupUser.store'
 import { formatUTCDate } from '@/hooks/formatted-date'
 import { useState } from 'react'
@@ -206,176 +208,169 @@ export default function GroupHeader() {
                {/* ======================================= */}
                {/* MODALS */}
                {/* ======================================= */}
-               {isInviteOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                         <div className="w-full max-w-md rounded-md bg-card border border-border p-6 shadow-2xl">
-                              <h2 className="text-xl font-extrabold">Invite New Member</h2>
-                              <p className="mt-1 text-sm text-muted-foreground">
+               <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
+                    <DialogContent className="sm:max-w-md p-6">
+                         <DialogHeader>
+                              <DialogTitle className="text-xl font-extrabold">Invite New Member</DialogTitle>
+                              <DialogDescription className="mt-1 text-sm text-muted-foreground">
                                    Send an invitation email to join {selectedGroup?.name}.
-                              </p>
+                              </DialogDescription>
+                         </DialogHeader>
 
-                              <form className="mt-6 space-y-4" onSubmit={handleInviteSubmit}>
-                                   <div>
-                                        <label htmlFor="invite-email" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Email Address</label>
-                                        <Input
-                                             id="invite-email"
-                                             type="email"
-                                             value={inviteEmail}
-                                             onChange={(event) => setInviteEmail(event.target.value)}
-                                             placeholder="member@example.com"
-                                             className="rounded-md"
-                                             required
-                                        />
-                                   </div>
+                         <form className="mt-4 space-y-4" onSubmit={handleInviteSubmit}>
+                              <div>
+                                   <label htmlFor="invite-email" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Email Address</label>
+                                   <Input
+                                        id="invite-email"
+                                        type="email"
+                                        value={inviteEmail}
+                                        onChange={(event) => setInviteEmail(event.target.value)}
+                                        placeholder="member@example.com"
+                                        className="rounded-md"
+                                        required
+                                   />
+                              </div>
 
-                                   <div>
-                                        <label htmlFor="invite-message" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Message (optional)</label>
-                                        <Textarea
-                                             id="invite-message"
-                                             value={inviteMessage}
-                                             onChange={(event) => setInviteMessage(event.target.value)}
-                                             placeholder="Welcome to our group."
-                                             className="min-h-24 rounded-md"
-                                        />
-                                   </div>
+                              <div>
+                                   <label htmlFor="invite-message" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Message (optional)</label>
+                                   <Textarea
+                                        id="invite-message"
+                                        value={inviteMessage}
+                                        onChange={(event) => setInviteMessage(event.target.value)}
+                                        placeholder="Welcome to our group."
+                                        className="min-h-24 rounded-md"
+                                   />
+                              </div>
 
-                                   <div className="flex items-center justify-end gap-3 pt-2">
-                                        <Button type="button" variant="ghost" onClick={() => setIsInviteOpen(false)} disabled={invitationLoading} className="rounded-md font-bold">
-                                             Cancel
-                                        </Button>
-                                        <Button type="submit" className="rounded-md shadow-md font-bold" disabled={invitationLoading}>
-                                             {invitationLoading ? "Sending..." : "Send Invite"}
-                                        </Button>
-                                   </div>
-                              </form>
-                         </div>
-                    </div>
-               )}
+                              <div className="flex items-center justify-end gap-3 pt-2">
+                                   <Button type="button" variant="ghost" onClick={() => setIsInviteOpen(false)} disabled={invitationLoading} className="rounded-md font-bold">
+                                        Cancel
+                                   </Button>
+                                   <Button type="submit" className="rounded-md shadow-md font-bold" disabled={invitationLoading}>
+                                        {invitationLoading ? "Sending..." : "Send Invite"}
+                                   </Button>
+                              </div>
+                         </form>
+                    </DialogContent>
+               </Dialog>
 
-               {isInstantOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                         <div className="w-full max-w-xl rounded-md bg-card border border-border p-6 shadow-2xl">
-                              <h2 className="text-xl font-extrabold">Start Instant Session</h2>
-                              <p className="mt-1 text-sm text-muted-foreground">
+               <Dialog open={isInstantOpen} onOpenChange={setIsInstantOpen}>
+                    <DialogContent className="sm:max-w-xl p-6">
+                         <DialogHeader>
+                              <DialogTitle className="text-xl font-extrabold">Start Instant Session</DialogTitle>
+                              <DialogDescription className="mt-1 text-sm text-muted-foreground">
                                    Start a live meeting now for {selectedGroup?.name}. Members will receive an email to join immediately.
-                              </p>
+                              </DialogDescription>
+                         </DialogHeader>
 
-                              <form className="mt-6 space-y-4" onSubmit={handleInstantMeeting}>
-                                   <div>
-                                        <label htmlFor="instant-title" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Title</label>
-                                        <Input
-                                             id="instant-title"
-                                             type="text"
-                                             value={instantTitle}
-                                             onChange={(event) => setInstantTitle(event.target.value)}
-                                             placeholder={`Instant Session - ${selectedGroup?.name || "Group"}`}
-                                             className="rounded-md"
-                                        />
-                                   </div>
+                         <form className="mt-4 space-y-4" onSubmit={handleInstantMeeting}>
+                              <div>
+                                   <label htmlFor="instant-title" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Title</label>
+                                   <Input
+                                        id="instant-title"
+                                        type="text"
+                                        value={instantTitle}
+                                        onChange={(event) => setInstantTitle(event.target.value)}
+                                        placeholder={`Instant Session - ${selectedGroup?.name || "Group"}`}
+                                        className="rounded-md"
+                                   />
+                              </div>
 
-                                   <div>
-                                        <label htmlFor="instant-description" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Agenda / Context</label>
-                                        <Textarea
-                                             id="instant-description"
-                                             value={instantDescription}
-                                             onChange={(event) => setInstantDescription(event.target.value)}
-                                             className="min-h-24 rounded-md"
-                                             placeholder="Quick context for members joining now"
-                                        />
-                                   </div>
+                              <div>
+                                   <label htmlFor="instant-description" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Agenda / Context</label>
+                                   <Textarea
+                                        id="instant-description"
+                                        value={instantDescription}
+                                        onChange={(event) => setInstantDescription(event.target.value)}
+                                        className="min-h-24 rounded-md"
+                                        placeholder="Quick context for members joining now"
+                                   />
+                              </div>
 
-                                   <div className="flex items-center justify-end gap-3 pt-2">
-                                        <Button type="button" variant="ghost" onClick={() => setIsInstantOpen(false)} disabled={loading} className="rounded-md font-bold">
-                                             Cancel
-                                        </Button>
-                                        <Button type="submit" className="rounded-md shadow-md font-bold" disabled={loading}>
-                                             {loading ? "Starting..." : "Start Now"}
-                                        </Button>
-                                   </div>
-                              </form>
-                         </div>
-                    </div>
-               )}
+                              <div className="flex items-center justify-end gap-3 pt-2">
+                                   <Button type="button" variant="ghost" onClick={() => setIsInstantOpen(false)} disabled={loading} className="rounded-md font-bold">
+                                        Cancel
+                                   </Button>
+                                   <Button type="submit" className="rounded-md shadow-md font-bold" disabled={loading}>
+                                        {loading ? "Starting..." : "Start Now"}
+                                   </Button>
+                              </div>
+                         </form>
+                    </DialogContent>
+               </Dialog>
 
-               {isScheduleOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                         <div className="w-full max-w-xl rounded-md bg-card border border-border p-6 shadow-2xl">
-                              <h2 className="text-xl font-extrabold">Schedule Session</h2>
-                              <p className="mt-1 text-sm text-muted-foreground">
+               <Dialog open={isScheduleOpen} onOpenChange={setIsScheduleOpen}>
+                    <DialogContent className="sm:max-w-xl p-6">
+                         <DialogHeader>
+                              <DialogTitle className="text-xl font-extrabold">Schedule Session</DialogTitle>
+                              <DialogDescription className="mt-1 text-sm text-muted-foreground">
                                    Define the date and time for the next formal gathering.
-                              </p>
+                              </DialogDescription>
+                         </DialogHeader>
 
-                              <form className="mt-6 space-y-4" onSubmit={handleScheduleMeeting}>
+                         <form className="mt-4 space-y-4" onSubmit={handleScheduleMeeting}>
+                              <div>
+                                   <label htmlFor="meeting-title" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Title</label>
+                                   <Input
+                                        id="meeting-title"
+                                        type="text"
+                                        value={meetingTitle}
+                                        onChange={(event) => setMeetingTitle(event.target.value)}
+                                        placeholder="Weekly Ledger Reconciliation"
+                                        className="rounded-md"
+                                        required
+                                   />
+                              </div>
+
+                              <div>
+                                   <label htmlFor="meeting-description" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Description</label>
+                                   <Textarea
+                                        id="meeting-description"
+                                        value={meetingDescription}
+                                        onChange={(event) => setMeetingDescription(event.target.value)}
+                                        className="min-h-24 rounded-md"
+                                        placeholder="Agenda summary"
+                                   />
+                              </div>
+
+                              <div>
+                                   <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Meeting Date</label>
+                                   <DatePicker
+                                        value={meetingDate}
+                                        onChange={setMeetingDate}
+                                        placeholder="Select meeting date"
+                                   />
+                              </div>
+
+                              <div className="grid gap-4 md:grid-cols-2">
                                    <div>
-                                        <label htmlFor="meeting-title" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Title</label>
-                                        <Input
-                                             id="meeting-title"
-                                             type="text"
-                                             value={meetingTitle}
-                                             onChange={(event) => setMeetingTitle(event.target.value)}
-                                             placeholder="Weekly Ledger Reconciliation"
-                                             className="rounded-md"
-                                             required
+                                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Start Time</label>
+                                        <TimePicker
+                                             value={meetingStartTime}
+                                             onChange={setMeetingStartTime}
                                         />
                                    </div>
 
                                    <div>
-                                        <label htmlFor="meeting-description" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Description</label>
-                                        <Textarea
-                                             id="meeting-description"
-                                             value={meetingDescription}
-                                             onChange={(event) => setMeetingDescription(event.target.value)}
-                                             className="min-h-24 rounded-md"
-                                             placeholder="Agenda summary"
+                                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">End Time (Optional)</label>
+                                        <TimePicker
+                                             value={meetingEndTime}
+                                             onChange={setMeetingEndTime}
                                         />
                                    </div>
+                              </div>
 
-                                   <div>
-                                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Meeting Date</label>
-                                        <DatePicker
-                                             value={meetingDate}
-                                             onChange={setMeetingDate}
-                                             placeholder="Select meeting date"
-                                        />
-                                   </div>
-
-                                   <div className="grid gap-4 md:grid-cols-2">
-                                        <div>
-                                             <label htmlFor="meeting-start-time" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Start Time</label>
-                                             <Input
-                                                  id="meeting-start-time"
-                                                  type="time"
-                                                  value={meetingStartTime}
-                                                  onChange={(event) => setMeetingStartTime(event.target.value)}
-                                                  className="rounded-md"
-                                                  required
-                                             />
-                                        </div>
-
-                                        <div>
-                                             <label htmlFor="meeting-end-time" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">End Time (Optional)</label>
-                                             <Input
-                                                  id="meeting-end-time"
-                                                  type="time"
-                                                  value={meetingEndTime}
-                                                  onChange={(event) => setMeetingEndTime(event.target.value)}
-                                                  className="rounded-md"
-                                             />
-                                        </div>
-                                   </div>
-
-                                   <div className="flex items-center justify-end gap-3 pt-2">
-                                        <Button type="button" variant="ghost" onClick={() => setIsScheduleOpen(false)} disabled={loading} className="rounded-md font-bold">
-                                             Cancel
-                                        </Button>
-                                        <Button type="submit" className="rounded-md shadow-md font-bold" disabled={loading}>
-                                             {loading ? "Saving..." : "Schedule Meeting"}
-                                        </Button>
-                                   </div>
-                              </form>
-                         </div>
-                    </div>
-               )}
+                              <div className="flex items-center justify-end gap-3 pt-2">
+                                   <Button type="button" variant="ghost" onClick={() => setIsScheduleOpen(false)} disabled={loading} className="rounded-md font-bold">
+                                        Cancel
+                                   </Button>
+                                   <Button type="submit" className="rounded-md shadow-md font-bold" disabled={loading}>
+                                        {loading ? "Saving..." : "Schedule Meeting"}
+                                   </Button>
+                              </div>
+                         </form>
+                    </DialogContent>
+               </Dialog>
           </>
      )
 }

@@ -21,6 +21,7 @@ import {
   type LoanRequest,
 } from "@/api/services/finance.service"
 import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -673,229 +674,215 @@ export default function GroupLoansPage() {
         </div>
       </div>
 
-      {isRequestModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-md border border-border bg-card shadow-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-border p-5">
-              <div>
-                <h2 className="text-xl font-bold tracking-tight text-foreground">Request loan</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Choose a category and submit the request for review.
-                </p>
-              </div>
-              <Button type="button" variant="ghost" size="icon" onClick={closeRequestModal}>
-                <X className="h-4 w-4" />
+      <Dialog open={isRequestModalOpen} onOpenChange={(open) => { if (!open) closeRequestModal() }}>
+        <DialogContent className="sm:max-w-xl p-6 sm:p-8">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-extrabold">Request loan</DialogTitle>
+            <DialogDescription className="mt-1 text-sm text-muted-foreground">
+              Choose a category and submit the request for review.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form className="mt-4 space-y-4" onSubmit={handleLoanRequestSubmit}>
+            <FieldGroup>
+              <Field>
+                <FieldLabel>Loan category</FieldLabel>
+                <FieldContent>
+                  <Select
+                    value={requestForm.loan_request_category_id}
+                    onValueChange={(value) =>
+                      handleRequestInputChange("loan_request_category_id", value)
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a loan category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.uuid} value={category.uuid}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FieldDescription>
+                    The selected category determines the principal amount and duration.
+                  </FieldDescription>
+                </FieldContent>
+              </Field>
+
+              {selectedCategory ? (
+                <div className="rounded-md border border-border bg-background/70 p-4">
+                  <p className="text-sm font-semibold text-foreground">
+                    {formatTzs(Number(selectedCategory.amount))}
+                  </p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                    {selectedCategory.duration_count} {durationLabels[selectedCategory.duration_type]}
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {selectedCategory.description || "No extra description added for this category."}
+                  </p>
+                </div>
+              ) : null}
+
+              <Field>
+                <FieldLabel htmlFor="loan-interest-rate">Interest rate (%)</FieldLabel>
+                <FieldContent>
+                  <Input
+                    id="loan-interest-rate"
+                    inputMode="decimal"
+                    min="0"
+                    placeholder="10"
+                    value={requestForm.interest_rate}
+                    onChange={(event) =>
+                      handleRequestInputChange("interest_rate", event.target.value)
+                    }
+                    required
+                  />
+                </FieldContent>
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="loan-purpose">Purpose</FieldLabel>
+                <FieldContent>
+                  <Textarea
+                    id="loan-purpose"
+                    placeholder="Describe what the loan will support and how repayment will stay on track."
+                    value={requestForm.purpose}
+                    onChange={(event) => handleRequestInputChange("purpose", event.target.value)}
+                  />
+                </FieldContent>
+              </Field>
+            </FieldGroup>
+
+            <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-4">
+              <Button type="button" variant="outline" onClick={closeRequestModal}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={requestSubmitting || categories.length === 0}>
+                <Plus className="h-4 w-4 mr-2" />
+                {requestSubmitting ? "Submitting..." : "Submit request"}
               </Button>
             </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-            <form className="space-y-4 p-5" onSubmit={handleLoanRequestSubmit}>
-              <FieldGroup>
+      <Dialog open={isCategoryModalOpen} onOpenChange={(open) => { if (!open) closeCategoryModal() }}>
+        <DialogContent className="sm:max-w-xl p-6 sm:p-8">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-extrabold">
+              {editingUuid ? "Update loan category" : "Add loan category"}
+            </DialogTitle>
+            <DialogDescription className="mt-1 text-sm text-muted-foreground">
+              Define the amount and repayment window members can request.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form className="mt-4 space-y-4" onSubmit={handleCategorySubmit}>
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="loan-name">Category name</FieldLabel>
+                <FieldContent>
+                  <Input
+                    id="loan-name"
+                    placeholder="Emergency support"
+                    value={categoryForm.name}
+                    onChange={(event) => handleCategoryInputChange("name", event.target.value)}
+                    required
+                  />
+                </FieldContent>
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="loan-amount">Amount (TZS)</FieldLabel>
+                <FieldContent>
+                  <Input
+                    id="loan-amount"
+                    inputMode="decimal"
+                    min="0"
+                    placeholder="150000"
+                    value={categoryForm.amount}
+                    onChange={(event) => handleCategoryInputChange("amount", event.target.value)}
+                    required
+                  />
+                </FieldContent>
+              </Field>
+
+              <div className="grid gap-4 sm:grid-cols-2">
                 <Field>
-                  <FieldLabel>Loan category</FieldLabel>
+                  <FieldLabel>Duration unit</FieldLabel>
                   <FieldContent>
                     <Select
-                      value={requestForm.loan_request_category_id}
+                      value={categoryForm.duration_type}
                       onValueChange={(value) =>
-                        handleRequestInputChange("loan_request_category_id", value)
+                        handleCategoryInputChange(
+                          "duration_type",
+                          value as LoanCategoryFormState["duration_type"]
+                        )
                       }
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a loan category" />
+                        <SelectValue placeholder="Select a duration unit" />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.uuid} value={category.uuid}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="MONTHS">Months</SelectItem>
+                        <SelectItem value="WEEKS">Weeks</SelectItem>
+                        <SelectItem value="DAYS">Days</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FieldDescription>
-                      The selected category determines the principal amount and duration.
-                    </FieldDescription>
                   </FieldContent>
                 </Field>
 
-                {selectedCategory ? (
-                  <div className="rounded-md border border-border bg-background/70 p-4">
-                    <p className="text-sm font-semibold text-foreground">
-                      {formatTzs(Number(selectedCategory.amount))}
-                    </p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                      {selectedCategory.duration_count} {durationLabels[selectedCategory.duration_type]}
-                    </p>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {selectedCategory.description || "No extra description added for this category."}
-                    </p>
-                  </div>
-                ) : null}
-
                 <Field>
-                  <FieldLabel htmlFor="loan-interest-rate">Interest rate (%)</FieldLabel>
+                  <FieldLabel htmlFor="loan-duration-count">Duration count</FieldLabel>
                   <FieldContent>
                     <Input
-                      id="loan-interest-rate"
-                      inputMode="decimal"
-                      min="0"
-                      placeholder="10"
-                      value={requestForm.interest_rate}
+                      id="loan-duration-count"
+                      type="number"
+                      min="1"
+                      placeholder="3"
+                      value={categoryForm.duration_count}
                       onChange={(event) =>
-                        handleRequestInputChange("interest_rate", event.target.value)
+                        handleCategoryInputChange("duration_count", event.target.value)
                       }
                       required
                     />
                   </FieldContent>
                 </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="loan-purpose">Purpose</FieldLabel>
-                  <FieldContent>
-                    <Textarea
-                      id="loan-purpose"
-                      placeholder="Describe what the loan will support and how repayment will stay on track."
-                      value={requestForm.purpose}
-                      onChange={(event) => handleRequestInputChange("purpose", event.target.value)}
-                    />
-                  </FieldContent>
-                </Field>
-              </FieldGroup>
-
-              <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-4">
-                <Button type="button" variant="outline" onClick={closeRequestModal}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={requestSubmitting || categories.length === 0}>
-                  <Plus className="h-4 w-4" />
-                  {requestSubmitting ? "Submitting..." : "Submit request"}
-                </Button>
               </div>
-            </form>
-          </div>
-        </div>
-      ) : null}
 
-      {isCategoryModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-md border border-border bg-card shadow-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-border p-5">
-              <div>
-                <h2 className="text-xl font-bold tracking-tight text-foreground">
-                  {editingUuid ? "Update loan category" : "Add loan category"}
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Define the amount and repayment window members can request.
-                </p>
-              </div>
-              <Button type="button" variant="ghost" size="icon" onClick={closeCategoryModal}>
-                <X className="h-4 w-4" />
+              <Field>
+                <FieldLabel htmlFor="loan-description">Description</FieldLabel>
+                <FieldContent>
+                  <Textarea
+                    id="loan-description"
+                    placeholder="Explain when members should use this option and any repayment expectations."
+                    value={categoryForm.description}
+                    onChange={(event) => handleCategoryInputChange("description", event.target.value)}
+                  />
+                </FieldContent>
+              </Field>
+            </FieldGroup>
+
+            <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-4">
+              <Button type="button" variant="outline" onClick={closeCategoryModal}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={categorySubmitting}>
+                <Plus className="h-4 w-4 mr-2" />
+                {categorySubmitting
+                  ? editingUuid
+                    ? "Saving..."
+                    : "Creating..."
+                  : editingUuid
+                    ? "Save changes"
+                    : "Create category"}
               </Button>
             </div>
-
-            <form className="space-y-4 p-5" onSubmit={handleCategorySubmit}>
-              <FieldGroup>
-                <Field>
-                  <FieldLabel htmlFor="loan-name">Category name</FieldLabel>
-                  <FieldContent>
-                    <Input
-                      id="loan-name"
-                      placeholder="Emergency support"
-                      value={categoryForm.name}
-                      onChange={(event) => handleCategoryInputChange("name", event.target.value)}
-                      required
-                    />
-                  </FieldContent>
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="loan-amount">Amount (TZS)</FieldLabel>
-                  <FieldContent>
-                    <Input
-                      id="loan-amount"
-                      inputMode="decimal"
-                      min="0"
-                      placeholder="150000"
-                      value={categoryForm.amount}
-                      onChange={(event) => handleCategoryInputChange("amount", event.target.value)}
-                      required
-                    />
-                  </FieldContent>
-                </Field>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field>
-                    <FieldLabel>Duration unit</FieldLabel>
-                    <FieldContent>
-                      <Select
-                        value={categoryForm.duration_type}
-                        onValueChange={(value) =>
-                          handleCategoryInputChange(
-                            "duration_type",
-                            value as LoanCategoryFormState["duration_type"]
-                          )
-                        }
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select a duration unit" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="MONTHS">Months</SelectItem>
-                          <SelectItem value="WEEKS">Weeks</SelectItem>
-                          <SelectItem value="DAYS">Days</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FieldContent>
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="loan-duration-count">Duration count</FieldLabel>
-                    <FieldContent>
-                      <Input
-                        id="loan-duration-count"
-                        type="number"
-                        min="1"
-                        placeholder="3"
-                        value={categoryForm.duration_count}
-                        onChange={(event) =>
-                          handleCategoryInputChange("duration_count", event.target.value)
-                        }
-                        required
-                      />
-                    </FieldContent>
-                  </Field>
-                </div>
-
-                <Field>
-                  <FieldLabel htmlFor="loan-description">Description</FieldLabel>
-                  <FieldContent>
-                    <Textarea
-                      id="loan-description"
-                      placeholder="Explain when members should use this option and any repayment expectations."
-                      value={categoryForm.description}
-                      onChange={(event) => handleCategoryInputChange("description", event.target.value)}
-                    />
-                  </FieldContent>
-                </Field>
-              </FieldGroup>
-
-              <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-4">
-                <Button type="button" variant="outline" onClick={closeCategoryModal}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={categorySubmitting}>
-                  <Plus className="h-4 w-4" />
-                  {categorySubmitting
-                    ? editingUuid
-                      ? "Saving..."
-                      : "Creating..."
-                    : editingUuid
-                      ? "Save changes"
-                      : "Create category"}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      ) : null}
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
