@@ -34,9 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={cn("h-full antialiased", poppins.variable, "font-sans", inter.variable)}>
       <head>
-        <Script id="theme-script" strategy="beforeInteractive">
-          {themeScript}
-        </Script>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-screen bg-background font-sans">
         <ThemeProvider >

@@ -66,12 +66,13 @@ export default function MeetingSessionPage() {
   // Role-Based Access Control
   // ==========================================
   const currentUserMembership = useMemo(() => {
-    return selectedGroupMembers.find(member => member.email === user?.email);
+    return selectedGroupMembers.find(member => member.user_id === user?.uuid);
   }, [selectedGroupMembers, user]);
 
-  const isLeader = (currentUserMembership?.role === "CHAIRPERSON" || currentUserMembership?.role === "SECRETARY") && 
-                   currentUserMembership?.is_verified && 
-                   currentUserMembership?.is_active;
+  const isLeader =
+    (currentUserMembership?.role === "CHAIRPERSON" || currentUserMembership?.role === "SECRETARY") &&
+    currentUserMembership?.is_verified &&
+    currentUserMembership?.is_active;
 
   const isMeetingOngoing = selectedMeeting?.status === "ongoing"
   const activeParticipants = participants.filter((participant) => participant.left_at === null)
@@ -141,7 +142,7 @@ export default function MeetingSessionPage() {
   const roomHeaderActions = (
     <div className="flex gap-2">
       <Button asChild variant="outline" size="sm" className="rounded-full shadow-sm">
-        <Link href={detailsHref} className="flex items-center gap-2 text-xs font-bold">
+        <Link href={detailsHref} className="flex items-center gap-2 text-xs font-bold text-black dark:text-white">
           <ArrowLeft className="w-3.5 h-3.5" /> Leave to Details
         </Link>
       </Button>
@@ -188,7 +189,7 @@ export default function MeetingSessionPage() {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8 space-y-6">
-      <div className="mx-auto w-full max-w-screen-xl space-y-6">
+      <div className="mx-auto w-full max-w-8xl space-y-6">
         
         {/* Pre-Join Lobby Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-[2rem] border border-border/80 bg-card/60 backdrop-blur-md p-6 md:p-8 shadow-sm">

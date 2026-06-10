@@ -5,6 +5,20 @@ import { API_ENDPOINTS } from "../endpoints"
 import { ApiResponse } from "../types"
 
 export const groupServices = {
+     async updateGroup(
+          groupUuid: string,
+          payload: { max_concurrent_loans: number; default_late_fee_amount: string }
+     ): Promise<ApiResponse<Group>> {
+          const response = await api.patch<Group>(
+               `${API_ENDPOINTS.GET_GROUP}${groupUuid}/`,
+               payload
+          )
+          return {
+               status: response.status,
+               data: response.data,
+          }
+     },
+
      async createGroup(payload: {
           name: string
           description?: string

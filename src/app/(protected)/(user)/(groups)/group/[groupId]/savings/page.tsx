@@ -10,12 +10,10 @@ import {
   Plus,
   Receipt,
   Users,
-  X,
 } from "lucide-react"
 import { financeServices, type Contribution } from "@/api/services/finance.service"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { TimePicker } from "@/components/ui/time-picker"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -26,7 +24,6 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { DatePicker } from "@/components/ui/date-picker"
 import {
   Select,
   SelectContent,
@@ -42,8 +39,6 @@ import { formatTzs } from "@/lib/vikoba-finance"
 type ContributionFormState = {
   membership_id: string
   amount: string
-  paid_at_date: Date | undefined
-  paid_at_time: string
   reference: string
   note: string
 }
@@ -51,8 +46,6 @@ type ContributionFormState = {
 const defaultContributionFormState: ContributionFormState = {
   membership_id: "",
   amount: "",
-  paid_at_date: undefined,
-  paid_at_time: "",
   reference: "",
   note: "",
 }
@@ -65,7 +58,6 @@ function getErrorMessage(error: unknown): string {
         non_field_errors?: string[]
         membership_id?: string[]
         amount?: string[]
-        paid_at?: string[]
         reference?: string[]
       }
     }
@@ -76,7 +68,6 @@ function getErrorMessage(error: unknown): string {
     errorResponse?.non_field_errors?.[0] ||
     errorResponse?.membership_id?.[0] ||
     errorResponse?.amount?.[0] ||
-    errorResponse?.paid_at?.[0] ||
     errorResponse?.reference?.[0] ||
     (error instanceof Error ? error.message : "Something went wrong while saving this contribution.")
   )
@@ -188,14 +179,6 @@ export default function GroupSavingsPage() {
         group_id: groupId,
         membership_id: form.membership_id,
         amount: form.amount.trim(),
-        paid_at: (() => {
-          const d = form.paid_at_date ? new Date(form.paid_at_date) : new Date()
-          if (form.paid_at_time) {
-            const [h, m] = form.paid_at_time.split(":")
-            d.setHours(Number(h), Number(m), 0, 0)
-          }
-          return d.toISOString()
-        })(),
         reference: form.reference.trim(),
         note: form.note.trim(),
       })
@@ -434,27 +417,6 @@ export default function GroupSavingsPage() {
                     onChange={(event) => handleInputChange("amount", event.target.value)}
                     required
                   />
-                </FieldContent>
-              </Field>
-
-              <Field>
-                <FieldLabel>Paid at</FieldLabel>
-                <FieldContent>
-                  <div className="flex flex-col gap-2">
-                    <DatePicker
-                      value={form.paid_at_date}
-                      onChange={(date) =>
-                        setForm((current) => ({ ...current, paid_at_date: date }))
-                      }
-                      placeholder="Select date"
-                    />
-                    <TimePicker
-                      value={form.paid_at_time}
-                      onChange={(time) =>
-                        setForm((current) => ({ ...current, paid_at_time: time }))
-                      }
-                    />
-                  </div>
                 </FieldContent>
               </Field>
 

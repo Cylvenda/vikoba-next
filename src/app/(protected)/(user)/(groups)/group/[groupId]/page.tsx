@@ -1,12 +1,10 @@
 "use client"
 
-import Link from "next/link"
-import { useEffect, useMemo } from "react"
-import { PiggyBank, WalletCards, FileText, Users, BadgeCheck, CircleAlert, CalendarClock, ArrowRight } from "lucide-react"
+import { useEffect } from "react"
+import { BadgeCheck, CalendarClock, CircleAlert } from "lucide-react"
 import GroupHeader from "@/components/group-layout/GroupHeader"
 import MeetingInProgress from "@/components/group-layout/MeetingInProgress"
 import MeetingsList from "@/components/group-layout/MeetingsList"
-import OverviewCards from "@/components/group-layout/OverviewCards"
 import { useGroupStore } from "@/store/group/groupUser.store"
 import { useMeetingStore } from "@/store/meeting/meeting.store"
 import { buildVikobaFinanceSnapshot, formatTzs } from "@/lib/vikoba-finance"
@@ -14,49 +12,10 @@ import { buildVikobaFinanceSnapshot, formatTzs } from "@/lib/vikoba-finance"
 export default function GroupPage() {
   const { selectedGroup, selectedGroupMembers } = useGroupStore()
   const { meetings, fetchMeetings } = useMeetingStore()
-  const groupId = selectedGroup?.id ?? ""
 
   useEffect(() => {
     void fetchMeetings()
   }, [fetchMeetings])
-
-  const quickLinks = useMemo(
-    () => [
-      {
-        title: "Savings Desk",
-        description: "Track member savings contributions and prepare contribution workflows.",
-        href: `/group/${groupId}/savings`,
-        icon: PiggyBank,
-        accent: "text-green-600",
-        bg: "bg-green-500/10",
-      },
-      {
-        title: "Loans Desk",
-        description: "Review borrowing activity, loan requests, and repayment follow-up.",
-        href: `/group/${groupId}/loans`,
-        icon: WalletCards,
-        accent: "text-chart-2",
-        bg: "bg-chart-2/10",
-      },
-      {
-        title: "Fines Ledger",
-        description: "Monitor penalties, missed obligations, and outstanding member fines.",
-        href: `/group/${groupId}/fines`,
-        icon: FileText,
-        accent: "text-orange-600",
-        bg: "bg-orange-500/10",
-      },
-      {
-        title: "Member Register",
-        description: "Verify members, assign leadership roles, and keep the roster healthy.",
-        href: `/group/${groupId}/members`,
-        icon: Users,
-        accent: "text-chart-4",
-        bg: "bg-chart-4/10",
-      },
-    ],
-    [groupId]
-  )
 
   // Data is already fetched by the layout
   if (!selectedGroup) {

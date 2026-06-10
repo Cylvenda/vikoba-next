@@ -62,15 +62,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-inherit">
       <FormInput
         title="Welcome Back"
         description="Login to your Community Hub account to continue"
       >
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6 mt-4"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
           {/* EMAIL */}
           <FieldInput
             control={form.control}

@@ -13,7 +13,6 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
       {/* Glassmorphic Auth Card Wrapper */}
       <Card className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 overflow-hidden rounded-[2rem] border border-border/80 bg-card/60 shadow-2xl shadow-chart-3/5 backdrop-blur-md">
-        
         {/* LEFT COLUMN: Framing Product View Bento-Style */}
         <div className="hidden md:block relative p-4 pr-0 h-full min-h-[560px]">
           <div className="relative h-full w-full overflow-hidden rounded-[1.6rem] border border-border/60 bg-muted/30 shadow-inner group">
@@ -32,7 +31,6 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         {/* RIGHT COLUMN: The Auth Form Side */}
         <div className="flex items-center justify-center p-8 lg:p-12">
           <div className="w-full max-w-md space-y-6">
-            
             {/* Integrated Branding Header Logo */}
             <div className="flex justify-center md:justify-start">
               <Link
@@ -56,13 +54,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             </div>
 
             {/* Render Nested Page Form (children) */}
-            <div className="pt-2">
-              {children}
-            </div>
-
+            <div className="pt-2 bg-inherit!">{children}</div>
           </div>
         </div>
-
       </Card>
     </main>
   );

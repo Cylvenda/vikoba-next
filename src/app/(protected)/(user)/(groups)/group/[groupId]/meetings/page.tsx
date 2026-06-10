@@ -54,11 +54,14 @@ export default function GroupMeetingsPage() {
   // Role-Based Access Control
   // ==========================================
   const currentUserMembership = useMemo(() => {
-    return selectedGroupMembers.find(member => member.email === user?.email);
+    return selectedGroupMembers.find(member => member.user_id === user?.uuid);
   }, [selectedGroupMembers, user]);
 
   const currentUserRole = currentUserMembership?.role;
-  const isLeader = currentUserRole === "CHAIRPERSON" || currentUserRole === "SECRETARY";
+  const isLeader =
+    (currentUserRole === "CHAIRPERSON" || currentUserRole === "SECRETARY") &&
+    currentUserMembership?.is_verified &&
+    currentUserMembership?.is_active;
 
   // ==========================================
   // Backend Dashboard Data Computations
@@ -173,7 +176,7 @@ export default function GroupMeetingsPage() {
   return (
     <>
       <div className="w-full p-4 md:p-6 lg:p-8 space-y-8">
-        <div className="mx-auto w-full max-w-screen-2xl">
+        <div className="mx-auto w-full max-w-screen-3xl">
           
           {/* HEADER ROW */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
@@ -306,7 +309,7 @@ export default function GroupMeetingsPage() {
 
             {/* TIMELINE LIST */}
             <div className="lg:col-span-2">
-              <Card className="rounded-[1.5rem] border border-border/80 bg-card/40 shadow-sm backdrop-blur-md p-6 h-full">
+              <Card className="rounded-md border border-border/80 bg-card/40 shadow-sm backdrop-blur-md p-6 h-full">
                 <div className="flex justify-between items-end mb-6 border-b border-border/50 pb-4">
                   <div>
                     <h3 className="text-lg font-extrabold text-foreground tracking-tight">Meeting Timeline</h3>

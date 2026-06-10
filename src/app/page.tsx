@@ -203,7 +203,7 @@ export default function Home() {
                     <div className="rounded-[1.4rem] bg-chart-1/10 p-4 border border-chart-1/25 hover:bg-chart-1/15 transition-all">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-chart-4 flex items-center gap-1.5">
                         <HandCoins size={12} className="text-chart-4" />
-                        Loans Desk
+                        Loans & Products
                       </p>
                       <p className="mt-2 text-lg font-bold text-chart-4">3 Raised</p>
                       <p className="mt-1 text-[10px] text-muted-foreground leading-snug">Awaiting digital approval tags</p>
@@ -211,7 +211,7 @@ export default function Home() {
                     <div className="rounded-[1.4rem] bg-chart-2/10 p-4 border border-chart-2/20 hover:bg-chart-2/15 transition-all">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-chart-3 flex items-center gap-1.5">
                         <Gavel size={12} className="text-chart-3" />
-                        Fines Log
+                        Fines & Payments
                       </p>
                       <p className="mt-2 text-lg font-bold text-chart-3">2 Resolved</p>
                       <p className="mt-1 text-[10px] text-muted-foreground leading-snug">Instant ledger adjustments</p>

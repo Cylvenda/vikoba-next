@@ -60,12 +60,13 @@ export default function MeetingPage() {
   // Role-Based Access Control & Logic
   // ==========================================
   const currentUserMembership = useMemo(() => {
-    return selectedGroupMembers.find(member => member.email === user?.email);
+    return selectedGroupMembers.find(member => member.user_id === user?.uuid);
   }, [selectedGroupMembers, user]);
 
-  const isLeader = (currentUserMembership?.role === "CHAIRPERSON" || currentUserMembership?.role === "SECRETARY") && 
-                   currentUserMembership?.is_verified && 
-                   currentUserMembership?.is_active;
+  const isLeader =
+    (currentUserMembership?.role === "CHAIRPERSON" || currentUserMembership?.role === "SECRETARY") &&
+    currentUserMembership?.is_verified &&
+    currentUserMembership?.is_active;
 
   const sessionHref = meetingId ? getMeetingSessionHref(meetingId, selectedMeeting?.group ?? params?.groupId) : "#"
   
@@ -365,10 +366,10 @@ export default function MeetingPage() {
 
   return (
     <div className="w-full p-4 md:p-6 lg:p-8 space-y-8">
-      <div className="mx-auto w-full max-w-screen-2xl space-y-6">
+      <div className="mx-auto w-full max-w-screen-3xl space-y-6">
         
         {/* Header Ribbon */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-[2rem] border border-border/80 bg-card/60 backdrop-blur-md p-6 shadow-sm relative overflow-hidden">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-md border border-border/80 bg-card/60 backdrop-blur-md p-6 shadow-sm relative overflow-hidden">
 
           
           <div className="flex items-center gap-4 relative z-10">

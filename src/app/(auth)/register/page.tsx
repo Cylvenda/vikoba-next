@@ -65,7 +65,7 @@ const Register = () => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-inherit">
       <FormInput
         title="Create Account"
         description="Join Community Hub and launch your VICOBA digital space"

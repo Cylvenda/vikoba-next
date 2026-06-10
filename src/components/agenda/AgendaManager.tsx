@@ -18,6 +18,7 @@ import {
   Layers
 } from "lucide-react"
 import { toast } from "react-toastify"
+import { ConfirmModal } from "@/components/ui/confirm-modal"
 
 interface AgendaManagerProps {
   meetingId: string
@@ -38,6 +39,18 @@ export function AgendaManager({
   const [showItemForm, setShowItemForm] = useState(false)
   const [editingSection, setEditingSection] = useState<AgendaSection | null>(null)
   const [editingItem, setEditingItem] = useState<AgendaItem | null>(null)
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => Promise<void>;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+    onConfirm: async () => {},
+  })
+
 
   const loadAgendaData = async () => {
     setLoading(true)
@@ -69,19 +82,24 @@ export function AgendaManager({
     setShowSectionForm(true)
   }
 
-  const handleDeleteSection = async (sectionId: string) => {
-    if (!confirm("Are you sure you want to delete this agenda section?")) return
-
-    try {
-      await meetingServices.deleteAgendaSection(sectionId)
-      toast.success("Agenda section deleted successfully")
-      loadAgendaData()
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error && 'response' in error
-        ? (error as any).response?.data?.detail
-        : "Failed to delete agenda section"
-      toast.error(errorMessage)
-    }
+  const handleDeleteSection = (sectionId: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Delete Agenda Section",
+      description: "Are you sure you want to delete this agenda section? This action cannot be undone.",
+      onConfirm: async () => {
+        try {
+          await meetingServices.deleteAgendaSection(sectionId)
+          toast.success("Agenda section deleted successfully")
+          loadAgendaData()
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error && 'response' in error
+            ? (error as any).response?.data?.detail
+            : "Failed to delete agenda section"
+          toast.error(errorMessage)
+        }
+      }
+    })
   }
 
   const handleCreateItem = () => {
@@ -94,19 +112,24 @@ export function AgendaManager({
     setShowItemForm(true)
   }
 
-  const handleDeleteItem = async (itemId: string) => {
-    if (!confirm("Are you sure you want to delete this agenda item?")) return
-
-    try {
-      await meetingServices.deleteAgendaItem(itemId)
-      toast.success("Agenda item deleted successfully")
-      loadAgendaData()
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error && 'response' in error
-        ? (error as any).response?.data?.detail
-        : "Failed to delete agenda item"
-      toast.error(errorMessage)
-    }
+  const handleDeleteItem = (itemId: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Delete Agenda Item",
+      description: "Are you sure you want to delete this agenda item? This action cannot be undone.",
+      onConfirm: async () => {
+        try {
+          await meetingServices.deleteAgendaItem(itemId)
+          toast.success("Agenda item deleted successfully")
+          loadAgendaData()
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error && 'response' in error
+            ? (error as any).response?.data?.detail
+            : "Failed to delete agenda item"
+          toast.error(errorMessage)
+        }
+      }
+    })
   }
 
   const handleToggleItemCompletion = async (item: AgendaItem) => {
@@ -442,6 +465,13 @@ export function AgendaManager({
           </div>
         </TabsContent>
       </Tabs>
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        description={confirmModal.description}
+      />
     </div>
   )
 }

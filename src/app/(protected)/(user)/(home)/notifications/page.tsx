@@ -1,32 +1,38 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import { BellRing, CheckCheck, MailPlus, ShieldAlert } from "lucide-react"
+import { useEffect, useMemo } from "react"
+import { BellRing, CheckCheck, MailPlus, ShieldAlert, Inbox, MailCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useAuthUserStore } from "@/store/auth/userAuth.store"
 import { useGroupStore } from "@/store/group/groupUser.store"
 import { useNotificationStore } from "@/store/notifications/notification.store"
 import { toast } from "react-toastify"
 
 export default function Page() {
-     const { invitations, invitationLoading, respondToInvitation, fetchGroups } = useGroupStore()
-     const { notifications, markAsRead } = useNotificationStore()
-     const [filter, setFilter] = useState<"all" | "invitations" | "updates" | "unread">("all")
+     const { user } = useAuthUserStore()
+     const { invitations, invitationLoading, respondToInvitation, fetchGroups, fetchMyInvitations } = useGroupStore()
+     const { notifications, loading: notificationsLoading, error: notificationsError, fetchNotifications, markAsRead } = useNotificationStore()
 
      const unreadNotifications = notifications.filter((notification) => !notification.read)
+     const viewedNotifications = notifications.filter((notification) => notification.read)
 
-     const activityItems = useMemo(() => {
-          const invitationItems = invitations.map((invitation) => ({
-               id: invitation.invitation_uuid,
-               kind: "invitation" as const,
-               title: `Invitation to join ${invitation.group_name}`,
-               message: invitation.message || `You were invited by ${invitation.invited_by_email}.`,
-               createdAt: new Date(invitation.created_at),
-               read: false,
-               invitation,
-          }))
+     const invitationItems = useMemo(
+          () =>
+               invitations.map((invitation) => ({
+                    id: invitation.invitation_uuid,
+                    kind: "invitation" as const,
+                    title: `Invitation to join ${invitation.group_name}`,
+                    message: invitation.message || `You were invited by ${invitation.invited_by_email}.`,
+                    createdAt: new Date(invitation.created_at),
+                    read: false,
+                    invitation,
+               })),
+          [invitations]
+     )
 
-          const notificationItems = notifications.map((notification) => ({
+     const unreadItems = useMemo(() => {
+          const notificationItems = unreadNotifications.map((notification) => ({
                id: notification.id,
                kind: "notification" as const,
                title: notification.type.replaceAll("_", " "),
@@ -36,15 +42,30 @@ export default function Page() {
                notification,
           }))
 
-          return [...invitationItems, ...notificationItems]
-               .filter((item) => {
-                    if (filter === "invitations") return item.kind === "invitation"
-                    if (filter === "updates") return item.kind === "notification"
-                    if (filter === "unread") return !item.read
-                    return true
-               })
-               .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-     }, [filter, invitations, notifications])
+          return [...invitationItems, ...notificationItems].sort(
+               (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+          )
+     }, [invitationItems, unreadNotifications])
+
+     const viewedItems = useMemo(
+          () =>
+               viewedNotifications
+                    .map((notification) => ({
+                         id: notification.id,
+                         kind: "notification" as const,
+                         title: notification.type.replaceAll("_", " "),
+                         message: notification.message,
+                         createdAt: new Date(notification.created_at),
+                         read: notification.read,
+                         notification,
+                    }))
+                   .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+          [viewedNotifications]
+     )
+
+     useEffect(() => {
+          void Promise.allSettled([fetchNotifications(), fetchMyInvitations()])
+     }, [fetchNotifications, fetchMyInvitations])
 
      const handleResponse = async (invitationUuid: string, action: "accept" | "decline") => {
           const result = await respondToInvitation(invitationUuid, action)
@@ -57,6 +78,13 @@ export default function Page() {
           }
 
           toast.error(result.message)
+     }
+
+     const handleMarkAsRead = async (notificationId: string) => {
+          const result = await markAsRead(notificationId)
+          if (!result.success) {
+               toast.error(result.message)
+          }
      }
 
      const formatDateTime = (date: Date) =>
@@ -78,6 +106,11 @@ export default function Page() {
                label: "Unread updates",
                value: unreadNotifications.length,
                icon: <BellRing className="size-5" />,
+          },
+          {
+               label: "Viewed updates",
+               value: viewedNotifications.length,
+               icon: <MailCheck className="size-5" />,
           },
           {
                label: "Total activity",
@@ -114,105 +147,159 @@ export default function Page() {
                     ))}
                </div>
 
-               <Card className="border-none bg-card shadow-sm">
-                    <CardHeader className="gap-4 border-b">
-                         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                              <div>
-                                   <CardTitle>Recent activity</CardTitle>
-                                   <CardDescription>
-                                        Invitations and updates appear together so nothing important gets missed.
-                                   </CardDescription>
-                              </div>
+               {notificationsError ? (
+                    <div className="flex items-start gap-3 rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                         <span>{notificationsError}</span>
+                    </div>
+               ) : null}
 
-                              <div className="flex flex-wrap gap-2">
-                                   {[
-                                        { value: "all", label: "All" },
-                                        { value: "invitations", label: "Invitations" },
-                                        { value: "updates", label: "Updates" },
-                                        { value: "unread", label: "Unread" },
-                                   ].map((item) => (
-                                        <Button
-                                             key={item.value}
-                                             type="button"
-                                             variant={filter === item.value ? "default" : "outline"}
-                                             className={filter === item.value ? "bg-chart-3" : ""}
-                                             onClick={() => setFilter(item.value as typeof filter)}
-                                        >
-                                             {item.label}
-                                        </Button>
-                                   ))}
-                              </div>
-                         </div>
-                    </CardHeader>
-
-                    <CardContent className="space-y-4 pt-6">
-                         {activityItems.length === 0 && (
-                              <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
-                                   No notifications yet. Group invitations will appear here automatically.
-                              </div>
-                         )}
-
-                         {activityItems.map((item) => (
-                              <div key={`${item.kind}-${item.id}`} className="rounded-3xl border border-border bg-muted/30 p-5">
-                                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                                        <div className="space-y-2">
-                                             <div className="flex items-center gap-2">
-                                                  <span className="rounded-full bg-background px-3 py-1 text-xs font-medium text-muted-foreground ring-1 ring-border">
-                                                       {item.kind === "invitation" ? "Invitation" : "Notification"}
-                                                  </span>
-                                                  {!item.read && (
-                                                       <span className="rounded-full bg-chart-2/20 px-3 py-1 text-xs font-medium text-chart-3">
-                                                            New
-                                                       </span>
-                                                  )}
-                                             </div>
-
-                                             <h2 className="text-lg font-semibold">{item.title}</h2>
-                                             <p className="text-sm text-muted-foreground">{item.message}</p>
-                                             <p className="text-xs text-muted-foreground">{formatDateTime(item.createdAt)}</p>
-
-                                             {item.kind === "invitation" && (
-                                                  <div className="rounded-2xl bg-background p-4 text-sm text-muted-foreground ring-1 ring-border">
-                                                       <p>Group: {item.invitation.group_name}</p>
-                                                       <p>Invited by: {item.invitation.invited_by_email}</p>
-                                                       <p>Status: {item.invitation.status}</p>
-                                                  </div>
-                                             )}
-                                        </div>
-
-                                        <div className="flex flex-wrap gap-2">
-                                             {item.kind === "invitation" ? (
-                                                  <>
-                                                       <Button
-                                                            variant="outline"
-                                                            disabled={invitationLoading}
-                                                            onClick={() => handleResponse(item.invitation.invitation_uuid, "decline")}
-                                                       >
-                                                            Decline
-                                                       </Button>
-                                                       <Button
-                                                            className="bg-chart-3"
-                                                            disabled={invitationLoading}
-                                                            onClick={() => handleResponse(item.invitation.invitation_uuid, "accept")}
-                                                       >
-                                                            Join group
-                                                       </Button>
-                                                  </>
-                                             ) : (
-                                                  <Button
-                                                       variant="outline"
-                                                       disabled={item.notification.read}
-                                                       onClick={() => markAsRead(item.notification.id)}
-                                                  >
-                                                       {item.notification.read ? "Read" : "Mark as read"}
-                                                  </Button>
-                                             )}
-                                        </div>
+               <div className="grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">
+                    <Card className="border-none bg-card shadow-sm">
+                         <CardHeader className="border-b">
+                              <div className="flex items-center gap-3">
+                                   <div className="flex size-11 items-center justify-center rounded-2xl bg-chart-2/15 text-chart-3">
+                                        <Inbox className="size-5" />
+                                   </div>
+                                   <div>
+                                        <CardTitle>Unread activity</CardTitle>
+                                        <CardDescription>
+                                             New notifications and pending invitations that still need your attention.
+                                        </CardDescription>
                                    </div>
                               </div>
-                         ))}
-                    </CardContent>
-               </Card>
+                         </CardHeader>
+
+                         <CardContent className="space-y-4 pt-6">
+                              {unreadItems.length === 0 ? (
+                                   <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                                        No unread activity right now.
+                                   </div>
+                              ) : (
+                                   unreadItems.map((item) => (
+                                        <div key={`${item.kind}-${item.id}`} className="rounded-3xl border border-border bg-muted/30 p-5">
+                                             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                                                  <div className="space-y-2">
+                                                       <div className="flex items-center gap-2">
+                                                            <span className="rounded-full bg-background px-3 py-1 text-xs font-medium text-muted-foreground ring-1 ring-border">
+                                                                 {item.kind === "invitation" ? "Invitation" : "Notification"}
+                                                            </span>
+                                                            <span className="rounded-full bg-chart-2/20 px-3 py-1 text-xs font-medium text-chart-3">
+                                                                 New
+                                                            </span>
+                                                       </div>
+
+                                                       <h2 className="text-lg font-semibold">{item.title}</h2>
+                                                       <p className="text-sm text-muted-foreground">{item.message}</p>
+                                                       <p className="text-xs text-muted-foreground">{formatDateTime(item.createdAt)}</p>
+
+                                                       {item.kind === "invitation" && (
+                                                            <div className="rounded-2xl bg-background p-4 text-sm text-muted-foreground ring-1 ring-border">
+                                                                 <p>Group: {item.invitation.group_name}</p>
+                                                                 <p>Invited by: {item.invitation.invited_by_email}</p>
+                                                                 <p>Status: {item.invitation.status}</p>
+                                                            </div>
+                                                       )}
+
+                                                       {item.kind === "invitation" &&
+                                                            user?.email &&
+                                                            item.invitation.invited_by_email.toLowerCase() === user.email.toLowerCase() && (
+                                                                 <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-700 dark:text-amber-300">
+                                                                      This invitation was sent from your own account and cannot be accepted or declined.
+                                                                 </div>
+                                                            )}
+                                                  </div>
+
+                                                  <div className="flex flex-wrap gap-2">
+                                                       {item.kind === "invitation" &&
+                                                       (!user?.email ||
+                                                            item.invitation.invited_by_email.toLowerCase() !== user.email.toLowerCase()) ? (
+                                                            <>
+                                                                 <Button
+                                                                     variant="outline"
+                                                                     disabled={invitationLoading}
+                                                                      onClick={() => handleResponse(item.invitation.invitation_uuid, "decline")}
+                                                                 >
+                                                                      Decline
+                                                                 </Button>
+                                                                 <Button
+                                                                     className="bg-chart-3"
+                                                                     disabled={invitationLoading}
+                                                                      onClick={() => handleResponse(item.invitation.invitation_uuid, "accept")}
+                                                                 >
+                                                                      Join group
+                                                                 </Button>
+                                                            </>
+                                                       ) : (
+                                                            item.kind === "notification" && (
+                                                                <Button
+                                                                     variant="outline"
+                                                                      disabled={item.notification.read || notificationsLoading}
+                                                                      onClick={() => void handleMarkAsRead(item.notification.id)}
+                                                                 >
+                                                                      {item.notification.read ? "Read" : "Mark as read"}
+                                                                </Button>
+                                                            )
+                                                       )}
+                                                  </div>
+                                             </div>
+                                        </div>
+                                   ))
+                              )}
+                         </CardContent>
+                    </Card>
+
+                    <Card className="border-none bg-card shadow-sm">
+                         <CardHeader className="border-b">
+                              <div className="flex items-center gap-3">
+                                   <div className="flex size-11 items-center justify-center rounded-2xl bg-chart-4/15 text-chart-4">
+                                        <MailCheck className="size-5" />
+                                   </div>
+                                   <div>
+                                        <CardTitle>Viewed notifications</CardTitle>
+                                        <CardDescription>
+                                             Read updates stay here so you can review them later without cluttering the main feed.
+                                        </CardDescription>
+                                   </div>
+                              </div>
+                         </CardHeader>
+
+                         <CardContent className="space-y-4 pt-6">
+                              {viewedItems.length === 0 ? (
+                                   <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                                        No viewed notifications yet.
+                                   </div>
+                              ) : (
+                                   viewedItems.map((item) => (
+                                        <div key={`${item.kind}-${item.id}`} className="rounded-3xl border border-border bg-muted/20 p-5">
+                                             <div className="space-y-2">
+                                                  <div className="flex items-center gap-2">
+                                                       <span className="rounded-full bg-background px-3 py-1 text-xs font-medium text-muted-foreground ring-1 ring-border">
+                                                            Viewed
+                                                       </span>
+                                                       <span className="rounded-full bg-chart-2/15 px-3 py-1 text-xs font-medium text-chart-3">
+                                                            Read
+                                                       </span>
+                                                  </div>
+
+                                                  <h2 className="text-lg font-semibold">{item.title}</h2>
+                                                  <p className="text-sm text-muted-foreground">{item.message}</p>
+                                                  <p className="text-xs text-muted-foreground">{formatDateTime(item.createdAt)}</p>
+
+                                                  <Button
+                                                       variant="outline"
+                                                       className="w-full"
+                                                       disabled={item.notification.read || notificationsLoading}
+                                                       onClick={() => void handleMarkAsRead(item.notification.id)}
+                                                  >
+                                                       {item.notification.read ? "Already viewed" : "Mark as viewed"}
+                                                  </Button>
+                                             </div>
+                                        </div>
+                                   ))
+                              )}
+                         </CardContent>
+                    </Card>
+               </div>
 
                {invitations.length > 0 && (
                     <Card className="border-none bg-card shadow-sm">

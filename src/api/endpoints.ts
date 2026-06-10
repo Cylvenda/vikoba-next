@@ -37,11 +37,18 @@ export const API_ENDPOINTS = {
 
      // Finance
      FINANCE_CONTRIBUTIONS: "finance/contributions/",
-     FINANCE_LOAN_CATEGORIES: "finance/loan-categories/",
-     FINANCE_LOAN_REQUESTS: "finance/loans/request/",
+     FINANCE_LOAN_PRODUCTS: "finance/loan-categories/",
+     FINANCE_LOANS: "finance/loans/request/",
+     FINANCE_LOAN_INSTALLMENTS: "finance/loans/",
+     FINANCE_LOAN_PAYMENTS: "finance/loans/",
+     FINANCE_FINES: "finance/fines/",
+     FINANCE_FINE_PAYMENTS: "finance/fines/payments/",
 
      // Admin
      ADMIN_USERS: "admin/users/",
      ADMIN_GROUPS: "admin/groups/",
      ADMIN_RESPOND_JOIN_REQUEST: "groups/", // groups/{groupUuid}/join-requests/{invitationUuid}/respond/
+
+     // Notifications
+     NOTIFICATIONS: "notifications/",
 }

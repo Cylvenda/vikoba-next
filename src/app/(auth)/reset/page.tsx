@@ -47,7 +47,7 @@ const ForgetPassword = () => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-inherit">
       <FormInput
         title="Reset Password"
         description="Enter your email and we'll send you a password recovery link"

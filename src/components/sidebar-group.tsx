@@ -125,7 +125,7 @@ export function GroupSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
           <TeamSwitcher
             teams={{
               name: selectedGroup?.name || "Group Dashboard",
-              logo: <BarChart3 className="text-chart-3" />,
+              logo: <BarChart3  />,
               role: roleLabel,
             }}
           />

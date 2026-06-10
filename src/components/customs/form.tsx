@@ -27,7 +27,7 @@ export const FormInput = ({
      className,
 }: FormInputProps): React.ReactElement => {
      return (
-          <Card className={`border-0 shadow-none ring-0 ${className}`}>
+          <Card className={`border-0 shadow-none ring-0 bg-inherit! ${className}`}>
                <CardContent className="border-0 shadow-none ring-0 p-0">
                     <FieldGroup className="border-0 shadow-none ring-0">
                          <FieldSet className="border-0 shadow-none ring-0">

@@ -4,8 +4,8 @@ const BACKEND_API_ROOT = normalizeApiRoot(
      process.env.BACKEND_API_BASE || "http://127.0.0.1:8000/api/"
 )
 
-const ACCESS_COOKIE_MAX_AGE = 60 * 10
-const REFRESH_COOKIE_MAX_AGE = 60 * 60 * 24
+const ACCESS_COOKIE_MAX_AGE = 60 * 5
+const REFRESH_COOKIE_MAX_AGE = 60 * 15
 
 function normalizeApiRoot(value: string) {
      return value.endsWith("/") ? value : `${value}/`

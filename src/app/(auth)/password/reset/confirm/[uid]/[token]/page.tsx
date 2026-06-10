@@ -64,7 +64,7 @@ export default function ResetPasswordConfirmPage() {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-inherit">
       <FormInput
         title="Set New Password"
         description="Choose a strong, secure password for your account"

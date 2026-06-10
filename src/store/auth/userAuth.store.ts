@@ -107,10 +107,16 @@ export const useAuthUserStore = create<AuthState>((set, get) => ({
           if (currentUser) return true
 
           const refreshed = await get().resendRefreshToken()
-          if (!refreshed) return false
+          if (!refreshed) {
+               await get().logout()
+               return false
+          }
 
           const refreshedUser = await get().fetchUser()
-          return Boolean(refreshedUser)
+          if (refreshedUser) return true
+
+          await get().logout()
+          return false
      },
 
      logout: async (): Promise<void> => {

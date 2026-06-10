@@ -98,7 +98,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link href="/home/profile">
+                <Link href="/profile">
                 <SparklesIcon/>
                 Profile
                 </Link>

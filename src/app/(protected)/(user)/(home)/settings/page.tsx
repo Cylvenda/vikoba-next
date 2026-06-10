@@ -83,7 +83,7 @@ export default function SettingsPage() {
 
             <div className="flex flex-wrap gap-3">
               <Button asChild>
-                <Link href="/home/profile">Open profile</Link>
+                <Link href="/profile">Open profile</Link>
               </Button>
               {user?.isAdmin && (
                 <Button asChild variant="outline">

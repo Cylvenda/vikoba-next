@@ -20,7 +20,20 @@ api.interceptors.response.use(
                try {
                     await api.post(API_ENDPOINTS.USER_TOKEN_REFRESH)
                     return api(originalRequest)
-               } catch (refreshError) {
+                } catch (refreshError) {
+                    try {
+                         await fetch(`${API_ENDPOINTS.API_ROOT}${API_ENDPOINTS.USER_LOGOUT}`, {
+                              method: "POST",
+                              credentials: "include",
+                         })
+                    } catch {
+                         // Ignore logout failures and still force the user back to login.
+                    }
+
+                    if (typeof window !== "undefined") {
+                         window.location.replace("/login?reason=session-expired")
+                    }
+
                     return Promise.reject(refreshError)
                }
           }
@@ -30,4 +43,3 @@ api.interceptors.response.use(
 )
 
 export default api
-

@@ -16,6 +16,8 @@ export type Group = {
   name: string;
   join_code?: string;
   description: string;
+  max_concurrent_loans?: number;
+  default_late_fee_amount?: string;
   created_by: string;
   is_active: boolean;
   is_private: boolean;
@@ -30,7 +32,7 @@ export type GroupInvitation = {
   group_name: string;
   email: string;
   invited_by_email: string;
-  status: "pending" | "accepted" | "declined" | "cancelled" | "expired";
+  status: "PENDING" | "ACCEPTED" | "DECLINED" | "CANCELLED" | "EXPIRED";
   message: string | null;
   created_at: string;
   responded_at: string | null;
