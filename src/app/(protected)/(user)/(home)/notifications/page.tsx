@@ -121,7 +121,7 @@ export default function Page() {
 
      return (
           <div className="w-full p-4 md:p-6 lg:p-8">
-               <div className="mx-auto w-full max-w-screen-2xl space-y-6">
+               <div className="mx-auto w-full max-w-screen-3xl space-y-6">
                <Card className="border-none bg-accent shadow-sm">
                     <CardHeader>
                          <CardTitle className="text-3xl">Notifications</CardTitle>
@@ -131,7 +131,7 @@ export default function Page() {
                     </CardHeader>
                </Card>
 
-               <div className="grid gap-5 md:grid-cols-3">
+               <div className="grid gap-5 md:grid-cols-4">
                     {overviewItems.map((item) => (
                          <Card key={item.label} className="border-none bg-card shadow-sm">
                               <CardContent className="flex items-center justify-between p-5">

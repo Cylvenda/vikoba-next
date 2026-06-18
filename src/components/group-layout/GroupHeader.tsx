@@ -170,7 +170,7 @@ export default function GroupHeader() {
                                    {selectedGroup?.join_code && (
                                         <button 
                                              onClick={handleCopyCode}
-                                             className="uppercase tracking-widest text-[10px] bg-chart-1/10 text-chart-1 px-2 py-0.5 rounded-full mr-2 border border-chart-1/30 hover:bg-chart-1/20 transition-colors flex items-center gap-1.5 inline-flex"
+                                             className="uppercase tracking-widest text-[10px] bg-green-300  px-2 py-0.5 cursor-pointer rounded-full mr-2 border border-chart-1/30 hover:bg-chart-1/20 transition-colors items-center gap-1.5 inline-flex"
                                              title="Click to copy join code"
                                         >
                                              Join Code: <span className="font-bold">{selectedGroup.join_code}</span>
@@ -185,7 +185,7 @@ export default function GroupHeader() {
                     <div className="flex flex-wrap gap-3 mt-5 md:mt-0 relative z-10">
                          <Button
                               variant="outline"
-                              className="rounded-full shadow-sm font-bold border-border/80 hover:bg-chart-3/10 hover:text-chart-3 transition-colors"
+                              className=" shadow-sm font-bold border-border/80 hover:bg-chart-3/10 hover:text-chart-3 transition-colors"
                               onClick={() => setIsInviteOpen(true)}
                               disabled={!selectedGroup?.id}
                          >
@@ -194,10 +194,10 @@ export default function GroupHeader() {
                          
                          {isLeader && (
                               <>
-                                   <Button className="bg-chart-4 hover:bg-chart-4/90 text-white rounded-full font-bold shadow-md" onClick={() => setIsInstantOpen(true)} disabled={!selectedGroup?.id}>
+                                   <Button className="bg-chart-4 hover:bg-chart-4/90 text-white font-bold shadow-md" onClick={() => setIsInstantOpen(true)} disabled={!selectedGroup?.id}>
                                         <Play className="w-4 h-4 mr-2" /> Start Instant Session
                                    </Button>
-                                   <Button className="bg-chart-3 hover:bg-chart-2 text-primary-foreground rounded-full font-bold shadow-md" onClick={() => setIsScheduleOpen(true)} >
+                                   <Button className="bg-chart-3 hover:bg-chart-2 text-primary-foreground font-bold shadow-md" onClick={() => setIsScheduleOpen(true)} >
                                         <CalendarPlus2 className="w-4 h-4 mr-2" /> Schedule Meeting
                                    </Button>
                               </>

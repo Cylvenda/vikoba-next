@@ -44,7 +44,7 @@ const Page = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           
           {/* Groups */}
-          <div className="rounded-3xl border border-border/80 bg-card/60 p-6 shadow-sm backdrop-blur-md flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div className="rounded-md border border-border/80 bg-card/60 p-6 shadow-sm backdrop-blur-md flex flex-col justify-between hover:shadow-md transition-shadow">
             <div className="flex justify-between items-center mb-6">
               <span className="text-[11px] font-bold uppercase tracking-widest text-chart-4">Groups</span>
               <Users className="w-5 h-5 text-chart-4" />
@@ -62,7 +62,7 @@ const Page = () => {
           </div>
 
           {/* Shares Placeholder */}
-          <div className="rounded-3xl border border-border/80 bg-card/60 p-6 shadow-sm backdrop-blur-md flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div className="rounded-md border border-border/80 bg-card/60 p-6 shadow-sm backdrop-blur-md flex flex-col justify-between hover:shadow-md transition-shadow">
             <div className="flex justify-between items-center mb-6">
               <span className="text-[11px] font-bold uppercase tracking-widest text-green-500">Shares (Hisa)</span>
               <TrendingUp className="w-5 h-5 text-green-500" />
@@ -77,7 +77,7 @@ const Page = () => {
           </div>
 
           {/* Loans Placeholder */}
-          <div className="rounded-3xl border border-border/80 bg-card/60 p-6 shadow-sm backdrop-blur-md flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div className="rounded-md border border-border/80 bg-card/60 p-6 shadow-sm backdrop-blur-md flex flex-col justify-between hover:shadow-md transition-shadow">
             <div className="flex justify-between items-center mb-6">
               <span className="text-[11px] font-bold uppercase tracking-widest text-chart-2">Active Loans</span>
               <HandCoins className="w-5 h-5 text-chart-2" />
@@ -92,7 +92,7 @@ const Page = () => {
           </div>
 
           {/* Attendance */}
-          <div className="rounded-3xl border border-border/80 bg-card/60 p-6 shadow-sm backdrop-blur-md flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div className="rounded-md border border-border/80 bg-card/60 p-6 shadow-sm backdrop-blur-md flex flex-col justify-between hover:shadow-md transition-shadow">
             <div className="flex justify-between items-center mb-6">
               <span className="text-[11px] font-bold uppercase tracking-widest text-chart-3">Meetings</span>
               <CalendarDays className="w-5 h-5 text-chart-3" />
@@ -110,13 +110,13 @@ const Page = () => {
         {/* Main Content Area */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="xl:col-span-2 space-y-6">
-            <div className="rounded-[2rem] border border-border/60 bg-card/40 shadow-sm backdrop-blur-sm p-6 md:p-8">
+            <div className="rounded-md border border-border/60 bg-card/40 shadow-sm backdrop-blur-sm p-6 md:p-8">
               <GroupList groups={groups} limit={5} hideSearch={false} />
             </div>
           </div>
           
           <div className="xl:col-span-1 space-y-6">
-            <div className="rounded-[2rem] border border-border/60 bg-card/40 shadow-sm backdrop-blur-sm p-6">
+            <div className="rounded-md border border-border/60 bg-card/40 shadow-sm backdrop-blur-sm p-6">
               <div className="flex items-center gap-2 mb-4">
                 <div className="h-2 w-2 rounded-full bg-chart-3 animate-pulse" />
                 <h3 className="font-bold tracking-tight text-foreground">Today&apos;s Sessions</h3>

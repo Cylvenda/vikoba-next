@@ -12,6 +12,7 @@ import {
   Users,
 } from "lucide-react"
 import { financeServices, type Contribution } from "@/api/services/finance.service"
+import { paymentServices } from "@/api/services/payment.service"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -41,6 +42,7 @@ type ContributionFormState = {
   amount: string
   reference: string
   note: string
+  phone: string
 }
 
 const defaultContributionFormState: ContributionFormState = {
@@ -48,6 +50,7 @@ const defaultContributionFormState: ContributionFormState = {
   amount: "",
   reference: "",
   note: "",
+  phone: "",
 }
 
 function getErrorMessage(error: unknown): string {
@@ -183,10 +186,27 @@ export default function GroupSavingsPage() {
         note: form.note.trim(),
       })
 
-      setContributions((current) => [response.data, ...current])
-      setFeedback("Contribution recorded successfully.")
-      resetForm()
-      setIsContributionModalOpen(false)
+      const contribution = response.data
+
+      // Step 2: Trigger mobile money collection
+      if (form.phone.trim()) {
+        setFeedback("Contribution pending. Check your phone for the mobile money prompt...")
+        await paymentServices.initiateCollection({
+          phone: form.phone.trim(),
+          amount: form.amount.trim(),
+          purpose: "CONTRIBUTION",
+          target_uuid: contribution.uuid,
+        })
+        setFeedback("Payment initiated! Check your phone to complete the transaction.")
+      } else {
+        setFeedback("Contribution recorded (no phone provided).")
+      }
+
+      setContributions((current) => [contribution, ...current])
+      setTimeout(() => {
+        resetForm()
+        setIsContributionModalOpen(false)
+      }, 3000)
     } catch (submitError: unknown) {
       setError(getErrorMessage(submitError))
     } finally {
@@ -417,6 +437,21 @@ export default function GroupSavingsPage() {
                     onChange={(event) => handleInputChange("amount", event.target.value)}
                     required
                   />
+                </FieldContent>
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="contribution-phone">Phone number</FieldLabel>
+                <FieldContent>
+                  <Input
+                    id="contribution-phone"
+                    type="tel"
+                    placeholder="e.g. 255700000000"
+                    value={form.phone}
+                    onChange={(event) => handleInputChange("phone", event.target.value)}
+                    required
+                  />
+                  <FieldDescription>The number that will receive the mobile money prompt.</FieldDescription>
                 </FieldContent>
               </Field>
 

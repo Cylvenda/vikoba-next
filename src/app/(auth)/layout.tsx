@@ -46,7 +46,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                       Community Hub
                     </p>
                     <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1">
-                      Return to landing page
+                      VICOBA Virtual Banking Platform
                     </p>
                   </div>
                 </div>

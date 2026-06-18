@@ -191,10 +191,10 @@ export default function GroupMeetingsPage() {
             </div>
             {isLeader && (
               <div className="flex flex-wrap gap-3">
-                <Button className="bg-chart-4 hover:bg-chart-4/90 text-white rounded-full shadow-md font-medium" onClick={() => setIsInstantOpen(true)} disabled={!selectedGroup?.id}>
+                <Button className="bg-chart-4 hover:bg-chart-4/90 text-white rounded-md shadow-md font-medium" onClick={() => setIsInstantOpen(true)} disabled={!selectedGroup?.id}>
                   <Play className="mr-2 h-4 w-4" /> Start Instant Session
                 </Button>
-                <Button className="bg-chart-3 hover:bg-chart-2 text-primary-foreground rounded-full shadow-md font-medium" onClick={() => setIsScheduleOpen(true)}>
+                <Button className="bg-chart-3 hover:bg-chart-2 text-primary-foreground rounded-md shadow-md font-medium" onClick={() => setIsScheduleOpen(true)}>
                   <CalendarPlus2 className="mr-2 h-4 w-4" /> Schedule Session
                 </Button>
               </div>

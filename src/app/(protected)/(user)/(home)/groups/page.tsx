@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { toast } from "react-toastify"
-import { BadgeCheck, FolderKanban, LockKeyhole, Plus, UserPlus, Users } from "lucide-react"
+import { ArrowBigLeft, BadgeCheck, FolderKanban, LockKeyhole, Plus, UserPlus, Users } from "lucide-react"
 import GroupList from "@/components/dashboard/GroupList"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -49,8 +49,8 @@ export default function GroupsPage() {
 
   return (
     <div className="w-full bg-background p-4 md:p-6 lg:p-8">
-      <div className="mx-auto w-full max-w-screen-3xl space-y-8">
-        <section className="rounded-[2rem] border border-border/60 bg-card/60 p-6 shadow-sm backdrop-blur-sm md:p-8">
+      <div className="mx-auto w-full max-w-screen-3xl space-y-4">
+        <section className="rounded-md border border-border/60 bg-card/60 p-6 shadow-sm backdrop-blur-sm md:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl space-y-3">
               <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-chart-4">My Groups</p>
@@ -88,8 +88,8 @@ export default function GroupsPage() {
             >
               <Plus size={16} /> <span className="hidden sm:inline">Add New Group</span>
             </Button>
-            <Button asChild variant="ghost" size="sm" className="ml-auto hidden sm:inline-flex">
-              <Link href="/home">Back to dashboard</Link>
+            <Button asChild variant="outline" size="sm" className="ml-auto hidden sm:inline-flex">
+              <Link href="/home"> <ArrowBigLeft /> Back to dashboard</Link>
             </Button>
           </div>
         </section>
@@ -133,7 +133,7 @@ export default function GroupsPage() {
           </Card>
         </section>
 
-        <section className="rounded-[2rem] border border-border/60 bg-card/50 p-4 shadow-sm md:p-6">
+        <section className="rounded-md border border-border/60 bg-card/50 p-4 shadow-sm md:p-6">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-chart-4">Groups list</p>

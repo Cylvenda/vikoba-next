@@ -48,7 +48,7 @@ export default function ProfilePage() {
 
   return (
     <div className="w-full p-4 md:p-6 lg:p-8">
-      <div className="mx-auto w-full max-w-screen-2xl space-y-6">
+      <div className="mx-auto w-full max-w-screen-3xl space-y-6">
       <Card className="border-none bg-accent shadow-sm">
          <CardHeader>
           <CardTitle className="text-3xl">Profile</CardTitle>
