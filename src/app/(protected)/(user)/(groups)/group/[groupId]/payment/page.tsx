@@ -23,6 +23,7 @@ import {
 import { toast } from "react-toastify"
 import Link from "next/link"
 import { financeServices } from "@/api/services/finance.service"
+import { paymentServices } from "@/api/services/payment.service"
 
 export default function PaymentPage() {
   const router = useRouter()
@@ -163,8 +164,22 @@ export default function PaymentPage() {
           payment_method: backendMethod,
           reference: reference,
         })
+      } else if (type === "saving") {
+        if (!loanId) throw new Error("Contribution ID is missing.")
+
+        if (paymentMethod === "mobile") {
+          await paymentServices.initiateCollection({
+            phone: phoneNumber,
+            amount: amount.toString(),
+            purpose: "CONTRIBUTION",
+            target_uuid: loanId,
+          })
+          toast.info("Check your phone for the mobile money prompt.")
+        } else {
+          throw new Error("Credit Card payments for savings are coming soon. Please use Mobile Money.")
+        }
       }
-      // Future: handle savings and fine payment types here
+      // Future: handle fine payment types here
 
       setIsSuccess(true)
       toast.success("Payment processed successfully!")

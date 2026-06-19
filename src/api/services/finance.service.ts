@@ -191,6 +191,7 @@ export type CreateContributionPayload = {
   amount: string
   reference?: string
   note?: string
+  status?: "PENDING" | "VERIFIED"
 }
 
 const mapLoan = (loan: LoanApiResponse): Loan => ({

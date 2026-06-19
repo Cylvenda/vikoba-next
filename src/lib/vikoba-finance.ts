@@ -40,13 +40,13 @@ export function buildMetricsFromSnapshot(snapshot: VikobaFinanceSnapshot): Vikob
       label: "Savings Pool",
       amount: snapshot.totalSavings,
       tone: "green",
-      detail: "verified member savings currently tracked in the ledger",
+      detail: "Confirmed savings from verified payments only",
     },
     {
-      label: "Pending Contributions",
-      amount: snapshot.pendingContributions,
-      tone: "amber",
-      detail: "contributions still waiting for treasurer confirmation",
+      label: "Monthly Collections",
+      amount: snapshot.monthlyCollections,
+      tone: "blue",
+      detail: "Verified deposits received in the last 30 days",
     },
     {
       label: "Active Loan Book",
