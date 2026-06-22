@@ -104,7 +104,7 @@ function ContributionCard({
   action?: React.ReactNode
 }) {
   const statusStyles: Record<string, string> = {
-    VERIFIED: "border-emerald-500/30 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400",
+    VERIFIED: "border-chart-1/30 bg-chart-1/5 text-chart-1",
     PENDING: "border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-400",
     REJECTED: "border-destructive/30 bg-destructive/5 text-destructive",
   }
@@ -368,7 +368,7 @@ export default function GroupSavingsPage() {
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 {canRecordContribution ? "Total verified savings" : "My verified savings"}
               </p>
-              <p className="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400">{formatTzs(totalSavings)}</p>
+              <p className="mt-2 text-2xl font-bold text-chart-1">{formatTzs(totalSavings)}</p>
               <p className="mt-1 text-xs text-muted-foreground">From confirmed payments only</p>
             </CardContent>
           </Card>
@@ -395,7 +395,7 @@ export default function GroupSavingsPage() {
         </div>
 
         {feedback ? (
-          <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300">
+          <div className="rounded-2xl border border-chart-1/25 bg-chart-1/10 px-4 py-3 text-sm text-chart-1">
             {feedback}
           </div>
         ) : null}
@@ -430,10 +430,10 @@ export default function GroupSavingsPage() {
               <Tabs defaultValue="verified" className="w-full">
                 <TabsList className="mb-6 grid w-full grid-cols-3 h-11 rounded-xl bg-muted/50 p-1">
                   <TabsTrigger value="verified" className="rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                    <CheckCircle2 className="mr-1.5 h-3.5 w-3.5 text-emerald-500" />
+                    <CheckCircle2 className="mr-1.5 h-3.5 w-3.5 text-chart-1" />
                     Verified
                     {verifiedContributions.length > 0 && (
-                      <span className="ml-2 rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="ml-2 rounded-full bg-chart-1/15 px-1.5 py-0.5 text-xs font-bold text-chart-1">
                         {verifiedContributions.length}
                       </span>
                     )}

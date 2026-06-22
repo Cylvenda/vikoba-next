@@ -323,7 +323,7 @@ export default function MeetingPage() {
       case "cancelled": 
         return <span className="inline-flex rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs font-bold tracking-wide text-orange-500 shadow-sm">CANCELLED</span>
       default: 
-        return <span className="inline-flex rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-xs font-bold tracking-wide text-blue-500 shadow-sm uppercase">{status}</span>
+        return <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-bold tracking-wide text-primary shadow-sm uppercase">{status}</span>
     }
   }
 
@@ -450,7 +450,7 @@ export default function MeetingPage() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="rounded-xl">
                       <DropdownMenuItem onClick={handleExportAgendaWord} className="font-medium cursor-pointer">
-                        <FileText className="w-4 h-4 mr-2 text-blue-500" />
+                        <FileText className="w-4 h-4 mr-2 text-primary" />
                         Export as Word (.doc)
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleExportAgendaPdf} className="font-medium cursor-pointer">
@@ -570,7 +570,7 @@ export default function MeetingPage() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="rounded-xl">
                       <DropdownMenuItem onClick={handleExportAttendanceWord} className="font-medium cursor-pointer">
-                        <FileText className="w-4 h-4 mr-2 text-blue-500" /> Word (.doc)
+                        <FileText className="w-4 h-4 mr-2 text-primary" /> Word (.doc)
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleExportAttendanceExcel} className="font-medium cursor-pointer">
                         <FileSpreadsheet className="w-4 h-4 mr-2 text-green-500" /> Excel (.xlsx)

@@ -134,18 +134,50 @@ export type CreateLoanPayload = {
   purpose?: string
 }
 
+export type FineCategory = {
+  uuid: string
+  group: string
+  name: string
+  description: string | null
+  default_amount: string
+  created_by_name: string
+  created_at: string
+}
+
+export type CreateFineCategoryPayload = {
+  group_uuid: string
+  name: string
+  description?: string
+  default_amount: string
+}
+
 export type Fine = {
   uuid: string
   group: string
   member: string
   member_name: string
+  member_email: string
+  fine_category_uuid: string | null
+  fine_category_name: string | null
+  issued_by_name: string | null
   reason: string
   amount: string
+  note: string | null
   status: "UNPAID" | "PAID"
   issued_at: string
   due_date: string
   total_paid: string
   balance: string
+}
+
+export type CreateFinePayload = {
+  group_uuid: string
+  membership_uuid: string
+  fine_category_uuid?: string
+  reason: string
+  amount: string
+  due_date: string
+  note?: string
 }
 
 export type FinePayment = {
@@ -389,6 +421,36 @@ export const financeServices = {
       status: response.status,
       data: response.data,
     }
+  },
+
+  async createFine(payload: CreateFinePayload): Promise<ApiResponse<Fine>> {
+    const response = await api.post<Fine>(API_ENDPOINTS.FINANCE_FINES, payload)
+    return { status: response.status, data: response.data }
+  },
+
+  async getFineCategories(groupUuid: string): Promise<ApiResponse<FineCategory[]>> {
+    const response = await api.get<FineCategory[]>(API_ENDPOINTS.FINANCE_FINE_CATEGORIES, {
+      params: { group_uuid: groupUuid },
+    })
+    return { status: response.status, data: response.data }
+  },
+
+  async createFineCategory(payload: CreateFineCategoryPayload): Promise<ApiResponse<FineCategory>> {
+    const response = await api.post<FineCategory>(API_ENDPOINTS.FINANCE_FINE_CATEGORIES, payload)
+    return { status: response.status, data: response.data }
+  },
+
+  async updateFineCategory(
+    uuid: string,
+    payload: Omit<CreateFineCategoryPayload, "group_uuid">
+  ): Promise<ApiResponse<FineCategory>> {
+    const response = await api.patch<FineCategory>(`${API_ENDPOINTS.FINANCE_FINE_CATEGORIES}${uuid}/`, payload)
+    return { status: response.status, data: response.data }
+  },
+
+  async deleteFineCategory(uuid: string): Promise<ApiResponse<void>> {
+    const response = await api.delete<void>(`${API_ENDPOINTS.FINANCE_FINE_CATEGORIES}${uuid}/`)
+    return { status: response.status, data: response.data }
   },
 
   async getLoanCategories(groupUuid: string): Promise<ApiResponse<LoanProduct[]>> {

@@ -43,6 +43,7 @@ export const API_ENDPOINTS = {
      FINANCE_LOAN_PAYMENTS: "finance/loans/",
      FINANCE_FINES: "finance/fines/",
      FINANCE_FINE_PAYMENTS: "finance/fines/payments/",
+     FINANCE_FINE_CATEGORIES: "finance/fine-categories/",
 
      // Admin
      ADMIN_USERS: "admin/users/",

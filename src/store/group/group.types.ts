@@ -16,6 +16,7 @@ export type Group = {
   name: string;
   join_code?: string;
   description: string;
+  visibility?: "PRIVATE" | "PUBLIC";
   max_concurrent_loans?: number;
   default_late_fee_amount?: string;
   created_by: string;

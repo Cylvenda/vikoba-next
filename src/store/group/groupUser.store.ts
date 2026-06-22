@@ -32,6 +32,7 @@ type GroupState = {
      removeGroupMember: (groupUuid: string, membershipUuid: string) => Promise<{ success: boolean; message: string }>
      changeGroupMemberRole: (groupUuid: string, membershipUuid: string, role: string) => Promise<{ success: boolean; message: string }>
      sendGroupInvitation: (groupUuid: string, email: string, message?: string) => Promise<{ success: boolean; message: string }>
+     updateGroup: (groupUuid: string, payload: Partial<Group>) => Promise<{ success: boolean; message: string }>
      clearSelectedGroup: () => void
 }
 
@@ -302,6 +303,29 @@ export const useGroupStore = create<GroupState>((set) => ({
      // Select a group (for UI / navigation)
      setSelectedGroup: (group) => {
           set({ selectedGroup: group })
+     },
+
+     // Update group settings
+     updateGroup: async (groupUuid, payload) => {
+          set({ loading: true, error: null })
+          try {
+               const res = await groupServices.updateGroup(groupUuid, payload)
+               set((state) => ({
+                    selectedGroup: state.selectedGroup?.id === groupUuid ? res.data : state.selectedGroup,
+                    groups: state.groups.map((g) => (g.id === groupUuid ? res.data : g)),
+                    loading: false,
+               }))
+               return { success: true, message: "Group settings updated successfully." }
+          } catch (err: unknown) {
+               const errorData = (err as { response?: { data?: Record<string, string[]> } })?.response?.data
+               const message = errorData
+                    ? Object.values(errorData).flat().join(" ")
+                    : err instanceof Error
+                    ? err.message
+                    : "Failed to update group settings"
+               set({ loading: false, error: message })
+               return { success: false, message }
+          }
      },
 
      // Clear selected group

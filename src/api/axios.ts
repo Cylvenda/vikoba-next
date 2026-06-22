@@ -20,7 +20,7 @@ api.interceptors.response.use(
                try {
                     await api.post(API_ENDPOINTS.USER_TOKEN_REFRESH)
                     return api(originalRequest)
-                } catch (refreshError) {
+               } catch (refreshError) {
                     try {
                          await fetch(`${API_ENDPOINTS.API_ROOT}${API_ENDPOINTS.USER_LOGOUT}`, {
                               method: "POST",
