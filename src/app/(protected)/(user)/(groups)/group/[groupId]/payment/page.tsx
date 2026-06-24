@@ -18,7 +18,9 @@ import {
   ShieldCheck,
   CheckCircle2,
   Lock,
-  Loader2
+  Loader2,
+  XCircle,
+  Clock
 } from "lucide-react"
 import { toast } from "react-toastify"
 import Link from "next/link"
@@ -43,16 +45,23 @@ export default function PaymentPage() {
   const hasLateFee = lateFeeAmount > 0
 
   const paymentModeLabel =
-    paymentMode === "installment"
-      ? "Installment payment"
-      : paymentMode === "custom"
-        ? "Custom amount"
-        : "Full balance payment"
+    type === "saving" 
+      ? "Savings Deposit"
+      : type === "fine"
+        ? "Penalty Settlement"
+        : paymentMode === "installment"
+          ? "Installment payment"
+          : paymentMode === "custom"
+            ? "Custom amount"
+            : "Full balance payment"
   
   const { selectedGroup, fetchGroupById } = useGroupStore()
   
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [isFailed, setIsFailed] = useState(false)
+  const [isPolling, setIsPolling] = useState(false)
+  const [failMessage, setFailMessage] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("mobile") // 'mobile' or 'card'
 
   // Mobile Money State
@@ -155,31 +164,59 @@ export default function PaymentPage() {
       if (type === "loan") {
         if (!loanId) throw new Error("Loan ID is missing.")
         
-        // Map UI payment method to backend enum
         const backendMethod = paymentMethod === "mobile" ? "MOBILE_MONEY" : "CREDIT_CARD"
         const reference = paymentMethod === "mobile" ? phoneNumber : cardNumber.replace(/\s/g, "")
         
-        await financeServices.repayLoan(loanId, {
-          amount: amount.toString(),
-          payment_method: backendMethod,
-          reference: reference,
-        })
+        if (paymentMethod === "mobile") {
+          const res = await paymentServices.initiateCollection({
+            phone: phoneNumber,
+            amount: amount.toString(),
+            purpose: "LOAN_REPAYMENT",
+            target_uuid: loanId,
+          })
+          setIsPolling(true)
+          pollTransactionStatus(res.data.transaction_uuid)
+          return
+        } else {
+          await financeServices.repayLoan(loanId, {
+            amount: amount.toString(),
+            payment_method: backendMethod,
+            reference: reference,
+          })
+        }
       } else if (type === "saving") {
         if (!loanId) throw new Error("Contribution ID is missing.")
 
         if (paymentMethod === "mobile") {
-          await paymentServices.initiateCollection({
+          const res = await paymentServices.initiateCollection({
             phone: phoneNumber,
             amount: amount.toString(),
             purpose: "CONTRIBUTION",
             target_uuid: loanId,
           })
-          toast.info("Check your phone for the mobile money prompt.")
+          setIsPolling(true)
+          pollTransactionStatus(res.data.transaction_uuid)
+          return
         } else {
           throw new Error("Credit Card payments for savings are coming soon. Please use Mobile Money.")
         }
+      } else if (type === "fine") {
+        if (!loanId) throw new Error("Fine ID is missing.")
+
+        if (paymentMethod === "mobile") {
+          const res = await paymentServices.initiateCollection({
+            phone: phoneNumber,
+            amount: amount.toString(),
+            purpose: "PENALTY_PAYMENT",
+            target_uuid: loanId,
+          })
+          setIsPolling(true)
+          pollTransactionStatus(res.data.transaction_uuid)
+          return
+        } else {
+          throw new Error("Credit Card payments for fines are coming soon. Please use Mobile Money.")
+        }
       }
-      // Future: handle fine payment types here
 
       setIsSuccess(true)
       toast.success("Payment processed successfully!")
@@ -194,9 +231,54 @@ export default function PaymentPage() {
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
         (err instanceof Error ? err.message : "Payment failed. Please try again.")
       toast.error(message)
-    } finally {
       setIsProcessing(false)
     }
+  }
+
+  const pollTransactionStatus = (uuid: string) => {
+    let attempts = 0
+    const maxAttempts = 60 // 2 minutes max (every 2 seconds)
+    
+    const interval = setInterval(async () => {
+      try {
+        attempts++
+        const res = await paymentServices.getTransactionStatus(uuid)
+        const status = res.data.status
+
+        if (status === "COMPLETED") {
+          clearInterval(interval)
+          setIsPolling(false)
+          setIsSuccess(true)
+          toast.success("Payment processed successfully!")
+          setTimeout(() => {
+            router.push(contextInfo.backLink)
+            router.refresh()
+          }, 2000)
+        } else if (status === "FAILED") {
+          clearInterval(interval)
+          setIsPolling(false)
+          setIsProcessing(false)
+          setIsFailed(true)
+          setFailMessage("Payment failed or was rejected. Please try again.")
+        } else if (status === "EXPIRED") {
+          clearInterval(interval)
+          setIsPolling(false)
+          setIsProcessing(false)
+          setIsFailed(true)
+          setFailMessage("Payment prompt expired. Please try again.")
+        }
+        
+        if (attempts >= maxAttempts) {
+          clearInterval(interval)
+          setIsPolling(false)
+          setIsProcessing(false)
+          setIsFailed(true)
+          setFailMessage("We couldn't verify the payment status in time. Please check your group dashboard later.")
+        }
+      } catch (err) {
+        console.error("Polling error", err)
+      }
+    }, 2000)
   }
 
   // Formatting helpers for card inputs
@@ -247,6 +329,44 @@ export default function PaymentPage() {
               Redirecting you back...
             </p>
           </div>
+        ) : isFailed ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="mb-6 rounded-full bg-destructive/20 p-4">
+              <XCircle className="h-16 w-16 text-destructive" />
+            </div>
+            <h2 className="mb-2 text-3xl font-extrabold text-foreground">Payment Failed</h2>
+            <p className="text-muted-foreground max-w-md mb-8">
+              {failMessage}
+            </p>
+            <div className="flex gap-4">
+              <Button onClick={() => { setIsFailed(false); setIsProcessing(false) }} variant="outline">
+                Try Again
+              </Button>
+              <Button onClick={() => router.push(`/group/${groupId}`)}>
+                Back to Dashboard
+              </Button>
+            </div>
+          </div>
+        ) : isPolling ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="mb-6 relative">
+              <div className="absolute inset-0 rounded-full bg-chart-3/20 animate-ping" />
+              <div className="relative rounded-full bg-chart-3/10 p-5">
+                <Smartphone className="h-12 w-12 text-chart-3 animate-pulse" />
+              </div>
+            </div>
+            <h2 className="mb-2 text-3xl font-extrabold text-foreground">Payment Initiated Successfully</h2>
+            <p className="text-muted-foreground max-w-md mb-2">
+              Please check your phone for the Mobile Money prompt and enter your PIN to complete the transaction.
+            </p>
+            <div className="flex items-center gap-2 text-sm font-medium text-chart-4 mb-8">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Waiting for confirmation...
+            </div>
+            <Button variant="ghost" onClick={() => router.push(`/group/${groupId}`)} className="text-muted-foreground">
+              Taking too long? Return to Dashboard
+            </Button>
+          </div>
         ) : (
           <div className="grid gap-8 lg:grid-cols-5">
             
@@ -287,20 +407,24 @@ export default function PaymentPage() {
                   <div className="mb-6 rounded-2xl border border-border/60 bg-muted/20 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                        Repayment plan
+                        {type === "saving" ? "Contribution Plan" : type === "fine" ? "Penalty Plan" : "Repayment plan"}
                       </span>
                       <Badge variant="secondary" className="uppercase">
                         {paymentModeLabel}
                       </Badge>
                     </div>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      {paymentMode === "installment"
-                        ? installmentNumber
-                          ? `You selected installment #${installmentNumber} for this loan.`
-                          : "You selected the next installment for this loan."
-                        : paymentMode === "custom"
-                          ? "You chose a custom repayment amount."
-                          : "You chose to clear the remaining balance on this loan."}
+                      {type === "saving"
+                        ? "You are adding funds to your group savings account."
+                        : type === "fine"
+                          ? "You are settling an outstanding group penalty."
+                          : paymentMode === "installment"
+                            ? installmentNumber
+                              ? `You selected installment #${installmentNumber} for this loan.`
+                              : "You selected the next installment for this loan."
+                            : paymentMode === "custom"
+                              ? "You chose a custom repayment amount."
+                              : "You chose to clear the remaining balance on this loan."}
                     </p>
                     {hasLateFee ? (
                       <p className="mt-2 text-sm font-medium text-chart-3">

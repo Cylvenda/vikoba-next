@@ -9,4 +9,7 @@ export const paymentServices = {
   }) => {
     return await axiosInstance.post("/payments/initiate/", payload)
   },
+  getTransactionStatus: async (transactionUuid: string) => {
+    return await axiosInstance.get(`/payments/status/${transactionUuid}/`)
+  },
 }

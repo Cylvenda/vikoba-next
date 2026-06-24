@@ -74,8 +74,8 @@ export default function Home() {
           <header className="sticky top-4 z-30 rounded-full border border-border/80 bg-background/80 px-4 py-3 shadow-lg shadow-chart-3/5 backdrop-blur-md md:px-6">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-chart-3 text-primary-foreground shadow-inner">
-                  <Coins size={18} />
+                <div className="flex h-10 w-10 items-center justify-center rounded-full shadow-inner overflow-hidden">
+                  <Image src="/logo.png" alt="VICOBA Logo" width={40} height={40} className="object-cover" />
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.28em] text-chart-4">Community Hub</p>
@@ -335,8 +335,8 @@ export default function Home() {
           <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 md:grid-cols-[1.3fr_0.8fr_0.9fr] md:px-10">
             <div className="max-w-md">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-chart-3 text-primary-foreground shadow-sm">
-                  <Coins size={16} />
+                <div className="flex h-10 w-10 items-center justify-center rounded-full shadow-sm overflow-hidden">
+                  <Image src="/logo.png" alt="VICOBA Logo" width={40} height={40} className="object-cover" />
                 </div>
                 <p className="text-sm font-bold uppercase tracking-[0.28em] text-chart-4">Community Hub</p>
               </div>
@@ -379,7 +379,7 @@ export default function Home() {
           <div className="border-t border-border/40 py-6">
             <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between md:px-10">
               <p>&copy; {new Date().getFullYear()} Community Hub. All cooperative banking transactions are verified synchronously.</p>
-              <p>Designed and Developed by <a href="mailto:brayanmlawa0917@gmail.com" className="hover:text-chart-3 font-medium transition-colors">Cylvenda</a>.</p>
+              <p>Designed and Developed by <a href="mailto:brayanmlawa0917@gmail.com" className="hover:text-chart-3 font-medium transition-colors">Cylvenda & Brirod</a>.</p>
             </div>
           </div>
         </footer>

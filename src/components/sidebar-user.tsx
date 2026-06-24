@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
@@ -55,7 +56,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher
           teams={{
             name: "Community Hub",
-            logo: <Monitor />,
+            logo: <Image src="/logo.png" alt="VICOBA Logo" width={32} height={32} className="object-cover rounded-md" />,
             role: roleLabel,
           }}
         />

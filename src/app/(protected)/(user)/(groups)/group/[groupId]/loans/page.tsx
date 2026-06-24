@@ -648,6 +648,9 @@ export default function GroupLoansPage() {
                 Loan types
               </p>
               <p className="mt-2 text-2xl font-bold text-foreground">{loanProducts.length}</p>
+              <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
+                Distinct loan products your group offers (e.g. Emergency, Business).
+              </p>
             </CardContent>
           </Card>
           <Card className="border-border/70 bg-card/80">
@@ -656,6 +659,9 @@ export default function GroupLoansPage() {
                 Total principal
               </p>
               <p className="mt-2 text-2xl font-bold text-foreground">{formatTzs(stats.totalPrincipal)}</p>
+              <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
+                Total raw capital disbursed to borrowers, excluding interest &amp; fees.
+              </p>
             </CardContent>
           </Card>
           <Card className="border-border/70 bg-card/80">
@@ -664,6 +670,9 @@ export default function GroupLoansPage() {
                 Active loans
               </p>
               <p className="mt-2 text-2xl font-bold text-foreground">{stats.activeLoans}</p>
+              <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
+                Loans currently approved, disbursed, and in the repayment phase.
+              </p>
             </CardContent>
           </Card>
           <Card className="border-border/70 bg-card/80">
@@ -672,6 +681,9 @@ export default function GroupLoansPage() {
                 Outstanding balance
               </p>
               <p className="mt-2 text-2xl font-bold text-foreground">{formatTzs(stats.totalOutstanding)}</p>
+              <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
+                Total amount still owed across all active loans, including interest &amp; late fees.
+              </p>
             </CardContent>
           </Card>
         </div>

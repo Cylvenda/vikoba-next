@@ -4,12 +4,13 @@ import { toast } from "react-toastify"
 
 import type { FormEvent } from "react"
 import { useEffect, useMemo, useState } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import {
   AlertCircle,
   CalendarRange,
   Clock3,
   Coins,
+  CreditCard,
   FileText,
   HandCoins,
   ReceiptText,
@@ -111,6 +112,7 @@ function getErrorMessage(error: unknown): string {
 }
 
 export default function GroupFinesPage() {
+  const router = useRouter()
   const params = useParams<{ groupId: string }>()
   const groupId = Array.isArray(params?.groupId) ? params.groupId[0] : params?.groupId
   const { selectedGroup, selectedGroupMembers } = useGroupStore()
@@ -424,11 +426,22 @@ export default function GroupFinesPage() {
                               <span>Issued {formatDate(fine.issued_at)} {fine.issued_by_name ? `by ${fine.issued_by_name}` : ''}</span>
                             </div>
                           </div>
-                          {canManageFines && Number(fine.balance) > 0 && (
-                            <Button variant="outline" onClick={() => openPaymentModal(fine)} className="shrink-0 text-orange-600 border-orange-200 hover:bg-orange-50">
-                              <HandCoins className="h-4 w-4 mr-2" /> Pay
-                            </Button>
-                          )}
+                          <div className="flex flex-col gap-2">
+                            {fine.member === currentMembership?.membership_id && Number(fine.balance) > 0 && (
+                              <Button 
+                                variant="default" 
+                                onClick={() => router.push(`/group/${groupId}/payment?type=fine&id=${fine.uuid}&amount=${fine.balance}`)} 
+                                className="shrink-0 bg-orange-600 hover:bg-orange-700 text-white"
+                              >
+                                <CreditCard className="h-4 w-4 mr-2" /> Pay Online
+                              </Button>
+                            )}
+                            {canManageFines && Number(fine.balance) > 0 && (
+                              <Button variant="outline" onClick={() => openPaymentModal(fine)} className="shrink-0 text-orange-600 border-orange-200 hover:bg-orange-50">
+                                <HandCoins className="h-4 w-4 mr-2" /> Record Cash
+                              </Button>
+                            )}
+                          </div>
                         </CardContent>
                       </Card>
                     ))}

@@ -38,8 +38,8 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                 className="inline-flex flex-col gap-2 rounded-xl transition hover:opacity-85"
               >
                 <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-chart-3 text-primary-foreground shadow-inner">
-                    <Coins size={16} />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full shadow-inner overflow-hidden">
+                    <Image src="/logo.png" alt="VICOBA Logo" width={40} height={40} className="object-cover" />
                   </div>
                   <div>
                     <p className="text-sm font-extrabold uppercase tracking-[0.25em] text-chart-4 leading-none">
