@@ -2,20 +2,24 @@ import Link from "next/link"
 import { CalendarDays, Clock3, Radio } from "lucide-react"
 import { useGroupStore } from "@/store/group/groupUser.store"
 import { useMeetingStore } from "@/store/meeting/meeting.store"
+import { useMemo } from "react"
 import { getMeetingDetailHref, getMeetingSessionHref } from "@/lib/meeting-routes"
 
 const MeetingsList = () => {
      const { selectedGroup } = useGroupStore()
      const { meetings } = useMeetingStore()
-     const groupMeetings = meetings
-          .filter((meeting) => meeting.group === selectedGroup?.id)
-          .sort((left, right) => new Date(right.scheduled_start).getTime() - new Date(left.scheduled_start).getTime())
+     const groupMeetings = useMemo(() => {
+          return meetings
+               .filter((meeting) => meeting.group === selectedGroup?.id)
+               .filter((meeting) => ["scheduled", "ongoing"].includes(meeting.status))
+               .sort((left, right) => new Date(right.scheduled_start).getTime() - new Date(left.scheduled_start).getTime())
+     }, [meetings, selectedGroup?.id])
 
      return (
           <div className="rounded-[1.5rem] border border-border/50 bg-card/70 p-4 shadow-sm">
                <div className="divide-y divide-border/40">
                     {groupMeetings.length === 0 && (
-                         <p className="py-6 text-sm text-muted-foreground">No meetings have been scheduled for this group yet.</p>
+                         <p className="py-6 text-sm text-muted-foreground">No scheduled or active meetings for this group yet.</p>
                     )}
                     {groupMeetings.map((m) => (
                          <div key={m.id} className="flex flex-col gap-4 py-4 lg:flex-row lg:items-center lg:gap-6">

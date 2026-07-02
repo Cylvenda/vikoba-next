@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, memo } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore, memo } from "react";
 import { useAuthUserStore } from "@/store/auth/userAuth.store";
 import { useGroupStore } from "@/store/group/groupUser.store";
 import { useMeetingStore } from "@/store/meeting/meeting.store";
@@ -45,7 +45,6 @@ const Page = () => {
   const { groups, invitations, fetchGroups, fetchMyInvitations, createGroup, joinGroupByCode, setSelectedGroup } = useGroupStore();
   const { meetings, fetchMeetings } = useMeetingStore();
 
-  const [isMounted, setIsMounted] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
 
@@ -62,12 +61,26 @@ const Page = () => {
     activeLoans: 0,
     unpaidFines: 0,
     consolidatedCash: 0,
-    isLoading: true,
+    isLoading: false,
   });
-  const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  type RecentActivity = {
+    id: string
+    title: string
+    type: string
+    amount: number
+    status: string
+    actor: string
+    happenedAt: string
+    groupName: string
+  }
+  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
+  const isMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   useEffect(() => {
-    setIsMounted(true);
     void fetchGroups();
     void fetchMyInvitations();
     void fetchMeetings();
@@ -75,13 +88,6 @@ const Page = () => {
 
   useEffect(() => {
     if (groups.length === 0) {
-      setFinancialData({
-        totalSavings: 0,
-        activeLoans: 0,
-        unpaidFines: 0,
-        consolidatedCash: 0,
-        isLoading: false,
-      });
       return;
     }
 
@@ -93,21 +99,27 @@ const Page = () => {
         let aggregatedLoans = 0;
         let aggregatedFines = 0;
         let aggregatedCash = 0;
-        let combinedActivities: any[] = [];
-
-        const displayName = `${user?.firstName || "Member"} ${user?.lastName || ""}`.trim();
+        const combinedActivities: RecentActivity[] = [];
 
         await Promise.all(
           groups.map(async (group) => {
             try {
               // 1. Fetch group snapshot
-              const snapshotRes = await axiosInstance.get(`/finance/groups/${group.id}/snapshot/`);
+              const snapshotRes = await axiosInstance.get(`finance/groups/${group.id}/snapshot/`);
               const snapshot = snapshotRes.data;
               aggregatedCash += Number(snapshot.availableCash);
 
               if (snapshot.recentActivity) {
                 combinedActivities.push(
-                  ...snapshot.recentActivity.map((act: any) => ({
+                  ...snapshot.recentActivity.map((act: {
+                    id: string
+                    title: string
+                    type: string
+                    amount: number
+                    status: string
+                    actor: string
+                    happenedAt: string
+                  }) => ({
                     ...act,
                     groupName: group.name,
                   }))
@@ -119,7 +131,7 @@ const Page = () => {
               const myVerifiedContributions = contributionsRes.data.filter(
                 (c) =>
                   c.status === "VERIFIED" &&
-                  (c.member_name === displayName || !user?.isAdmin)
+                  c.member_user_id === user?.uuid
               );
               aggregatedSavings += myVerifiedContributions.reduce((sum, c) => sum + Number(c.amount), 0);
 
@@ -128,7 +140,7 @@ const Page = () => {
               const myActiveLoans = loansRes.data.filter(
                 (loan) =>
                   ["ACTIVE", "OVERDUE"].includes(loan.status) &&
-                  (loan.borrower_name === displayName || loan.borrower === user?.uuid)
+                  loan.borrower_user_id === user?.uuid
               );
               aggregatedLoans += myActiveLoans.reduce((sum, loan) => sum + Number(loan.remaining_balance || loan.balance), 0);
 
@@ -137,11 +149,14 @@ const Page = () => {
               const myUnpaidFines = finesRes.data.filter(
                 (fine) =>
                   fine.status === "UNPAID" &&
-                  (fine.member_name === displayName || fine.member === user?.uuid)
+                  fine.member_user_id === user?.uuid
               );
               aggregatedFines += myUnpaidFines.reduce((sum, fine) => sum + Number(fine.balance || fine.amount), 0);
             } catch (err) {
-              console.error(`Failed to fetch finance data for group ${group.id}:`, err);
+              const status = (err as { response?: { status?: number } })?.response?.status
+              if (status !== 403) {
+                console.error(`Failed to fetch finance data for group ${group.id}:`, err);
+              }
             }
           })
         );
@@ -173,7 +188,7 @@ const Page = () => {
     return () => {
       isCancelled = true;
     };
-  }, [groups, user]);
+  }, [groups, user?.uuid]);
 
   const todaysMeetings = useMemo(() => {
     const today = new Date();
@@ -237,12 +252,33 @@ const Page = () => {
 
   const totalUserLiabilities = financialData.activeLoans + financialData.unpaidFines;
 
-  const trendData = recentActivities.map((act) => ({
-    name: new Date(act.happenedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-    amount: Number(act.amount),
-    title: act.title || act.type,
-    groupName: act.groupName
-  })).reverse();
+  const trendData = useMemo(() => {
+    const map = new Map<string, { name: string; amount: number; title: string; actor: string; groupName: string }>();
+    recentActivities.forEach((act) => {
+      const dateKey = new Date(act.happenedAt).toISOString().slice(0, 10);
+      const label = new Date(act.happenedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      const existing = map.get(dateKey);
+      const entry = {
+        name: label,
+        amount: Number(act.amount),
+        title: act.title || act.type,
+        actor: act.actor || "System",
+        groupName: act.groupName,
+      };
+        if (existing) {
+          existing.amount += entry.amount;
+          if (!existing.title.includes(entry.title)) {
+            existing.title = `${existing.title}, ${entry.title}`
+          }
+          if (!existing.groupName.includes(entry.groupName)) {
+            existing.groupName = `${existing.groupName}, ${entry.groupName}`
+          }
+        } else {
+        map.set(dateKey, entry);
+      }
+    });
+    return Array.from(map.values()).reverse();
+  }, [recentActivities]);
 
   return (
     <div className="w-full p-4 md:p-6 lg:p-8 min-h-screen bg-background text-foreground space-y-8">
@@ -326,12 +362,12 @@ const Page = () => {
           <Card className="border border-border bg-card/60 shadow-sm backdrop-blur-md transition-all hover:-translate-y-0.5">
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Active Workspaces</p>
-                  <h3 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground">
-                    {groups.length}
-                  </h3>
-                </div>
+                 <div>
+                   <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Active Workspaces</p>
+                   <h3 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground">
+                     {groups.length + invitations.length}
+                   </h3>
+                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
                   <Users className="h-5 w-5" />
                 </div>
@@ -369,8 +405,8 @@ const Page = () => {
                           <stop offset="95%" stopColor="var(--chart-3)" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <XAxis dataKey="name" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
-                      <YAxis stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000}k`} />
+                      <XAxis dataKey="name" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={true} />
+                      <YAxis stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={true} tickFormatter={(val) => `${val / 1000}k`} />
                       <Tooltip
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
@@ -378,8 +414,8 @@ const Page = () => {
                             return (
                               <div className="rounded-xl border border-border/80 bg-popover/95 p-3.5 shadow-md backdrop-blur-md text-xs space-y-1">
                                 <p className="font-bold text-foreground">{data.title}</p>
-                                <p className="text-[10px] text-primary font-semibold">{data.groupName}</p>
-                                <p className="text-muted-foreground">{data.name}</p>
+                                <p className="text-[10px] text-primary font-semibold">{data.actor}</p>
+                                <p className="text-muted-foreground">{data.groupName} • {data.name}</p>
                                 <p className="font-extrabold text-foreground">{formatTzs(data.amount)}</p>
                               </div>
                             );
@@ -464,7 +500,7 @@ const Page = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold tracking-tight text-foreground">My Workspaces</h2>
-                <p className="text-xs text-muted-foreground mt-0.5">Access and manage your savings pools</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Access and manage your savings pool</p>
               </div>
             </div>
 
@@ -488,7 +524,7 @@ const Page = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {groups.map((group) => (
-                  <Card key={group.id} className="border border-border/60 bg-card hover:border-primary/50 transition-all hover:shadow-md relative overflow-hidden group">
+                  <Card key={`${group.id}-${group.name}`} className="border border-border/60 bg-card hover:border-primary/50 transition-all hover:shadow-md relative overflow-hidden group">
                     <CardContent className="p-5 flex flex-col justify-between h-full space-y-4">
                       <div>
                         <div className="flex justify-between items-start gap-4">

@@ -24,14 +24,31 @@ export type VikobaFinanceSnapshot = {
   availableCash: number
   monthlyCollections: number
   recentActivity: VikobaFinanceActivity[]
+  groupWallet?: {
+    balance: number
+    totalVerifiedSavings: number
+    totalFinesCollected: number
+    totalLoanDisbursed: number
+    totalLoanRepayments: number
+  }
+  memberWallets?: {
+    membershipUuid: string
+    memberUserId: string
+    memberName: string
+    savingsBalance: number
+    loanOutstanding: number
+    fineOutstanding: number
+    netBalance: number
+  }[]
 }
 
-export function formatTzs(amount: number) {
+export function formatTzs(amount: number | undefined | null): string {
+  const safeAmount = typeof amount === "number" && isFinite(amount) ? amount : 0
   return new Intl.NumberFormat("en-TZ", {
     style: "currency",
     currency: "TZS",
     maximumFractionDigits: 0,
-  }).format(amount)
+  }).format(safeAmount)
 }
 
 export function buildMetricsFromSnapshot(snapshot: VikobaFinanceSnapshot): VikobaFinanceMetric[] {

@@ -6,7 +6,6 @@ import type { FormEvent } from "react"
 import { useEffect, useMemo, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import {
-  AlertCircle,
   CalendarRange,
   Clock3,
   Coins,
@@ -14,7 +13,6 @@ import {
   FileText,
   HandCoins,
   ReceiptText,
-  WalletCards,
   PlusCircle,
   Settings2,
   Trash2,
@@ -43,7 +41,6 @@ import {
 import {
   Field,
   FieldContent,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
@@ -100,13 +97,14 @@ function formatDateTime(value: string) {
 }
 
 function getErrorMessage(error: unknown): string {
-  const errorResponse = (error as any)?.response?.data
+  const errorResponse = (error as { response?: { data?: unknown } })?.response?.data
   if (typeof errorResponse === 'object' && errorResponse !== null) {
-      const values = Object.values(errorResponse)
-      if (values.length > 0 && Array.isArray(values[0])) {
-          return values[0][0] as string
-      }
-      if (errorResponse.detail) return errorResponse.detail
+    const typedError = errorResponse as { detail?: string; [key: string]: unknown }
+    const values = Object.values(typedError)
+    if (values.length > 0 && Array.isArray(values[0])) {
+      return values[0][0] as string
+    }
+    if (typedError.detail) return typedError.detail
   }
   return error instanceof Error ? error.message : "An unexpected error occurred."
 }
@@ -129,6 +127,7 @@ export default function GroupFinesPage() {
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false)
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
   const [editingCategoryUuid, setEditingCategoryUuid] = useState<string | null>(null)
+  const [fineScope, setFineScope] = useState<"all" | "mine">("all")
   
   const [paymentForm, setPaymentForm] = useState<CreateFinePaymentPayload>(defaultPaymentFormState)
   const [issueForm, setIssueForm] = useState<IssueFineFormState>(defaultIssueFormState)
@@ -151,6 +150,26 @@ export default function GroupFinesPage() {
 
     return { totalAmount, outstandingBalance, unpaidCount, paidCount }
   }, [fines])
+
+  const myFineIds = useMemo(() => {
+    return new Set(
+      fines.filter((fine) => fine.member_user_id === user?.uuid || fine.member === currentMembership?.membership_id).map((fine) => fine.uuid),
+    )
+  }, [currentMembership?.membership_id, fines, user?.uuid])
+
+  const effectiveFineScope = canManageFines ? fineScope : "mine"
+
+  const visibleFines = useMemo(() => {
+    if (effectiveFineScope === "mine") {
+      return fines.filter((fine) => myFineIds.has(fine.uuid))
+    }
+
+    return fines
+  }, [effectiveFineScope, fines, myFineIds])
+
+  const payableFines = useMemo(() => {
+    return fines.filter((fine) => myFineIds.has(fine.uuid) && fine.status === "UNPAID")
+  }, [fines, myFineIds])
 
   useEffect(() => {
     if (!groupId) return
@@ -181,12 +200,13 @@ export default function GroupFinesPage() {
   // --- Modal Handlers ---
   
   const openPaymentModal = (fine?: Fine) => {
+    const fallbackFine = fine ?? payableFines[0]
     setPaymentForm({
       group_id: groupId || "",
-      fine_id: fine?.uuid || fines.find(f => f.status === 'UNPAID')?.uuid || "",
-      amount: fine?.balance || fines.find(f => f.status === 'UNPAID')?.balance || "",
+      fine_id: fallbackFine?.uuid || "",
+      amount: fallbackFine?.balance || "",
       reference: "",
-      note: fine ? `Payment for ${fine.reason}` : "",
+      note: fallbackFine ? `Payment for ${fallbackFine.reason}` : "",
     })
     setIsPaymentModalOpen(true)
   }
@@ -328,13 +348,19 @@ export default function GroupFinesPage() {
                   : "Review your group fines, balances, and payment history."}
               </p>
             </div>
-            {canManageFines && (
+            {(canManageFines || payableFines.length > 0) && (
               <div className="flex items-center gap-3">
-                <Button variant="outline" onClick={openIssueModal} className="gap-2">
-                  <PlusCircle className="h-4 w-4" /> Issue Fine
-                </Button>
-                <Button onClick={() => openPaymentModal()} disabled={stats.unpaidCount === 0} className="gap-2 bg-orange-600 hover:bg-orange-700 text-white">
-                  <HandCoins className="h-4 w-4" /> Record Payment
+                {canManageFines ? (
+                  <Button variant="outline" onClick={openIssueModal} className="gap-2">
+                    <PlusCircle className="h-4 w-4" /> Issue Fine
+                  </Button>
+                ) : null}
+                <Button
+                  onClick={() => openPaymentModal()}
+                  disabled={payableFines.length === 0}
+                  className="gap-2 bg-orange-600 hover:bg-orange-700 text-white"
+                >
+                  <HandCoins className="h-4 w-4" /> Pay My Fine
                 </Button>
               </div>
             )}
@@ -381,70 +407,123 @@ export default function GroupFinesPage() {
           <TabsContent value="fines">
             <Card className="border-border/70 bg-card/80 shadow-sm">
               <CardContent className="p-6">
-                <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                   <div>
-                    <h2 className="text-xl font-bold tracking-tight text-foreground">Issued Fines</h2>
-                    <p className="text-sm text-muted-foreground">List of all penalties issued to members.</p>
+                    <h2 className="text-xl font-bold tracking-tight text-foreground">Fine Ledger</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Review penalties, who issued them, and who they belong to.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      variant={fineScope === "all" ? "default" : "outline"}
+                      onClick={() => setFineScope("all")}
+                      className="rounded-full"
+                    >
+                      All fines
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={fineScope === "mine" ? "default" : "outline"}
+                      onClick={() => setFineScope("mine")}
+                      className="rounded-full"
+                    >
+                      My fines
+                    </Button>
+                    <div className="rounded-full border border-border bg-background px-3 py-1 text-xs font-semibold text-muted-foreground">
+                      {visibleFines.length} shown
+                    </div>
                   </div>
                 </div>
 
                 {loading ? (
                   <div className="py-10 text-center text-muted-foreground">Loading fines...</div>
-                ) : fines.length === 0 ? (
+                ) : visibleFines.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-border/80 bg-background/60 py-12 text-center">
-                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500/10 text-orange-500"><Coins className="h-6 w-6" /></div>
-                    <h3 className="mt-4 text-xl font-bold text-foreground">No fines recorded yet</h3>
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500/10 text-orange-500">
+                      <Coins className="h-6 w-6" />
+                    </div>
+                    <h3 className="mt-4 text-xl font-bold text-foreground">No fines in this view</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Switch between all fines and your own fines to see what is available.
+                    </p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {fines.map((fine) => (
-                      <Card key={fine.uuid} className="border-border/70 bg-background/70 shadow-none">
-                        <CardContent className="p-5 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                          <div className="space-y-3">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h3 className="text-lg font-bold text-foreground">{fine.reason}</h3>
-                              {fine.fine_category_name && <Badge variant="outline" className="text-xs">{fine.fine_category_name}</Badge>}
-                              <Badge variant={fineStatusVariants[fine.status]}>{fine.status}</Badge>
-                            </div>
-                            <div className="grid gap-3 sm:grid-cols-3">
-                              <div className="rounded-xl border border-border/70 bg-card/60 p-3">
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Amount</p>
-                                <p className="mt-1 text-sm font-bold">{formatTzs(Number(fine.amount))}</p>
-                              </div>
-                              <div className="rounded-xl border border-border/70 bg-card/60 p-3">
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Paid</p>
-                                <p className="mt-1 text-sm font-bold">{formatTzs(Number(fine.total_paid))}</p>
-                              </div>
-                              <div className="rounded-xl border border-border/70 bg-card/60 p-3">
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Balance</p>
-                                <p className="mt-1 text-sm font-bold text-orange-600 dark:text-orange-400">{formatTzs(Number(fine.balance))}</p>
-                              </div>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-                              <span className="font-medium text-foreground">{fine.member_name}</span>
-                              <span className="flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" /> Due {formatDate(fine.due_date)}</span>
-                              <span>Issued {formatDate(fine.issued_at)} {fine.issued_by_name ? `by ${fine.issued_by_name}` : ''}</span>
-                            </div>
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            {fine.member === currentMembership?.membership_id && Number(fine.balance) > 0 && (
-                              <Button 
-                                variant="default" 
-                                onClick={() => router.push(`/group/${groupId}/payment?type=fine&id=${fine.uuid}&amount=${fine.balance}`)} 
-                                className="shrink-0 bg-orange-600 hover:bg-orange-700 text-white"
-                              >
-                                <CreditCard className="h-4 w-4 mr-2" /> Pay Online
-                              </Button>
-                            )}
-                            {canManageFines && Number(fine.balance) > 0 && (
-                              <Button variant="outline" onClick={() => openPaymentModal(fine)} className="shrink-0 text-orange-600 border-orange-200 hover:bg-orange-50">
-                                <HandCoins className="h-4 w-4 mr-2" /> Record Cash
-                              </Button>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                  <div className="overflow-x-auto rounded-2xl border border-border/70">
+                    <table className="min-w-full divide-y divide-border">
+                      <thead className="bg-background/80">
+                        <tr className="text-left text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                          <th className="px-4 py-3">Member</th>
+                          <th className="px-4 py-3">Issued By</th>
+                          <th className="px-4 py-3">Reason</th>
+                          <th className="px-4 py-3">Amount</th>
+                          <th className="px-4 py-3">Paid</th>
+                          <th className="px-4 py-3">Balance</th>
+                          <th className="px-4 py-3">Due</th>
+                          <th className="px-4 py-3">Status</th>
+                          <th className="px-4 py-3">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border bg-card/40">
+                        {visibleFines.map((fine) => {
+                          const isMine = fine.member === currentMembership?.membership_id || fine.member_user_id === user?.uuid
+                          const isUnpaid = fine.status === "UNPAID"
+                          return (
+                            <tr key={fine.uuid} className="align-top">
+                              <td className="px-4 py-4">
+                                <p className="font-semibold text-foreground">{fine.member_name}</p>
+                                <p className="text-[11px] text-muted-foreground">{fine.member_email}</p>
+                              </td>
+                              <td className="px-4 py-4 text-sm text-muted-foreground">
+                                {fine.issued_by_name || "System"}
+                              </td>
+                              <td className="px-4 py-4">
+                                <div className="space-y-1">
+                                  <p className="font-semibold text-foreground">{fine.reason}</p>
+                                  {fine.fine_category_name ? (
+                                    <Badge variant="outline" className="text-[10px]">
+                                      {fine.fine_category_name}
+                                    </Badge>
+                                  ) : null}
+                                </div>
+                              </td>
+                              <td className="px-4 py-4 text-sm font-semibold">{formatTzs(Number(fine.amount))}</td>
+                              <td className="px-4 py-4 text-sm">{formatTzs(Number(fine.total_paid))}</td>
+                              <td className="px-4 py-4 text-sm font-bold text-orange-600 dark:text-orange-400">
+                                {formatTzs(Number(fine.balance))}
+                              </td>
+                              <td className="px-4 py-4 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-1.5">
+                                  <Clock3 className="h-3.5 w-3.5" />
+                                  {formatDate(fine.due_date)}
+                                </div>
+                              </td>
+                              <td className="px-4 py-4">
+                                <Badge variant={fineStatusVariants[fine.status]}>{fine.status}</Badge>
+                              </td>
+                              <td className="px-4 py-4">
+                                {isUnpaid && isMine ? (
+                                  <Button
+                                    variant="default"
+                                    onClick={() => router.push(`/group/${groupId}/payment?type=fine&id=${fine.uuid}&amount=${fine.balance}`)}
+                                    className="shrink-0 bg-orange-600 hover:bg-orange-700 text-white"
+                                  >
+                                    <CreditCard className="mr-2 h-4 w-4" />
+                                    Pay Fine
+                                  </Button>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground">
+                                    {isMine ? "Already paid" : "Owner only"}
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </CardContent>
@@ -511,7 +590,9 @@ export default function GroupFinesPage() {
                   <div className="rounded-2xl border border-dashed border-border/80 bg-background/60 py-12 text-center">
                     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-muted"><Settings2 className="h-6 w-6 text-muted-foreground" /></div>
                     <h3 className="mt-4 text-lg font-bold text-foreground">No categories defined</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">Create templates for common fines like "Late to meeting" or "Missed contribution".</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Create templates for common fines like &quot;Late to meeting&quot; or &quot;Missed contribution&quot;.
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -559,13 +640,13 @@ export default function GroupFinesPage() {
                 <FieldLabel>Select Fine</FieldLabel>
                 <FieldContent>
                   <Select value={paymentForm.fine_id} onValueChange={(val) => {
-                    const f = fines.find(x => x.uuid === val)
+                    const f = payableFines.find(x => x.uuid === val)
                     setPaymentForm({ ...paymentForm, fine_id: val, amount: f ? f.balance : "" })
                   }}>
                     <SelectTrigger><SelectValue placeholder="Select fine" /></SelectTrigger>
                     <SelectContent>
-                      {fines.filter(f => f.status === 'UNPAID').map(f => (
-                        <SelectItem key={f.uuid} value={f.uuid}>{f.member_name} - {f.reason} ({formatTzs(Number(f.balance))})</SelectItem>
+                      {payableFines.map(f => (
+                        <SelectItem key={f.uuid} value={f.uuid}>{f.reason} ({formatTzs(Number(f.balance))})</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

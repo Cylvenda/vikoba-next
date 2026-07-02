@@ -240,7 +240,7 @@ export default function GroupMeetingsPage() {
 
             <div className="rounded-2xl border border-border bg-card/60 p-5 shadow-sm backdrop-blur-md flex flex-col justify-between">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Total Ledger</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Total Meeting</span>
                 <History className="w-4 h-4 text-muted-foreground" />
               </div>
               <div>

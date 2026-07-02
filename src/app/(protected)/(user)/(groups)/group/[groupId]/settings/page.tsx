@@ -68,6 +68,7 @@ const GroupSettingsPage = () => {
 
   /* form state — Financial */
   const [loanLimit, setLoanLimit] = useState("1");
+  const [minimumSavingsForLoan, setMinimumSavingsForLoan] = useState("0");
   const [lateFee, setLateFee] = useState("0");
 
   /* form state — Status */
@@ -93,13 +94,16 @@ const GroupSettingsPage = () => {
   }, [groupId, selectedGroup, fetchGroupById]);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (!selectedGroup) return;
     setName(selectedGroup.name ?? "");
     setDescription(selectedGroup.description ?? "");
     setVisibility((selectedGroup.visibility as "PRIVATE" | "PUBLIC") ?? (selectedGroup.is_private ? "PRIVATE" : "PUBLIC"));
     setLoanLimit(String(selectedGroup.max_concurrent_loans ?? 1));
+    setMinimumSavingsForLoan(String(selectedGroup.minimum_savings_for_loan ?? "0"));
     setLateFee(String(selectedGroup.default_late_fee_amount ?? "0"));
     setIsActive(selectedGroup.is_active ?? true);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [selectedGroup]);
 
   const copyJoinCode = async () => {
@@ -128,13 +132,19 @@ const GroupSettingsPage = () => {
 
   const handleSaveFinancial = async () => {
     const parsedLimit = Number(loanLimit);
+    const parsedMinimumSavings = Number(minimumSavingsForLoan);
     if (!Number.isInteger(parsedLimit) || parsedLimit < 1) {
       toast.error("Loan limit must be at least 1.");
+      return;
+    }
+    if (Number.isNaN(parsedMinimumSavings) || parsedMinimumSavings < 0) {
+      toast.error("Minimum savings must be zero or greater.");
       return;
     }
     setIsSaving(true);
     const result = await updateGroup(groupId!, {
       max_concurrent_loans: parsedLimit,
+      minimum_savings_for_loan: minimumSavingsForLoan.trim() || "0",
       default_late_fee_amount: lateFee.trim() || "0",
     });
     setIsSaving(false);
@@ -362,6 +372,35 @@ const GroupSettingsPage = () => {
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-normal">
                   Prevents members from holding more than this many outstanding loans simultaneously. Default is <span className="font-semibold text-foreground">1</span>.
+                </p>
+              </div>
+
+              {/* Minimum Savings */}
+              <div className="p-5 rounded-2xl border border-border/80 bg-background/40 space-y-4">
+                <div className="flex items-center gap-2.5 mb-1">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-chart-1/10 text-chart-1">
+                    <Coins className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground">Minimum Savings to Borrow</p>
+                    <p className="text-[11px] text-muted-foreground">Verified savings required before a member can request a loan</p>
+                  </div>
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">TZS</span>
+                  <Input
+                    id="minimum-savings-for-loan"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={minimumSavingsForLoan}
+                    onChange={(e) => setMinimumSavingsForLoan(e.target.value)}
+                    disabled={!isChairperson || isSaving}
+                    className="pl-14 rounded-xl border-border/80 bg-background focus-visible:ring-primary font-bold"
+                  />
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-normal">
+                  Members whose verified savings are below this amount cannot borrow. Set to <span className="font-semibold text-foreground">0</span> to disable the minimum requirement.
                 </p>
               </div>
 

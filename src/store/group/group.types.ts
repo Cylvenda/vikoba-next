@@ -18,6 +18,7 @@ export type Group = {
   description: string;
   visibility?: "PRIVATE" | "PUBLIC";
   max_concurrent_loans?: number;
+  minimum_savings_for_loan?: string;
   default_late_fee_amount?: string;
   created_by: string;
   is_active: boolean;

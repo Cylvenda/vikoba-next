@@ -20,11 +20,10 @@ import {
   Lock,
   Loader2,
   XCircle,
-  Clock
 } from "lucide-react"
 import { toast } from "react-toastify"
 import Link from "next/link"
-import { financeServices } from "@/api/services/finance.service"
+import { financeServices, type Loan } from "@/api/services/finance.service"
 import { paymentServices } from "@/api/services/payment.service"
 
 export default function PaymentPage() {
@@ -63,6 +62,8 @@ export default function PaymentPage() {
   const [isPolling, setIsPolling] = useState(false)
   const [failMessage, setFailMessage] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("mobile") // 'mobile' or 'card'
+  const [loanContext, setLoanContext] = useState<Loan | null>(null)
+  const [loanContextLoading, setLoanContextLoading] = useState(type === "loan")
 
   // Mobile Money State
   const [phoneNumber, setPhoneNumber] = useState("")
@@ -78,6 +79,56 @@ export default function PaymentPage() {
       fetchGroupById(groupId)
     }
   }, [groupId, selectedGroup, fetchGroupById])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadLoanContext = async () => {
+      if (type !== "loan") {
+        setLoanContext(null)
+        setLoanContextLoading(false)
+        return
+      }
+
+      if (!groupId || !loanId) {
+        setLoanContext(null)
+        setLoanContextLoading(false)
+        return
+      }
+
+      setLoanContextLoading(true)
+
+      try {
+        const loansResponse = await financeServices.getLoans(groupId)
+        if (cancelled) return
+
+        const foundLoan = loansResponse.data.find((item) => item.uuid === loanId) || null
+        setLoanContext(foundLoan)
+      } catch (error: unknown) {
+        if (!cancelled) {
+          toast.error(
+            (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
+              (error instanceof Error ? error.message : "Unable to load loan details.")
+          )
+          setLoanContext(null)
+        }
+      } finally {
+        if (!cancelled) {
+          setLoanContextLoading(false)
+        }
+      }
+    }
+
+    void loadLoanContext()
+
+    return () => {
+      cancelled = true
+    }
+  }, [groupId, loanId, type])
+
+  const isLoanRepayable = Boolean(
+    loanContext && ["ACTIVE", "OVERDUE"].includes(loanContext.status)
+  )
 
   const getPaymentContextInfo = () => {
     switch (type) {
@@ -157,6 +208,17 @@ export default function PaymentPage() {
     e.preventDefault()
     
     if (!validateForm()) return
+
+    if (type === "loan" && (!loanContext || !isLoanRepayable)) {
+      toast.error(
+        loanContext?.status === "PENDING"
+          ? "This loan is still pending approval."
+          : loanContext?.status === "APPROVED"
+            ? "This loan has not been disbursed yet."
+            : "Repayments are only allowed for active or overdue loans."
+      )
+      return
+    }
     
     setIsProcessing(true)
 
@@ -318,7 +380,41 @@ export default function PaymentPage() {
           </Button>
         </div>
 
-        {isSuccess ? (
+        {loanContextLoading ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="mb-6 rounded-full bg-muted/30 p-4">
+              <Loader2 className="h-16 w-16 animate-spin text-muted-foreground" />
+            </div>
+            <h2 className="mb-2 text-3xl font-extrabold text-foreground">Loading payment details</h2>
+            <p className="max-w-md text-muted-foreground">
+              We are checking the loan status before allowing repayment.
+            </p>
+          </div>
+        ) : type === "loan" && !isLoanRepayable ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="mb-6 rounded-full bg-amber-500/20 p-4">
+              <Lock className="h-16 w-16 text-amber-600" />
+            </div>
+            <h2 className="mb-2 text-3xl font-extrabold text-foreground">
+              Loan not ready for repayment
+            </h2>
+            <p className="max-w-md text-muted-foreground">
+              {loanContext?.status === "PENDING"
+                ? "This is only a loan request. Members must approve it first before the treasurer can disburse funds and repayments can begin."
+                : loanContext?.status === "APPROVED"
+                  ? "This loan has been approved, but it has not been disbursed yet. Repayment starts only after disbursement."
+                  : "Only active or overdue loans can be repaid."}
+            </p>
+            <div className="mt-8 flex gap-4">
+              <Button onClick={() => router.push(`/group/${groupId}/loans`)}>
+                Back to Loans
+              </Button>
+              <Button variant="outline" onClick={() => router.push(`/group/${groupId}`)}>
+                Back to Dashboard
+              </Button>
+            </div>
+          </div>
+        ) : isSuccess ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <div className="mb-6 rounded-full bg-green-500/20 p-4">
               <CheckCircle2 className="h-16 w-16 text-green-500" />
@@ -379,6 +475,14 @@ export default function PaymentPage() {
                   </Badge>
                   <h1 className="text-2xl font-bold text-foreground">{contextInfo.title}</h1>
                   <p className="mt-2 text-sm text-muted-foreground">{contextInfo.description}</p>
+                  {type === "loan" && loanContext ? (
+                    <p className="mt-2 text-xs font-medium text-muted-foreground">
+                      Loan status:{" "}
+                      <span className="font-semibold text-foreground">
+                        {loanContext.status.toLowerCase().replaceAll("_", " ")}
+                      </span>
+                    </p>
+                  ) : null}
                 </div>
                 
                 <div className="-mt-6 rounded-t-3xl bg-card p-8 shadow-[0_-8px_30px_-15px_rgba(0,0,0,0.1)]">

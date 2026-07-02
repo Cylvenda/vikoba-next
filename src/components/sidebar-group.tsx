@@ -38,6 +38,11 @@ const navMain = (groupId: string) => [
     icon: <Home />,
   },
   {
+    title: "Wallet",
+    url: `/group/${groupId}/wallet`,
+    icon: <WalletCards />,
+  },
+  {
     title: "Savings",
     url: `/group/${groupId}/savings`,
     icon: <PiggyBank />,

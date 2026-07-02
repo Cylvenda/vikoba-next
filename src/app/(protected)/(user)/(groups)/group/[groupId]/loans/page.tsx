@@ -16,6 +16,7 @@ import {
 } from "lucide-react"
 import {
   financeServices,
+  type Contribution,
   type LoanInstallment,
   type Loan,
   type LoanProduct,
@@ -154,6 +155,7 @@ export default function GroupLoansPage() {
 
   const [loanProducts, setLoanProducts] = useState<LoanProduct[]>([])
   const [loans, setLoans] = useState<Loan[]>([])
+  const [contributions, setContributions] = useState<Contribution[]>([])
   const [loading, setLoading] = useState(true)
   const [productSubmitting, setProductSubmitting] = useState(false)
   const [requestSubmitting, setRequestSubmitting] = useState(false)
@@ -196,6 +198,18 @@ export default function GroupLoansPage() {
   )
 
   const selectedLoanProduct = loanProducts.find((product) => product.uuid === requestForm.loan_product_id)
+  const verifiedSavingsBalance = useMemo(() => {
+    return contributions
+      .filter((contribution) => contribution.status === "VERIFIED" && contribution.member_user_id === user?.uuid)
+      .reduce((sum, contribution) => sum + parseTzsAmount(contribution.amount), 0)
+  }, [contributions, user?.uuid])
+  const minimumSavingsRequirement = parseTzsAmount(selectedGroup?.minimum_savings_for_loan || "0")
+  const selectedLoanProductAmount = selectedLoanProduct ? parseTzsAmount(selectedLoanProduct.amount) : 0
+  const canRequestLoanBySavings = Boolean(
+    selectedLoanProduct &&
+      verifiedSavingsBalance >= minimumSavingsRequirement &&
+      selectedLoanProductAmount <= verifiedSavingsBalance
+  )
   const activeLoanNextInstallment = useMemo(() => {
     return (
       selectedLoanInstallments.find((installment) => installment.status !== "PAID") ||
@@ -218,7 +232,10 @@ export default function GroupLoansPage() {
   }, [activePaymentLoan, activeLoanNextInstallment, paymentChoiceAmount, paymentChoiceMode])
 
   const stats = useMemo(() => {
-    const totalPrincipal = loans.reduce((sum, loan) => sum + parseTzsAmount(loan.principal_amount), 0)
+    const disbursedLoans = loans.filter(
+      (loan) => ["ACTIVE", "OVERDUE", "PAID_OFF", "COMPLETED"].includes(loan.status)
+    )
+    const totalPrincipal = disbursedLoans.reduce((sum, loan) => sum + parseTzsAmount(loan.principal_amount), 0)
     const totalOutstanding = loans.reduce((sum, loan) => sum + parseTzsAmount(loan.balance), 0)
     const activeLoans = loans.filter((loan) => ["ACTIVE", "OVERDUE"].includes(loan.status)).length
     const pendingRequests = loans.filter((loan) => loan.status === "PENDING").length
@@ -236,7 +253,7 @@ export default function GroupLoansPage() {
       if (loanFilter === "ALL") return true
       
       const loanBorrower = selectedGroupMembers.find((m) => m.user_id === loan.borrower || m.membership_id === loan.borrower)
-      const isCurrentUserLoan = loanBorrower?.user_id === user?.uuid
+      const isCurrentUserLoan = loan.borrower_user_id === user?.uuid || loanBorrower?.user_id === user?.uuid
 
       if (loanFilter === "MY_LOANS") return isCurrentUserLoan
       if (loanFilter === "ACCEPTED") return ["APPROVED", "PAID_OFF", "COMPLETED"].includes(loan.status)
@@ -255,14 +272,16 @@ export default function GroupLoansPage() {
       setLoading(true)
 
       try {
-        const [productsResponse, loansResponse] = await Promise.all([
+        const [productsResponse, loansResponse, contributionsResponse] = await Promise.all([
           financeServices.getLoanProducts(groupId),
           financeServices.getLoans(groupId),
+          financeServices.getContributions(groupId),
         ])
 
         if (!isCancelled) {
           setLoanProducts(productsResponse.data)
           setLoans(loansResponse.data)
+          setContributions(contributionsResponse.data)
         }
       } catch (loadError: unknown) {
         if (!isCancelled) {
@@ -440,6 +459,18 @@ export default function GroupLoansPage() {
 
     if (!selectedLoanProduct) {
       toast.error("Please select a loan type before submitting a request.")
+      return
+    }
+
+    if (verifiedSavingsBalance < minimumSavingsRequirement) {
+      toast.error(
+        `You need at least ${formatTzs(minimumSavingsRequirement)} in verified savings before requesting a loan.`
+      )
+      return
+    }
+
+    if (selectedLoanProductAmount > verifiedSavingsBalance) {
+      toast.error("Your selected loan amount cannot exceed your verified savings balance.")
       return
     }
 
@@ -896,7 +927,7 @@ export default function GroupLoansPage() {
                         ? `${loanBorrower.first_name} ${loanBorrower.last_name}`.trim() || loanBorrower.email 
                         : loan.borrower_name || "Unnamed member"
 
-                      const isCurrentUserLoan = loanBorrower?.user_id === user?.uuid
+                      const isCurrentUserLoan = loan.borrower_user_id === user?.uuid || loanBorrower?.user_id === user?.uuid
 
                       return (
                         <div
@@ -1054,13 +1085,13 @@ export default function GroupLoansPage() {
                     <p className="text-sm text-muted-foreground mt-1">Select a loan below to make a repayment.</p>
                   </div>
                   <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs uppercase tracking-widest">
-                    {loans.filter((l) => ["ACTIVE", "OVERDUE"].includes(l.status) && (l.borrower === currentMembership?.membership_id || l.borrower_name === `${user?.firstName} ${user?.lastName}`)).length} active
+                    {loans.filter((l) => ["ACTIVE", "OVERDUE"].includes(l.status) && l.borrower_user_id === user?.uuid).length} active
                   </Badge>
                 </div>
 
                 {(() => {
                   const myActiveLoans = loans.filter(
-                    (l) => ["ACTIVE", "OVERDUE"].includes(l.status) && (l.borrower === currentMembership?.membership_id || l.borrower_name === `${user?.firstName} ${user?.lastName}`)
+                    (l) => ["ACTIVE", "OVERDUE"].includes(l.status) && l.borrower_user_id === user?.uuid
                   )
                   if (myActiveLoans.length === 0) {
                     return (
@@ -1342,7 +1373,7 @@ export default function GroupLoansPage() {
                 </FieldContent>
               </Field>
 
-              {selectedLoanProduct ? (
+                {selectedLoanProduct ? (
                 <div className="rounded-2xl border border-border bg-background/70 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
@@ -1375,6 +1406,37 @@ export default function GroupLoansPage() {
                 </div>
               ) : null}
 
+              <div className={`rounded-2xl border p-4 ${canRequestLoanBySavings ? "border-chart-1/20 bg-chart-1/5" : "border-amber-500/20 bg-amber-500/5"}`}>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                  Savings eligibility
+                </p>
+                <div className="mt-2 grid gap-2 text-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-muted-foreground">Verified savings</span>
+                    <span className="font-semibold text-foreground">{formatTzs(verifiedSavingsBalance)}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-muted-foreground">Minimum required</span>
+                    <span className="font-semibold text-foreground">{formatTzs(minimumSavingsRequirement)}</span>
+                  </div>
+                  {selectedLoanProduct ? (
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-muted-foreground">Selected loan amount</span>
+                      <span className="font-semibold text-foreground">{formatTzs(selectedLoanProductAmount)}</span>
+                    </div>
+                  ) : null}
+                </div>
+                <p className={`mt-3 text-xs ${canRequestLoanBySavings ? "text-chart-1" : "text-amber-700 dark:text-amber-400"}`}>
+                  {!selectedLoanProduct
+                    ? "Select a loan type to see whether your savings qualify."
+                    : verifiedSavingsBalance < minimumSavingsRequirement
+                      ? "Your verified savings are below the minimum required to borrow from this group."
+                      : selectedLoanProductAmount > verifiedSavingsBalance
+                        ? "Your selected loan amount is higher than your verified savings balance."
+                        : "You can request this loan using your verified savings balance."}
+                </p>
+              </div>
+
               <Field>
                 <FieldLabel htmlFor="loan-purpose">Purpose</FieldLabel>
                 <FieldContent>
@@ -1392,7 +1454,7 @@ export default function GroupLoansPage() {
               <Button type="button" variant="outline" onClick={closeRequestModal}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={requestSubmitting || loanProducts.length === 0}>
+              <Button type="submit" disabled={requestSubmitting || loanProducts.length === 0 || !selectedLoanProduct || !canRequestLoanBySavings}>
                 <ArrowRightLeft className="h-4 w-4 mr-2" />
                 {requestSubmitting ? "Submitting..." : "Submit request"}
               </Button>

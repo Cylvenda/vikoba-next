@@ -52,6 +52,7 @@ type LoanApiResponse = {
   duration_type: LoanProduct["duration_type"]
   duration_count: number
   borrower: string
+  borrower_user_id: string
   borrower_name: string
   interest_rate: string
   purpose: string | null
@@ -85,6 +86,7 @@ export type Loan = {
   duration_type: LoanProduct["duration_type"]
   duration_count: number
   borrower: string
+  borrower_user_id: string
   borrower_name: string
   interest_rate: string
   purpose: string | null
@@ -155,6 +157,7 @@ export type Fine = {
   uuid: string
   group: string
   member: string
+  member_user_id: string
   member_name: string
   member_email: string
   fine_category_uuid: string | null
@@ -206,6 +209,7 @@ export type Contribution = {
   group: string
   group_name: string
   member: string
+  member_user_id: string
   member_name: string
   amount: string
   status: "PENDING" | "VERIFIED" | "REJECTED"
@@ -215,6 +219,29 @@ export type Contribution = {
   received_by_name: string
   note: string | null
   created_at: string
+}
+
+export type GroupWalletReport = {
+  balance: number
+  totalVerifiedSavings: number
+  totalFinesCollected: number
+  totalLoanDisbursed: number
+  totalLoanRepayments: number
+}
+
+export type MemberWalletReport = {
+  membership_uuid: string
+  member_user_id: string
+  member_name: string
+  savings_balance: number
+  loan_outstanding: number
+  fine_outstanding: number
+  net_balance: number
+}
+
+export type WalletReport = {
+  groupWallet: GroupWalletReport
+  memberWallets: MemberWalletReport[]
 }
 
 export type CreateContributionPayload = {
@@ -248,6 +275,7 @@ const mapLoan = (loan: LoanApiResponse): Loan => ({
   duration_type: loan.duration_type,
   duration_count: loan.duration_count,
   borrower: loan.borrower,
+  borrower_user_id: loan.borrower_user_id,
   borrower_name: loan.borrower_name,
   interest_rate: loan.interest_rate,
   purpose: loan.purpose,
@@ -432,6 +460,11 @@ export const financeServices = {
     const response = await api.get<FineCategory[]>(API_ENDPOINTS.FINANCE_FINE_CATEGORIES, {
       params: { group_uuid: groupUuid },
     })
+    return { status: response.status, data: response.data }
+  },
+
+  async getWalletReport(groupUuid: string): Promise<ApiResponse<WalletReport>> {
+    const response = await api.get<WalletReport>(`finance/groups/${groupUuid}/wallet-report/`)
     return { status: response.status, data: response.data }
   },
 
