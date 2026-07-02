@@ -38,12 +38,16 @@ import {
   Pie,
   Cell
 } from "recharts";
+import { useLanguage } from "@/components/language/language-provider";
 
 const Page = () => {
   const router = useRouter();
   const { user } = useAuthUserStore();
   const { groups, invitations, fetchGroups, fetchMyInvitations, createGroup, joinGroupByCode, setSelectedGroup } = useGroupStore();
   const { meetings, fetchMeetings } = useMeetingStore();
+  const { language } = useLanguage();
+  const isSwahili = language === "sw";
+  const tt = (en: string, sw: string) => (isSwahili ? sw : en);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
@@ -245,9 +249,9 @@ const Page = () => {
 
   // Recharts Donut data for user personal financials
   const donutData = [
-    { name: "My Savings", value: financialData.totalSavings, color: "var(--chart-1)" },
-    { name: "My Active Loans", value: financialData.activeLoans, color: "var(--chart-3)" },
-    { name: "My Unpaid Fines", value: financialData.unpaidFines, color: "var(--destructive)" }
+    { name: tt("My Savings", "Akiba Zangu"), value: financialData.totalSavings, color: "var(--chart-1)" },
+    { name: tt("My Active Loans", "Mikopo Yangu Inayotumika"), value: financialData.activeLoans, color: "var(--chart-3)" },
+    { name: tt("My Unpaid Fines", "Faini Zangu Zisizolipwa"), value: financialData.unpaidFines, color: "var(--destructive)" }
   ].filter(d => d.value > 0);
 
   const totalUserLiabilities = financialData.activeLoans + financialData.unpaidFines;
@@ -289,19 +293,20 @@ const Page = () => {
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
               <Building2 className="w-8 h-8 text-primary" />
-              Community Hub
+              {tt("Community Hub", "Community Hub")}
             </h1>
             <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
-              Welcome back to your workspace, <span className="font-semibold text-foreground">{displayName}</span>
+              {tt("Welcome back to your workspace,", "Karibu tena kwenye nafasi yako ya kazi,")}{" "}
+              <span className="font-semibold text-foreground">{displayName}</span>
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <Button variant="outline" size="sm" onClick={() => setJoinOpen(true)} className="rounded-xl">
-              Join Group
+              {tt("Join Group", "Jiunge na Kikundi")}
             </Button>
             <Button size="sm" onClick={() => setCreateOpen(true)} className="rounded-xl">
               <Plus className="mr-1.5 h-4 w-4" />
-              New Group
+              {tt("New Group", "Kikundi Kipya")}
             </Button>
           </div>
         </div>
@@ -312,16 +317,16 @@ const Page = () => {
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">My Savings (Hisa)</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">{tt("My Savings (Hisa)", "Akiba Zangu (Hisa)")}</p>
                   <h3 className="mt-2 text-2xl font-extrabold tracking-tight text-chart-1">
-                    {financialData.isLoading ? "Loading..." : formatTzs(financialData.totalSavings)}
+                    {financialData.isLoading ? tt("Loading...", "Inapakia...") : formatTzs(financialData.totalSavings)}
                   </h3>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-chart-1/10 text-chart-1">
                   <PiggyBank className="h-5 w-5" />
                 </div>
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">Total verified savings across all groups</p>
+              <p className="mt-3 text-xs text-muted-foreground">{tt("Total verified savings across all groups", "Jumla ya akiba zilizothibitishwa katika vikundi vyote")}</p>
             </CardContent>
           </Card>
 
@@ -329,16 +334,16 @@ const Page = () => {
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">My Active Loans</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">{tt("My Active Loans", "Mikopo Yangu Inayotumika")}</p>
                   <h3 className="mt-2 text-2xl font-extrabold tracking-tight text-chart-3">
-                    {financialData.isLoading ? "Loading..." : formatTzs(financialData.activeLoans)}
+                    {financialData.isLoading ? tt("Loading...", "Inapakia...") : formatTzs(financialData.activeLoans)}
                   </h3>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-chart-3/10 text-chart-3">
                   <HandCoins className="h-5 w-5" />
                 </div>
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">Outstanding balance requiring repayments</p>
+              <p className="mt-3 text-xs text-muted-foreground">{tt("Outstanding balance requiring repayments", "Salio lililosalia linalohitaji marejesho")}</p>
             </CardContent>
           </Card>
 
@@ -346,16 +351,16 @@ const Page = () => {
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">My Unpaid Fines</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">{tt("My Unpaid Fines", "Faini Zangu Zisizolipwa")}</p>
                   <h3 className="mt-2 text-2xl font-extrabold tracking-tight text-destructive">
-                    {financialData.isLoading ? "Loading..." : formatTzs(financialData.unpaidFines)}
+                    {financialData.isLoading ? tt("Loading...", "Inapakia...") : formatTzs(financialData.unpaidFines)}
                   </h3>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
                   <FileText className="h-5 w-5" />
                 </div>
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">Penalties to clear to stay in good standing</p>
+              <p className="mt-3 text-xs text-muted-foreground">{tt("Penalties to clear to stay in good standing", "Adhabu za kulipa ili kubaki katika hali nzuri")}</p>
             </CardContent>
           </Card>
 
@@ -363,7 +368,7 @@ const Page = () => {
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
                  <div>
-                   <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Active Workspaces</p>
+                   <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">{tt("Active Workspaces", "Nafasi za Kazi Zilizofunguliwa")}</p>
                    <h3 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground">
                      {groups.length + invitations.length}
                    </h3>
@@ -373,7 +378,7 @@ const Page = () => {
                 </div>
               </div>
               <p className="mt-3 text-xs text-muted-foreground">
-                {invitations.length > 0 ? `${invitations.length} pending invitation(s)` : "Up to date"}
+                {invitations.length > 0 ? tt(`${invitations.length} pending invitation(s)`, `${invitations.length} mwaliko unaosubiri`) : tt("Up to date", "Imesasishwa")}
               </p>
             </CardContent>
           </Card>
@@ -386,12 +391,12 @@ const Page = () => {
             <CardContent className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h3 className="text-lg font-bold tracking-tight text-foreground">Workspace Ledger Activity</h3>
-                  <p className="text-xs text-muted-foreground">Consolidated flow across all joined groups</p>
+                  <h3 className="text-lg font-bold tracking-tight text-foreground">{tt("Workspace Ledger Activity", "Shughuli za Daftari la Kazi")}</h3>
+                  <p className="text-xs text-muted-foreground">{tt("Consolidated flow across all joined groups", "Mtiririko uliounganishwa katika vikundi vyote ulivyojiunga")}</p>
                 </div>
                 <div className="flex items-center gap-1 border border-border bg-background px-2.5 py-1 rounded-full text-xs font-medium text-muted-foreground">
                   <Activity className="h-3.5 w-3.5" />
-                  Multi-Group Feed
+                  {tt("Multi-Group Feed", "Mlisho wa Vikundi Vingi")}
                 </div>
               </div>
 
@@ -428,7 +433,7 @@ const Page = () => {
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
-                    {financialData.isLoading ? "Aggregating consolidated movements..." : "No recent activity logged across your workspaces."}
+                    {financialData.isLoading ? tt("Aggregating consolidated movements...", "Inakusanya mienendo iliyounganishwa...") : tt("No recent activity logged across your workspaces.", "Hakuna shughuli za hivi karibuni zilizorekodiwa katika nafasi zako za kazi.")}
                   </div>
                 )}
               </div>
@@ -439,8 +444,8 @@ const Page = () => {
           <Card className="border border-border/80 bg-card/50 shadow-sm backdrop-blur-md">
             <CardContent className="p-6 flex flex-col justify-between h-full">
               <div>
-                <h3 className="text-lg font-bold tracking-tight text-foreground">My Position</h3>
-                <p className="text-xs text-muted-foreground">Consolidated share savings vs liabilities</p>
+                <h3 className="text-lg font-bold tracking-tight text-foreground">{tt("My Position", "Hali Yangu")}</h3>
+                <p className="text-xs text-muted-foreground">{tt("Consolidated share savings vs liabilities", "Akiba za hisa dhidi ya madeni")}</p>
               </div>
 
               <div className="relative flex-1 min-h-[200px] flex items-center justify-center">
@@ -465,7 +470,7 @@ const Page = () => {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute flex flex-col items-center justify-center">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Net Value</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{tt("Net Value", "Thamani Halisi")}</p>
                       <p className="text-base font-extrabold text-foreground mt-0.5">
                         {formatTzs(financialData.totalSavings - totalUserLiabilities)}
                       </p>
@@ -473,7 +478,7 @@ const Page = () => {
                   </>
                 ) : (
                   <div className="text-xs text-muted-foreground">
-                    {financialData.isLoading ? "Calculating net values..." : "Join a group to populate position charts."}
+                    {financialData.isLoading ? tt("Calculating net values...", "Inakokotoa thamani halisi...") : tt("Join a group to populate position charts.", "Jiunge na kikundi ili kujaza chati za hali.")}
                   </div>
                 )}
               </div>
@@ -499,25 +504,25 @@ const Page = () => {
           <div className="xl:col-span-2 space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold tracking-tight text-foreground">My Workspaces</h2>
-                <p className="text-xs text-muted-foreground mt-0.5">Access and manage your savings pool</p>
+                <h2 className="text-xl font-bold tracking-tight text-foreground">{tt("My Workspaces", "Nafasi Zangu za Kazi")}</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">{tt("Access and manage your savings pool", "Fikia na simamia mfuko wako wa akiba")}</p>
               </div>
             </div>
 
             {groups.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border/80 bg-card/40 py-16 text-center">
                 <Building2 className="mx-auto h-12 w-12 text-muted-foreground/45 mb-4 animate-pulse" />
-                <h3 className="text-lg font-bold text-foreground">Welcome to VICOBA Ecosystem</h3>
+                <h3 className="text-lg font-bold text-foreground">{tt("Welcome to VICOBA Ecosystem", "Karibu kwenye Mfumo wa VICOBA")}</h3>
                 <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
-                  You are not yet a member of any savings group. Start by creating a group or join using a workspace short code.
+                  {tt("You are not yet a member of any savings group. Start by creating a group or join using a workspace short code.", "Bado hujawa mwanachama wa kikundi chochote cha akiba. Anza kwa kuunda kikundi au jiunge kwa kutumia msimbo wa mkato wa nafasi ya kazi.")}
                 </p>
                 <div className="mt-6 flex justify-center gap-3">
                   <Button variant="outline" size="sm" onClick={() => setJoinOpen(true)} className="rounded-xl">
-                    Enter Join Code
+                    {tt("Enter Join Code", "Weka Msimbo wa Kujiunga")}
                   </Button>
                   <Button size="sm" onClick={() => setCreateOpen(true)} className="rounded-xl">
                     <Plus className="mr-1.5 h-4 w-4" />
-                    Create Group
+                    {tt("Create Group", "Unda Kikundi")}
                   </Button>
                 </div>
               </div>
@@ -534,14 +539,14 @@ const Page = () => {
                           </div>
                         </div>
                         <p className="text-xs text-muted-foreground line-clamp-2 mt-2 leading-relaxed">
-                          {group.description || "No description provided."}
+                          {group.description || tt("No description provided.", "Hakuna maelezo yaliyotolewa.")}
                         </p>
                       </div>
 
                       <div className="pt-4 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
                         <div className="flex items-center gap-1.5">
                           <Users className="h-3.5 w-3.5 text-primary" />
-                          <span className="font-semibold text-foreground">{group.members_count || 0}</span> Members
+                          <span className="font-semibold text-foreground">{group.members_count || 0}</span> {tt("Members", "Wanachama")}
                         </div>
                         <Button
                           variant="ghost"
@@ -552,7 +557,7 @@ const Page = () => {
                           }}
                           className="h-8 rounded-lg text-primary hover:text-primary hover:bg-primary/10 text-xs font-semibold gap-1"
                         >
-                          Enter Workspace
+                          {tt("Enter Workspace", "Fungua Nafasi")}
                           <ArrowRight className="h-3.5 w-3.5" />
                         </Button>
                       </div>
@@ -571,9 +576,9 @@ const Page = () => {
                 <CardContent className="p-4 flex items-start gap-3">
                   <Sparkles className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-xs">Pending Invitations ({invitations.length})</p>
+                    <p className="font-bold text-xs">{tt("Pending Invitations", "Mialiko Inayosubiri")} ({invitations.length})</p>
                     <p className="text-[11px] mt-1 opacity-90 leading-normal">
-                      You have pending invitations to join new workspaces.
+                      {tt("You have pending invitations to join new workspaces.", "Una mialiko inayosubiri ya kujiunga na nafasi mpya za kazi.")}
                     </p>
                     <Button
                       variant="outline"
@@ -581,7 +586,7 @@ const Page = () => {
                       onClick={() => router.push("/notifications")}
                       className="mt-2.5 h-7 text-[10px] rounded-lg border-amber-500/30 bg-background text-amber-700 dark:text-amber-400 hover:bg-amber-500/10"
                     >
-                      View Invitations
+                      {tt("View Invitations", "Tazama Mialiko")}
                     </Button>
                   </div>
                 </CardContent>
@@ -592,7 +597,7 @@ const Page = () => {
             <Card className="border border-border/80 bg-card p-5 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
                 <div className="h-2.5 w-2.5 rounded-full bg-primary animate-pulse" />
-                <h3 className="font-bold tracking-tight text-foreground text-sm">Today&apos;s Sessions</h3>
+                <h3 className="font-bold tracking-tight text-foreground text-sm">{tt("Today's Sessions", "Vikao vya Leo")}</h3>
               </div>
               
               {todaysMeetings.length > 0 ? (
@@ -612,21 +617,21 @@ const Page = () => {
               ) : (
                 <div className="py-10 text-center">
                   <CalendarDays className="mx-auto h-8 w-8 text-muted-foreground/35 mb-2.5" />
-                  <p className="text-xs font-semibold text-muted-foreground">No meetings scheduled today</p>
+                  <p className="text-xs font-semibold text-muted-foreground">{tt("No meetings scheduled today", "Hakuna vikao vilivyopangwa leo")}</p>
                 </div>
               )}
             </Card>
 
             {/* Combined Recent Activity Timeline */}
             <Card className="border border-border/80 bg-card p-5 shadow-sm">
-              <h3 className="font-bold text-foreground text-sm">General Activity Feed</h3>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Verified financial events across joined groups</p>
+              <h3 className="font-bold text-foreground text-sm">{tt("General Activity Feed", "Mlisho Mkuu wa Shughuli")}</h3>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{tt("Verified financial events across joined groups", "Matukio ya kifedha yaliyothibitishwa katika vikundi vilivyojiunga")}</p>
               
               <div className="mt-4 space-y-3.5">
                 {financialData.isLoading ? (
-                  <div className="text-[11px] text-muted-foreground animate-pulse">Loading feed...</div>
+                  <div className="text-[11px] text-muted-foreground animate-pulse">{tt("Loading feed...", "Inapakia mlisho...")}</div>
                 ) : recentActivities.length === 0 ? (
-                  <div className="text-[11px] text-muted-foreground text-center py-6">No workspace activity found.</div>
+                  <div className="text-[11px] text-muted-foreground text-center py-6">{tt("No workspace activity found.", "Hakuna shughuli za nafasi ya kazi zilizopatikana.")}</div>
                 ) : (
                   recentActivities.map((item) => (
                     <div key={item.id} className="relative pl-4 border-l border-l-border/70 space-y-1 text-xs">
@@ -658,25 +663,25 @@ const Page = () => {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-xl p-6 sm:p-8 rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-extrabold text-foreground flex items-center gap-2">
+              <DialogTitle className="text-xl font-extrabold text-foreground flex items-center gap-2">
               <Building2 className="h-5 w-5 text-primary" />
-              Create a New Group
+              {tt("Create a New Group", "Unda Kikundi Kipya")}
             </DialogTitle>
             <DialogDescription className="mt-1 text-sm text-muted-foreground">
-              Define the parameters for your VICOBA workspace.
+              {tt("Define the parameters for your VICOBA workspace.", "Bainisha vigezo vya nafasi yako ya kazi ya VICOBA.")}
             </DialogDescription>
           </DialogHeader>
 
           <form className="mt-4 space-y-4" onSubmit={handleCreateGroup}>
             <div className="space-y-1.5">
               <label htmlFor="group-name" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Group Name
+                {tt("Group Name", "Jina la Kikundi")}
               </label>
               <Input
                 id="group-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Kilimanjaro Savings Circle"
+                placeholder={tt("e.g., Kilimanjaro Savings Circle", "mfano, Kikundi cha Akiba cha Kilimanjaro")}
                 className="bg-muted/30 border-border/80"
                 required
               />
@@ -684,14 +689,14 @@ const Page = () => {
 
             <div className="space-y-1.5">
               <label htmlFor="group-description" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Description
+                {tt("Description", "Maelezo")}
               </label>
               <textarea
                 id="group-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="min-h-[100px] w-full rounded-lg border border-border/80 bg-muted/30 px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary resize-none"
-                placeholder="Describe the target capital or goals for this circle..."
+                placeholder={tt("Describe the target capital or goals for this circle...", "Eleza mtaji unaolengwa au malengo ya kundi hili...")}
               />
             </div>
 
@@ -702,7 +707,7 @@ const Page = () => {
                 onChange={(e) => setIsPrivate(e.target.checked)}
                 className="rounded border-border text-primary focus:ring-primary h-4.5 w-4.5"
               />
-              Make Group Private
+              {tt("Make Group Private", "Fanya Kikundi Kiwe Binafsi")}
             </label>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-border mt-4">
@@ -710,7 +715,7 @@ const Page = () => {
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting} className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground">
-                {isSubmitting ? "Creating..." : "Create Group"}
+                {isSubmitting ? tt("Creating...", "Inaumba...") : tt("Create Group", "Unda Kikundi")}
               </Button>
             </div>
           </form>
@@ -723,23 +728,23 @@ const Page = () => {
           <DialogHeader>
             <DialogTitle className="text-xl font-extrabold text-foreground flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
-              Join VICOBA Group
+              {tt("Join VICOBA Group", "Jiunge na Kikundi cha VICOBA")}
             </DialogTitle>
             <DialogDescription className="mt-1 text-sm text-muted-foreground">
-              Enter the 6-character short code to request member membership.
+              {tt("Enter the 6-character short code to request member membership.", "Ingiza msimbo mfupi wa herufi 6 kuomba uanachama.")}
             </DialogDescription>
           </DialogHeader>
 
           <form className="mt-4 space-y-4" onSubmit={handleJoinGroup}>
             <div className="space-y-1.5">
               <label htmlFor="join-code" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Join Code
+                {tt("Join Code", "Msimbo wa Kujiunga")}
               </label>
               <Input
                 id="join-code"
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                placeholder="e.g., A1B2C3"
+                placeholder={tt("e.g., A1B2C3", "mfano, A1B2C3")}
                 className="bg-muted/30 border-border/80 text-center tracking-widest uppercase text-lg font-bold"
                 maxLength={6}
                 required
@@ -751,7 +756,7 @@ const Page = () => {
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting} className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground">
-                {isSubmitting ? "Requesting..." : "Join Group"}
+                {isSubmitting ? tt("Requesting...", "Inaomba...") : tt("Join Group", "Jiunge na Kikundi")}
               </Button>
             </div>
           </form>

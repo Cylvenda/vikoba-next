@@ -18,10 +18,13 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { getTranslation } from "@/lib/i18n"
+import { useLanguage } from "@/components/language/language-provider"
+import LanguageToggle from "@/components/language/language-toggle"
 
 const userSections = [
   {
-    title: "Members",
+    titleKey: "guide.sectionMembers",
     icon: Users,
     steps: [
       "Join your group and verify your membership.",
@@ -31,7 +34,7 @@ const userSections = [
     ],
   },
   {
-    title: "Leadership",
+    titleKey: "guide.sectionLeadership",
     icon: ShieldCheck,
     steps: [
       "Chairperson schedules meetings and reviews approvals.",
@@ -41,7 +44,7 @@ const userSections = [
     ],
   },
   {
-    title: "Finance Flow",
+    titleKey: "guide.sectionFinance",
     icon: Landmark,
     steps: [
       "Verified savings go into the group wallet.",
@@ -54,7 +57,7 @@ const userSections = [
 
 const processCards = [
   {
-    title: "Savings Process",
+    titleKey: "guide.sectionSavings",
     icon: WalletCards,
     points: [
       "Enter savings during a meeting or through the savings screen.",
@@ -63,7 +66,7 @@ const processCards = [
     ],
   },
   {
-    title: "Loan Process",
+    titleKey: "guide.sectionLoans",
     icon: HandCoins,
     points: [
       "Members request loans from their group.",
@@ -72,7 +75,7 @@ const processCards = [
     ],
   },
   {
-    title: "Fine Process",
+    titleKey: "guide.sectionFines",
     icon: FileText,
     points: [
       "Leaders issue fines to specific members.",
@@ -81,7 +84,7 @@ const processCards = [
     ],
   },
   {
-    title: "Meetings",
+    titleKey: "guide.sectionMeetings",
     icon: Megaphone,
     points: [
       "Meetings are scheduled by leadership and shared with members.",
@@ -100,14 +103,17 @@ const leadershipWorkflow = [
 ]
 
 const quickLinks = [
-  { label: "Dashboard", href: "/home" },
-  { label: "Wallet", href: "/guide#wallet" },
-  { label: "Loans", href: "/guide#loans" },
-  { label: "Fines", href: "/guide#fines" },
-  { label: "Meetings", href: "/guide#meetings" },
+  { key: "guide.quickLinkDashboard", href: "/home" },
+  { key: "guide.quickLinkWallet", href: "/guide#wallet" },
+  { key: "guide.quickLinkLoans", href: "/guide#loans" },
+  { key: "guide.quickLinkFines", href: "/guide#fines" },
+  { key: "guide.quickLinkMeetings", href: "/guide#meetings" },
 ]
 
 export default function GuidePage() {
+  const { language } = useLanguage()
+  const isSwahili = language === "sw"
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <section className="relative overflow-hidden">
@@ -118,15 +124,16 @@ export default function GuidePage() {
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-2 text-sm font-semibold shadow-sm backdrop-blur">
               <BookOpen className="h-4 w-4 text-chart-3" />
-              System Guide
+              {isSwahili ? "Mwongozo wa Mfumo" : "System Guide"}
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <LanguageToggle compact />
               <Button asChild variant="outline" className="rounded-full">
-                <Link href="/login">Sign in</Link>
+                <Link href="/login">{getTranslation(language, "actions.signIn")}</Link>
               </Button>
               <Button asChild className="rounded-full bg-chart-3 hover:bg-chart-2">
                 <Link href="/register">
-                  Start using the system
+                  {isSwahili ? "Anza kutumia mfumo" : "Start using the system"}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -137,22 +144,20 @@ export default function GuidePage() {
             <div className="space-y-6">
               <div className="space-y-4">
                 <Badge className="rounded-full bg-chart-3/10 px-3 py-1 text-chart-4 hover:bg-chart-3/10">
-                  Public and member access
+                  {isSwahili ? "Ufikiaji wa umma na wanachama" : "Public and member access"}
                 </Badge>
                 <h1 className="max-w-4xl text-4xl font-black tracking-tight md:text-6xl">
-                  How to use the VICOBA system, from first login to leadership workflows.
+                  {getTranslation(language, "guide.title")}
                 </h1>
                 <p className="max-w-3xl text-base leading-8 text-muted-foreground md:text-lg">
-                  This guide explains what members, leaders, and finance roles should do in the
-                  system, how money moves through the group wallet, and how to keep records clean
-                  for reporting and accountability.
+                  {getTranslation(language, "guide.lead")}
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-2">
                 {quickLinks.map((item) => (
                   <Button key={item.href} asChild variant="outline" className="rounded-full">
-                    <Link href={item.href}>{item.label}</Link>
+                    <Link href={item.href}>{getTranslation(language, item.key)}</Link>
                   </Button>
                 ))}
               </div>
@@ -162,25 +167,25 @@ export default function GuidePage() {
               <CardContent className="p-6">
                 <div className="flex items-center gap-2">
                   <LifeBuoy className="h-5 w-5 text-chart-3" />
-                  <h2 className="text-xl font-bold">Quick Start</h2>
+                  <h2 className="text-xl font-bold">{getTranslation(language, "guide.quickStartTitle")}</h2>
                 </div>
                 <ol className="mt-5 space-y-4">
                   <li className="rounded-2xl border border-border bg-background p-4">
-                    <p className="font-semibold">1. Join or sign in</p>
+                    <p className="font-semibold">{getTranslation(language, "guide.step1Title")}</p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Members sign in, while new users register and request to join a group.
+                      {getTranslation(language, "guide.step1Body")}
                     </p>
                   </li>
                   <li className="rounded-2xl border border-border bg-background p-4">
-                    <p className="font-semibold">2. Open your workspace</p>
+                    <p className="font-semibold">{getTranslation(language, "guide.step2Title")}</p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Use the dashboard for group activities, wallet reports, loans, fines, and meetings.
+                      {getTranslation(language, "guide.step2Body")}
                     </p>
                   </li>
                   <li className="rounded-2xl border border-border bg-background p-4">
-                    <p className="font-semibold">3. Follow the process</p>
+                    <p className="font-semibold">{getTranslation(language, "guide.step3Title")}</p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Savings, loans, and fines should flow through the correct finance process so reports stay accurate.
+                      {getTranslation(language, "guide.step3Body")}
                     </p>
                   </li>
                 </ol>
@@ -194,13 +199,13 @@ export default function GuidePage() {
         {userSections.map((section) => {
           const Icon = section.icon
           return (
-            <Card key={section.title} className="border-border/80 bg-card/60 shadow-sm backdrop-blur-md">
+            <Card key={section.titleKey} className="border-border/80 bg-card/60 shadow-sm backdrop-blur-md">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
                   <div className="rounded-2xl bg-chart-3/10 p-3 text-chart-3">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h2 className="text-lg font-bold">{section.title}</h2>
+                  <h2 className="text-lg font-bold">{getTranslation(language, section.titleKey)}</h2>
                 </div>
                 <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
                   {section.steps.map((step) => (
@@ -221,19 +226,19 @@ export default function GuidePage() {
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-3">
               <CircleDollarSign className="h-6 w-6 text-chart-3" />
-              <h2 className="text-2xl font-black tracking-tight">Wallet and reporting rules</h2>
+              <h2 className="text-2xl font-black tracking-tight">{getTranslation(language, "guide.walletTitle")}</h2>
             </div>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <div className="rounded-2xl border border-border bg-background p-5">
-                <p className="font-semibold">Group wallet</p>
+                <p className="font-semibold">{getTranslation(language, "guide.walletGroupTitle")}</p>
                 <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                  This is the real cash position of the group. Verified savings, loan repayments, and fine payments increase it. Loan disbursements reduce it.
+                  {getTranslation(language, "guide.walletGroupBody")}
                 </p>
               </div>
               <div className="rounded-2xl border border-border bg-background p-5">
-                <p className="font-semibold">Member wallet</p>
+                <p className="font-semibold">{getTranslation(language, "guide.walletMemberTitle")}</p>
                 <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                  Every member also has a wallet summary for reporting and analysis. It shows savings, loan exposure, fine exposure, and net balance.
+                  {getTranslation(language, "guide.walletMemberBody")}
                 </p>
               </div>
             </div>
@@ -245,13 +250,13 @@ export default function GuidePage() {
         {processCards.map((card) => {
           const Icon = card.icon
           return (
-            <Card key={card.title} className="border-border/80 bg-card/60 shadow-sm backdrop-blur-md">
+            <Card key={card.titleKey} className="border-border/80 bg-card/60 shadow-sm backdrop-blur-md">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
                   <div className="rounded-2xl bg-chart-1/10 p-3 text-chart-1">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h2 className="text-lg font-bold">{card.title}</h2>
+                  <h2 className="text-lg font-bold">{getTranslation(language, card.titleKey)}</h2>
                 </div>
                 <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
                   {card.points.map((point) => (
@@ -272,33 +277,38 @@ export default function GuidePage() {
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-3">
               <Building2 className="h-6 w-6 text-chart-3" />
-              <h2 className="text-2xl font-black tracking-tight">Leadership process</h2>
+              <h2 className="text-2xl font-black tracking-tight">{getTranslation(language, "guide.leadershipTitle")}</h2>
             </div>
             <div className="mt-5 grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
               <div className="rounded-2xl border border-border bg-background p-5">
-                <p className="font-semibold">What leaders do</p>
+                <p className="font-semibold">{getTranslation(language, "guide.leadershipChecklistTitle")}</p>
                 <ol className="mt-3 space-y-3 text-sm text-muted-foreground">
-                  {leadershipWorkflow.map((item, index) => (
-                    <li key={item} className="flex gap-3">
+                  {[
+                    "guide.leadershipChecklist1",
+                    "guide.leadershipChecklist2",
+                    "guide.leadershipChecklist3",
+                    "guide.leadershipChecklist4",
+                  ].map((key, index) => (
+                    <li key={key} className="flex gap-3">
                       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-chart-3/10 text-xs font-bold text-chart-3">
                         {index + 1}
                       </span>
-                      <span>{item}</span>
+                      <span>{getTranslation(language, key)}</span>
                     </li>
                   ))}
                 </ol>
               </div>
 
               <div className="rounded-2xl border border-border bg-background p-5">
-                <p className="font-semibold">Leadership checklist</p>
+                <p className="font-semibold">
+                  {isSwahili ? "Uongozi hufanya nini" : "What leaders do"}
+                </p>
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  {[
-                    "Confirm member identity before issuing fines or approving requests.",
-                    "Use the wallet report to verify cash before lending.",
-                    "Review outstanding member balances before each session ends.",
-                    "Keep meeting minutes and actions aligned with financial records.",
-                  ].map((item) => (
+                  {leadershipWorkflow.map((item, index) => (
                     <div key={item} className="rounded-xl border border-border/70 p-4 text-sm text-muted-foreground">
+                      <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-chart-3/10 text-xs font-bold text-chart-3">
+                        {index + 1}
+                      </span>
                       {item}
                     </div>
                   ))}
@@ -314,10 +324,10 @@ export default function GuidePage() {
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-3">
               <HandCoins className="h-6 w-6 text-chart-3" />
-              <h2 className="text-2xl font-black tracking-tight">Loans</h2>
+              <h2 className="text-2xl font-black tracking-tight">{getTranslation(language, "guide.loansTitle")}</h2>
             </div>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">
-              Loan requests should come from members inside a group. The system checks verified savings and the current group wallet balance before disbursement. Only the group wallet funds the loan, and repayments return cash back to that wallet.
+              {getTranslation(language, "guide.loansBody")}
             </p>
           </CardContent>
         </Card>
@@ -328,10 +338,10 @@ export default function GuidePage() {
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-3">
               <FileText className="h-6 w-6 text-chart-3" />
-              <h2 className="text-2xl font-black tracking-tight">Fines and penalties</h2>
+              <h2 className="text-2xl font-black tracking-tight">{getTranslation(language, "guide.finesTitle")}</h2>
             </div>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">
-              Leadership can issue fines to a specific member. The member can pay only their own fine, and once paid the money is recorded back into the group wallet and reflected in reports.
+              {getTranslation(language, "guide.finesBody")}
             </p>
           </CardContent>
         </Card>
@@ -342,10 +352,10 @@ export default function GuidePage() {
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-3">
               <Megaphone className="h-6 w-6 text-chart-3" />
-              <h2 className="text-2xl font-black tracking-tight">Meetings</h2>
+              <h2 className="text-2xl font-black tracking-tight">{getTranslation(language, "guide.meetingsTitle")}</h2>
             </div>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">
-              Meetings are where leadership runs the group session, reviews financial activity, records minutes, and keeps the group aligned. Members can use meeting actions as the main place to participate in live group processes.
+              {getTranslation(language, "guide.meetingsBody")}
             </p>
           </CardContent>
         </Card>
@@ -353,10 +363,10 @@ export default function GuidePage() {
         <div className="mt-6 rounded-2xl border border-border/80 bg-card/60 p-6 shadow-sm backdrop-blur-md">
           <div className="flex items-center gap-3">
             <ShieldCheck className="h-5 w-5 text-chart-3" />
-            <h3 className="text-lg font-bold">Need help?</h3>
+            <h3 className="text-lg font-bold">{getTranslation(language, "guide.helpTitle")}</h3>
           </div>
           <p className="mt-3 text-sm leading-7 text-muted-foreground">
-            Start with the dashboard, then move into your group workspace. If you are a leader, focus on the wallet, loans, fines, and meetings pages. If you are a member, use your group dashboard and wallet pages to understand your balances and actions.
+            {getTranslation(language, "guide.helpBody")}
           </p>
         </div>
       </section>

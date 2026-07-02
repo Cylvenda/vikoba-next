@@ -5,6 +5,7 @@ import { useParticipants, useTracks, type TrackReferenceOrPlaceholder } from "@l
 import { Track, RoomEvent } from "livekit-client"
 import { ParticipantTile } from "@/components/meeting-room/ParticipantTile"
 import type { MeetingParticipantSignalState } from "@/components/meeting-room/types"
+import { useLanguage } from "@/components/language/language-provider"
 
 type VideoGridProps = {
   hostIdentity?: string
@@ -53,6 +54,8 @@ function getGridClass(count: number) {
 }
 
 export function VideoGrid({ hostIdentity, currentUserIdentity, participantSignals }: VideoGridProps) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const participants = useParticipants()
   const trackRefs = useTracks(
     [
@@ -102,8 +105,8 @@ export function VideoGrid({ hostIdentity, currentUserIdentity, participantSignal
           {filmstripTrackRefs.length > 0 ? (
             <div className="flex w-full min-w-0 flex-col gap-1 xl:max-w-[20rem]">
               <div>
-                <h3 className="text-sm font-semibold text-foreground">Participants</h3>
-                <p className="text-xs text-muted-foreground">Screen sharing is active</p>
+                <h3 className="text-sm font-semibold text-foreground">{tt("Participants", "Washiriki")}</h3>
+                <p className="text-xs text-muted-foreground">{tt("Screen sharing is active", "Skrini inashirikiwa")}</p>
               </div>
               <div className="grid min-h-0 flex-1 grid-cols-1 gap-1 sm:grid-cols-2 xl:auto-rows-fr xl:grid-cols-1">
                 {filmstripTrackRefs.map((trackRef) => (

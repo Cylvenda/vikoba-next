@@ -18,18 +18,23 @@ import {
   ShieldCheck,
   SlidersHorizontal
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuthUserStore } from "@/store/auth/userAuth.store";
 import { useGroupStore } from "@/store/group/groupUser.store";
+import { useLanguage } from "@/components/language/language-provider";
 
 const GroupsPage = () => {
   const router = useRouter();
   const { user } = useAuthUserStore();
   const { groups, fetchGroups, fetchMyInvitations, createGroup, joinGroupByCode, setSelectedGroup, loading } = useGroupStore();
+  const { language } = useLanguage();
+  const tt = useMemo(
+    () => (en: string, sw: string) => (language === "sw" ? sw : en),
+    [language],
+  );
 
   const [createOpen, setCreateOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
@@ -50,11 +55,11 @@ const GroupsPage = () => {
       try {
         await Promise.allSettled([fetchGroups(), fetchMyInvitations()]);
       } catch {
-        toast.error("We could not load your groups right now.");
+        toast.error(tt("We could not load your groups right now.", "Kwa sasa hatukuweza kupakia vikundi vyako."));
       }
     };
     void load();
-  }, [fetchGroups, fetchMyInvitations]);
+  }, [fetchGroups, fetchMyInvitations, tt]);
 
   const displayName = useMemo(
     () => `${user?.firstName || "Member"} ${user?.lastName || ""}`.trim(),
@@ -114,7 +119,7 @@ const GroupsPage = () => {
   const handleJoinGroup = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (joinCode.length !== 6) {
-      toast.error("Join code must be 6 characters long.");
+      toast.error(tt("Join code must be 6 characters long.", "Msimbo wa kujiunga lazima uwe na herufi 6."));
       return;
     }
     setIsSubmitting(true);
@@ -140,25 +145,25 @@ const GroupsPage = () => {
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
               <FolderKanban className="w-8 h-8 text-primary" />
-              Groups Workspace
+              {tt("Groups Workspace", "Nafasi ya Vikundi")}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Browse and manage your VICOBA savings circles. Hello, <span className="font-semibold text-foreground">{displayName}</span>
+              {tt("Browse and manage your VICOBA savings circles. Hello,", "Vinjari na simamia vikundi vyako vya akiba vya VICOBA. Hujambo,")} <span className="font-semibold text-foreground">{displayName}</span>
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <Button variant="outline" size="sm" onClick={() => setJoinOpen(true)} className="rounded-xl">
               <UserPlus className="mr-1.5 h-4 w-4" />
-              Join Group
+              {tt("Join Group", "Jiunge na Kikundi")}
             </Button>
             <Button size="sm" onClick={() => setCreateOpen(true)} className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground">
               <Plus className="mr-1.5 h-4 w-4" />
-              Add New Group
+              {tt("Add New Group", "Ongeza Kikundi Kipya")}
             </Button>
             <Button asChild variant="ghost" size="sm" className="rounded-xl">
               <Link href="/home" className="flex items-center gap-1.5">
                 <ArrowLeft className="h-4 w-4" />
-                Back
+                {tt("Back", "Rudi")}
               </Link>
             </Button>
           </div>
@@ -170,7 +175,7 @@ const GroupsPage = () => {
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Total Groups</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">{tt("Total Groups", "Jumla ya Vikundi")}</p>
                   <h3 className="mt-2 text-3xl font-extrabold tracking-tight text-foreground">
                     {overview.totalGroups}
                   </h3>
@@ -179,7 +184,7 @@ const GroupsPage = () => {
                   <FolderKanban className="h-5 w-5" />
                 </div>
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">Workspace allocations</p>
+              <p className="mt-3 text-xs text-muted-foreground">{tt("Workspace allocations", "Ugawaji wa nafasi za kazi")}</p>
             </CardContent>
           </Card>
 
@@ -187,7 +192,7 @@ const GroupsPage = () => {
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Active Groups</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">{tt("Active Groups", "Vikundi Hai")}</p>
                   <h3 className="mt-2 text-3xl font-extrabold tracking-tight text-chart-1">
                     {overview.activeGroups}
                   </h3>
@@ -196,7 +201,7 @@ const GroupsPage = () => {
                   <BadgeCheck className="h-5 w-5" />
                 </div>
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">Operating currently</p>
+              <p className="mt-3 text-xs text-muted-foreground">{tt("Operating currently", "Vinavyofanya kazi sasa")}</p>
             </CardContent>
           </Card>
 
@@ -204,7 +209,7 @@ const GroupsPage = () => {
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Private Circles</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">{tt("Private Circles", "Vikundi vya Binafsi")}</p>
                   <h3 className="mt-2 text-3xl font-extrabold tracking-tight text-chart-2">
                     {overview.privateGroups}
                   </h3>
@@ -213,7 +218,7 @@ const GroupsPage = () => {
                   <Lock className="h-5 w-5" />
                 </div>
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">Invite-only setups</p>
+              <p className="mt-3 text-xs text-muted-foreground">{tt("Invite-only setups", "Mipangilio ya mwaliko pekee")}</p>
             </CardContent>
           </Card>
 
@@ -221,7 +226,7 @@ const GroupsPage = () => {
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Total Members</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">{tt("Total Members", "Jumla ya Wanachama")}</p>
                   <h3 className="mt-2 text-3xl font-extrabold tracking-tight text-chart-3">
                     {overview.totalMembers}
                   </h3>
@@ -230,7 +235,7 @@ const GroupsPage = () => {
                   <Users className="h-5 w-5" />
                 </div>
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">Across all circles</p>
+              <p className="mt-3 text-xs text-muted-foreground">{tt("Across all circles", "Katika vikundi vyote")}</p>
             </CardContent>
           </Card>
         </div>
@@ -241,7 +246,7 @@ const GroupsPage = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search groups by name or description..."
+                placeholder={tt("Search groups by name or description...", "Tafuta vikundi kwa jina au maelezo...")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 bg-background/50 border-border/80 focus-visible:ring-primary rounded-xl"
@@ -261,7 +266,7 @@ const GroupsPage = () => {
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {tab === "ALL" ? "All Type" : tab === "PRIVATE" ? "Private" : "Public"}
+                    {tab === "ALL" ? tt("All", "Zote") : tab === "PRIVATE" ? tt("Private", "Binafsi") : tt("Public", "Za wazi")}
                   </button>
                 ))}
               </div>
@@ -271,14 +276,14 @@ const GroupsPage = () => {
           {/* Group Grid list */}
           {loading && groups.length === 0 ? (
             <div className="py-20 text-center text-sm text-muted-foreground animate-pulse">
-              Loading groups workspace...
+              {tt("Loading groups workspace...", "Inapakia nafasi ya vikundi...")}
             </div>
           ) : filteredGroups.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border/80 bg-card/20 py-20 text-center">
               <FolderKanban className="mx-auto h-12 w-12 text-muted-foreground/35 mb-4 animate-pulse" />
-              <h3 className="text-lg font-bold text-foreground">No groups found</h3>
+              <h3 className="text-lg font-bold text-foreground">{tt("No groups found", "Hakuna vikundi vilivyopatikana")}</h3>
               <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
-                No groups match your current search query or filter selection. Try adjusting your settings.
+                {tt("No groups match your current search query or filter selection. Try adjusting your settings.", "Hakuna vikundi vinavyolingana na utafutaji au kichujio ulichochagua. Jaribu kurekebisha mipangilio yako.")}
               </p>
             </div>
           ) : (
@@ -297,7 +302,7 @@ const GroupsPage = () => {
                       </div>
                       
                       <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
-                        {group.description || "No description provided for this group workspace circle."}
+                        {group.description || tt("No description provided for this group workspace circle.", "Hakuna maelezo yaliyotolewa kwa kundi hili.")}
                       </p>
                     </div>
 
@@ -310,7 +315,7 @@ const GroupsPage = () => {
                         <span className="text-border/80">•</span>
                         <div className="flex items-center gap-1">
                           <ShieldCheck className="h-3.5 w-3.5 text-chart-1" />
-                          <span className="font-semibold text-foreground capitalize">{group.is_active ? "Active" : "Inactive"}</span>
+                          <span className="font-semibold text-foreground capitalize">{group.is_active ? tt("Active", "Hai") : tt("Inactive", "Haimi")}</span>
                         </div>
                       </div>
 
@@ -323,7 +328,7 @@ const GroupsPage = () => {
                         }}
                         className="h-8 rounded-lg text-primary hover:text-primary-foreground hover:bg-primary text-xs font-semibold gap-1"
                       >
-                        Open Workspace
+                        {tt("Open Workspace", "Fungua Nafasi")}
                         <ArrowRight className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -341,23 +346,23 @@ const GroupsPage = () => {
           <DialogHeader>
             <DialogTitle className="text-xl font-extrabold text-foreground flex items-center gap-2">
               <FolderKanban className="h-5 w-5 text-primary" />
-              Create a New Group
+              {tt("Create a New Group", "Unda Kikundi Kipya")}
             </DialogTitle>
             <DialogDescription className="mt-1 text-sm text-muted-foreground">
-              Define the parameters for your VICOBA workspace.
+              {tt("Define the parameters for your VICOBA workspace.", "Bainisha vigezo vya nafasi yako ya kazi ya VICOBA.")}
             </DialogDescription>
           </DialogHeader>
 
           <form className="mt-4 space-y-4" onSubmit={handleCreateGroup}>
             <div className="space-y-1.5">
               <label htmlFor="group-name" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Group Name
+                {tt("Group Name", "Jina la Kikundi")}
               </label>
               <Input
                 id="group-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Kilimanjaro Savings Circle"
+                placeholder={tt("e.g., Kilimanjaro Savings Circle", "mfano, Kikundi cha Akiba cha Kilimanjaro")}
                 className="bg-muted/30 border-border/80 rounded-xl"
                 required
               />
@@ -365,14 +370,14 @@ const GroupsPage = () => {
 
             <div className="space-y-1.5">
               <label htmlFor="group-description" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Description
+                {tt("Description", "Maelezo")}
               </label>
               <textarea
                 id="group-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="min-h-[100px] w-full rounded-xl border border-border/80 bg-muted/30 px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary resize-none"
-                placeholder="Describe the target capital or goals for this circle..."
+                placeholder={tt("Describe the target capital or goals for this circle...", "Eleza mtaji unaolengwa au malengo ya kundi hili...")}
               />
             </div>
 
@@ -383,15 +388,15 @@ const GroupsPage = () => {
                 onChange={(e) => setIsPrivate(e.target.checked)}
                 className="rounded border-border text-primary focus:ring-primary h-4.5 w-4.5"
               />
-              Make Group Private
+              {tt("Make Group Private", "Fanya Kikundi Kiwe Binafsi")}
             </label>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-border mt-4">
               <Button type="button" variant="ghost" onClick={() => setCreateOpen(false)} className="rounded-xl">
-                Cancel
+                {tt("Cancel", "Ghairi")}
               </Button>
               <Button type="submit" disabled={isSubmitting} className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground">
-                {isSubmitting ? "Creating..." : "Create Group"}
+                {isSubmitting ? tt("Creating...", "Inaunda...") : tt("Create Group", "Unda Kikundi")}
               </Button>
             </div>
           </form>
@@ -404,23 +409,23 @@ const GroupsPage = () => {
           <DialogHeader>
             <DialogTitle className="text-xl font-extrabold text-foreground flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
-              Join VICOBA Group
+              {tt("Join VICOBA Group", "Jiunge na Kikundi cha VICOBA")}
             </DialogTitle>
             <DialogDescription className="mt-1 text-sm text-muted-foreground">
-              Enter the 6-character short code to request member membership.
+              {tt("Enter the 6-character short code to request member membership.", "Ingiza msimbo mfupi wa herufi 6 kuomba uanachama.")}
             </DialogDescription>
           </DialogHeader>
 
           <form className="mt-4 space-y-4" onSubmit={handleJoinGroup}>
             <div className="space-y-1.5">
               <label htmlFor="join-code" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Join Code
+                {tt("Join Code", "Msimbo wa Kujiunga")}
               </label>
               <Input
                 id="join-code"
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                placeholder="e.g., A1B2C3"
+                placeholder={tt("e.g., A1B2C3", "mfano, A1B2C3")}
                 className="bg-muted/30 border-border/80 text-center tracking-widest uppercase text-lg font-bold rounded-xl"
                 maxLength={6}
                 required
@@ -429,10 +434,10 @@ const GroupsPage = () => {
 
             <div className="flex justify-end gap-3 pt-4 border-t border-border mt-4">
               <Button type="button" variant="ghost" onClick={() => setJoinOpen(false)} className="rounded-xl">
-                Cancel
+                {tt("Cancel", "Ghairi")}
               </Button>
               <Button type="submit" disabled={isSubmitting} className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground">
-                {isSubmitting ? "Requesting..." : "Join Group"}
+                {isSubmitting ? tt("Requesting...", "Inaomba...") : tt("Join Group", "Jiunge na Kikundi")}
               </Button>
             </div>
           </form>

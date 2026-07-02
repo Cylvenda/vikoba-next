@@ -1,7 +1,7 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { useEffect, useMemo, useRef, useState, useTransition } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   RoomAudioRenderer,
   useConnectionState,
@@ -13,12 +13,10 @@ import {
 import { PanelLeftClose, PanelRightClose, X } from "lucide-react"
 import { toast } from "react-toastify"
 import type { AgendaItem, AttendanceRecord, ParticipantSession } from "@/store/meeting/meeting.types"
-import { useMeetingStore } from "@/store/meeting/meeting.store"
 import { AgendaPanel } from "@/components/meeting-room/AgendaPanel"
 import { AttendancePanel } from "@/components/meeting-room/AttendancePanel"
 import { ChatPanel } from "@/components/meeting-room/ChatPanel"
 import { ControlBar } from "@/components/meeting-room/ControlBar"
-import { MinuteSectionsPanel } from "@/components/meeting/MinuteSectionsPanel"
 import { AgendaMinutesPanel } from "@/components/meeting-room/AgendaMinutesPanel"
 import { TopBar } from "@/components/meeting-room/TopBar"
 import { VideoGrid } from "@/components/meeting-room/VideoGrid"
@@ -31,6 +29,7 @@ import type {
   MeetingSidebarTab,
   ParticipantRoleMap,
 } from "@/components/meeting-room/types"
+import { useLanguage } from "@/components/language/language-provider"
 
 type MeetingRoomProps = {
   meetingId?: string
@@ -101,6 +100,7 @@ function PanelFrame({
   onClose: () => void
   children: ReactNode
 }) {
+  const { language } = useLanguage()
   const CloseIcon = side === "left" ? PanelLeftClose : PanelRightClose
 
   return (
@@ -115,7 +115,7 @@ function PanelFrame({
         </div>
         <Button type="button" variant="ghost" size="icon" className="shrink-0 rounded-2xl" onClick={onClose}>
           <X className="size-4" />
-          <span className="sr-only">Close panel</span>
+          <span className="sr-only">{language === "sw" ? "Funga paneli" : "Close panel"}</span>
         </Button>
       </div>
 
@@ -131,20 +131,18 @@ export function MeetingRoom({
   attendanceRecords,
   participantSessions,
   hostIdentity,
-  hostEmail,
   currentUserId,
   currentUserName,
-  minutesContent,
   headerActions,
   onLeaveRequested,
   participantRoles = {},
 }: MeetingRoomProps) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const connectionState = useConnectionState()
   const room = useRoomContext()
   const participants = useParticipants()
   const { localParticipant } = useLocalParticipant()
-  const { saveMinutes } = useMeetingStore()
-  const [isSavingMinutes, startSavingMinutes] = useTransition()
   const [leftPanel, setLeftPanel] = useState<Extract<MeetingSidebarTab, "agenda" | "minutes"> | null>(null)
   const [rightPanel, setRightPanel] = useState<Extract<MeetingSidebarTab, "chat" | "attendance"> | null>(null)
   const [participantSignals, setParticipantSignals] = useState<Record<string, MeetingParticipantSignalState>>({})
@@ -155,8 +153,8 @@ export function MeetingRoom({
     {
       id: "meeting-room-system-welcome",
       senderId: "system",
-      senderName: "System",
-      text: "Welcome to the meeting room. Chat is active locally and ready for realtime delivery.",
+      senderName: language === "sw" ? "Mfumo" : "System",
+      text: language === "sw" ? "Karibu kwenye chumba cha kikao. Ujumbe uko tayari kutumwa moja kwa moja." : "Welcome to the meeting room. Chat is active locally and ready for realtime delivery.",
       createdAt: new Date().toISOString(),
       kind: "system",
     },
@@ -419,7 +417,7 @@ export function MeetingRoom({
       if (left.status !== right.status) return left.status === "online" ? -1 : 1
       return left.name.localeCompare(right.name)
     })
-  }, [attendanceRecords, currentUserId, hostEmail, hostIdentity, participantSessions, participants, participantRoles])
+  }, [attendanceRecords, currentUserId, participantSessions, participants, participantRoles])
 
   const handleSendMessage = async (text: string) => {
     const nextMessage: MeetingChatMessage = {
@@ -454,31 +452,13 @@ export function MeetingRoom({
         {
           id: `${nextMessage.id}-failed`,
           senderId: "system",
-          senderName: "System",
-          text: "Your message was saved locally but could not be delivered to the room.",
+          senderName: tt("System", "Mfumo"),
+          text: tt("Your message was saved locally but could not be delivered to the room.", "Ujumbe wako umehifadhiwa lakini haukuweza kutumwa kwenye chumba."),
           createdAt: new Date().toISOString(),
           kind: "system",
         },
       ])
     }
-  }
-
-  const handleSaveMinutes = async (content: string) => {
-    if (!meetingId || !isHost) {
-      return
-    }
-
-    startSavingMinutes(() => {
-      void (async () => {
-        const result = await saveMinutes(meetingId, { content })
-        if (result.success) {
-          toast.success(result.message)
-          return
-        }
-
-        toast.error(result.message)
-      })()
-    })
   }
 
   const handleLeave = async () => {
@@ -511,7 +491,7 @@ export function MeetingRoom({
         reliable: true,
       }
     ).catch(() => {
-      toast.error("Failed to share your hand raise with the room.")
+      toast.error(tt("Failed to share your hand raise with the room.", "Imeshindikana kutuma taarifa ya kuinua mkono."))
     })
   }
 
@@ -563,10 +543,10 @@ export function MeetingRoom({
         reliable: true,
       }
     ).catch(() => {
-      toast.error("Failed to share your reaction with the room.")
+      toast.error(tt("Failed to share your reaction with the room.", "Imeshindikana kutuma mwitikio wako."))
     })
 
-    toast.success(`${emoji} Reaction sent`, {
+    toast.success(`${emoji} ${tt("Reaction sent", "Mwitikio umetumwa")}`, {
       autoClose: 1500,
     })
   }
@@ -585,11 +565,11 @@ export function MeetingRoom({
         {leftPanel ? (
           <PanelFrame
             side="left"
-            title={leftPanel === "minutes" ? "Meeting Minutes" : "Agenda"}
+            title={leftPanel === "minutes" ? tt("Meeting Minutes", "Kumbukumbu za Kikao") : tt("Agenda", "Ajenda")}
             description={
               leftPanel === "minutes"
-                ? "Host can manage minute sections, mark sections as done, and add notes during the meeting."
-                : "Follow the current discussion without leaving the live room."
+                ? tt("Host can manage minute sections, mark sections as done, and add notes during the meeting.", "Mwenyeji anaweza kusimamia kumbukumbu, kukamilisha sehemu, na kuongeza maelezo wakati wa kikao.")
+                : tt("Follow the current discussion without leaving the live room.", "Fuatilia majadiliano bila kuondoka kwenye chumba cha moja kwa moja.")
             }
             onClose={() => setLeftPanel(null)}
           >
@@ -622,11 +602,11 @@ export function MeetingRoom({
         {rightPanel ? (
           <PanelFrame
             side="right"
-            title={rightPanel === "attendance" ? "Attendance" : "Meeting chat"}
+            title={rightPanel === "attendance" ? tt("Attendance", "Mahudhurio") : tt("Meeting chat", "Ujumbe wa kikao")}
             description={
               rightPanel === "attendance"
-                ? "Track who is present without covering the meeting stage."
-                : "Chat while everyone stays visible on screen."
+                ? tt("Track who is present without covering the meeting stage.", "Fuatilia waliopo bila kufunika eneo la kikao.")
+                : tt("Chat while everyone stays visible on screen.", "Tuma ujumbe huku kila mtu akibaki kuonekana.")
             }
             onClose={() => setRightPanel(null)}
           >

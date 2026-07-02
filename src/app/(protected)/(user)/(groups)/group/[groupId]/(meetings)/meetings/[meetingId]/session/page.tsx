@@ -12,12 +12,15 @@ import { useGroupStore } from "@/store/group/groupUser.store"
 import { toast } from "react-toastify"
 import { getMeetingDetailHref } from "@/lib/meeting-routes"
 import { Video, ShieldAlert, Users, PhoneOff, ArrowLeft } from "lucide-react"
+import { useLanguage } from "@/components/language/language-provider"
 
 export default function MeetingSessionPage() {
   const params = useParams<{ meetingId: string; groupId: string }>()
   const router = useRouter()
   const meetingId = Array.isArray(params?.meetingId) ? params.meetingId[0] : params?.meetingId
   const groupId = Array.isArray(params?.groupId) ? params.groupId[0] : params?.groupId
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   
   const { user } = useAuthUserStore()
   const { selectedGroupMembers, fetchSelectedGroupMembers } = useGroupStore()
@@ -118,7 +121,7 @@ export default function MeetingSessionPage() {
 
     const result = await leaveMeeting(meetingId)
     if (result.success) {
-      toast.success("You left the session.")
+      toast.success(tt("You left the session.", "Umeondoka kwenye kikao."))
       router.push(detailsHref)
       return
     }
@@ -128,7 +131,7 @@ export default function MeetingSessionPage() {
 
   const handleRoomConnected = async () => {
     if (!meetingId) return
-    toast.success("Connected to the Live Session.")
+    toast.success(tt("Connected to the Live Session.", "Umeunganishwa kwenye Kikao cha Moja kwa Moja."))
     await fetchParticipants(meetingId, { silent: true })
   }
 
@@ -136,19 +139,19 @@ export default function MeetingSessionPage() {
     if (!meetingId) return
     await fetchParticipants(meetingId, { silent: true })
     await fetchAttendance(meetingId, { silent: true })
-    toast.warning("Disconnected from the Live Session.")
+    toast.warning(tt("Disconnected from the Live Session.", "Umetenganishwa na Kikao cha Moja kwa Moja."))
   }
 
   const roomHeaderActions = (
     <div className="flex gap-2">
       <Button asChild variant="outline" size="sm" className="rounded-full shadow-sm">
         <Link href={detailsHref} className="flex items-center gap-2 text-xs font-bold text-black dark:text-white">
-          <ArrowLeft className="w-3.5 h-3.5" /> Leave to Details
+          <ArrowLeft className="w-3.5 h-3.5" /> {tt("Leave to Details", "Rudi kwenye Maelezo")}
         </Link>
       </Button>
       {isLeader && isMeetingOngoing ? (
         <Button size="sm" className="rounded-full bg-red-500 hover:bg-red-600 text-white font-bold shadow-sm shadow-red-500/20" onClick={handleEnd} disabled={loading}>
-          <PhoneOff className="w-3.5 h-3.5 mr-1" /> End Session
+          <PhoneOff className="w-3.5 h-3.5 mr-1" /> {tt("End Session", "Maliza Kikao")}
         </Button>
       ) : null}
     </div>
@@ -195,22 +198,22 @@ export default function MeetingSessionPage() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-[2rem] border border-border/80 bg-card/60 backdrop-blur-md p-6 md:p-8 shadow-sm">
           <div>
             <div className="inline-flex items-center gap-1.5 rounded-full border border-chart-3/30 bg-chart-3/10 px-3 py-1 text-[10px] font-bold tracking-widest text-chart-3 uppercase mb-4 shadow-sm">
-              <Video className="w-3 h-3" /> Pre-Session Lobby
+              <Video className="w-3 h-3" /> {tt("Pre-Session Lobby", "Eneo la Kusubiri Kikao")}
             </div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">{selectedMeeting?.title || "Loading session..."}</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">{selectedMeeting?.title || tt("Loading session...", "Inapakia kikao...")}</h1>
             <p className="mt-2 text-sm font-medium text-muted-foreground flex items-center gap-2">
               <ShieldAlert className="w-4 h-4" /> 
-              Status: <span className="uppercase tracking-widest text-[10px] bg-muted px-2 py-0.5 rounded border border-border/50">{selectedMeeting?.status || "loading"}</span>
+              {tt("Status:", "Hali:")} <span className="uppercase tracking-widest text-[10px] bg-muted px-2 py-0.5 rounded border border-border/50">{selectedMeeting?.status || tt("loading", "inapakia")}</span>
             </p>
           </div>
 
           <div className="flex flex-wrap gap-3">
             <Button asChild variant="outline" className="rounded-full font-bold shadow-sm border-border/80 hover:bg-chart-3/10 hover:border-chart-3/30 hover:text-chart-3 transition-colors">
-              <Link href={detailsHref}>Back to Details</Link>
+              <Link href={detailsHref}>{tt("Back to Details", "Rudi kwenye Maelezo")}</Link>
             </Button>
             {isLeader && selectedMeeting?.status === "scheduled" && (
               <Button className="rounded-full bg-chart-3 hover:bg-chart-2 text-primary-foreground font-bold shadow-md" onClick={handleStart} disabled={loading}>
-                <Video className="w-4 h-4 mr-2" /> Start Session Now
+                <Video className="w-4 h-4 mr-2" /> {tt("Start Session Now", "Anzisha Kikao Sasa")}
               </Button>
             )}
           </div>
@@ -226,9 +229,9 @@ export default function MeetingSessionPage() {
                 <div className="mx-auto w-16 h-16 rounded-full bg-chart-4/15 flex items-center justify-center mb-6 border border-chart-4/30 shadow-inner">
                   <Video className="w-8 h-8 text-chart-4" />
                 </div>
-                <h3 className="text-2xl font-bold text-foreground tracking-tight">Ready to connect?</h3>
+                <h3 className="text-2xl font-bold text-foreground tracking-tight">{tt("Ready to connect?", "Uko tayari kuunganishwa?")}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground font-medium">
-                  Verify your camera and microphone permissions before requesting a secure token to join the Community Hub Live Session.
+                  {tt("Verify your camera and microphone permissions before requesting a secure token to join the Community Hub Live Session.", "Thibitisha ruhusa za kamera na kipaza sauti kabla ya kujiunga na Kikao cha Community Hub.")}
                 </p>
               </div>
 
@@ -267,21 +270,21 @@ export default function MeetingSessionPage() {
             <div className="rounded-[2rem] border border-border/80 bg-card/60 backdrop-blur-md p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-6 border-b border-border/50 pb-4">
                 <Users className="w-5 h-5 text-chart-4" />
-                <h2 className="text-lg font-bold tracking-tight">Live Tracker</h2>
+                <h2 className="text-lg font-bold tracking-tight">{tt("Live Tracker", "Ufuatiliaji wa Moja kwa Moja")}</h2>
               </div>
               
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Active Participants</h3>
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">{tt("Active Participants", "Washiriki Waliounganishwa")}</h3>
                   {isMeetingOngoing && (
                     <div className={`mb-3 inline-flex rounded-full border px-2 py-1 text-[9px] font-bold uppercase tracking-widest ${isConnectedParticipant ? 'border-green-500/30 bg-green-500/10 text-green-600' : 'border-chart-4/30 bg-chart-4/10 text-chart-4'}`}>
-                      {isConnectedParticipant ? "You are connected" : "You are disconnected"}
+                      {isConnectedParticipant ? tt("You are connected", "Umeunganishwa") : tt("You are disconnected", "Hujaunganishwa")}
                     </div>
                   )}
 
                   <div className="space-y-2">
                     {activeParticipants.length === 0 ? (
-                      <p className="text-xs text-muted-foreground italic">No participants actively transmitting data.</p>
+                      <p className="text-xs text-muted-foreground italic">{tt("No participants actively transmitting data.", "Hakuna washiriki waliounganishwa kwa sasa.")}</p>
                     ) : (
                       activeParticipants.map((participant) => (
                         <div key={participant.id} className="rounded-xl bg-background/50 border border-border/60 px-3 py-2 text-sm flex justify-between items-center">
@@ -294,17 +297,17 @@ export default function MeetingSessionPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Attendance History</h3>
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">{tt("Attendance History", "Historia ya Mahudhurio")}</h3>
                   <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
                     {attendance.length === 0 ? (
-                      <p className="text-xs text-muted-foreground italic">No history logged yet.</p>
+                      <p className="text-xs text-muted-foreground italic">{tt("No history logged yet.", "Bado hakuna historia iliyorekodiwa.")}</p>
                     ) : (
                       attendance.map((record) => (
                         <div key={record.id} className="rounded-xl border border-border/50 bg-card p-3 shadow-sm">
                           <div className="flex items-start justify-between gap-2 mb-2">
                             <p className="font-bold text-sm truncate">{record.user_email}</p>
                             <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-                              {record.is_verified_member ? "Member" : "Guest"}
+                              {record.is_verified_member ? tt("Member", "Mwanachama") : tt("Guest", "Mgeni")}
                             </span>
                           </div>
                           <div className="flex justify-between items-end">
@@ -312,9 +315,9 @@ export default function MeetingSessionPage() {
                               record.status === "present" ? "bg-green-500/10 text-green-600" :
                               "bg-muted text-muted-foreground"
                             }`}>
-                              {record.status}
+                              {record.status === "present" ? tt("present", "yupo") : record.status}
                             </span>
-                            <span className="text-[10px] font-medium text-muted-foreground">{record.total_duration_minutes} min duration</span>
+                            <span className="text-[10px] font-medium text-muted-foreground">{record.total_duration_minutes} {tt("min duration", "dakika")}</span>
                           </div>
                         </div>
                       ))

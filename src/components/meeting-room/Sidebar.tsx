@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react"
 import type { MeetingSidebarTab } from "@/components/meeting-room/types"
+import { useLanguage } from "@/components/language/language-provider"
 
 type SidebarProps = {
   activeTab: MeetingSidebarTab
@@ -32,6 +33,13 @@ export function Sidebar({
   minutesCount = 0,
   children,
 }: SidebarProps) {
+  const { language } = useLanguage()
+  const labels: Record<MeetingSidebarTab, string> = {
+    chat: language === "sw" ? "Ujumbe" : "Chat",
+    attendance: language === "sw" ? "Mahudhurio" : "Attendance",
+    agenda: language === "sw" ? "Ajenda" : "Agenda",
+    minutes: language === "sw" ? "Kumbukumbu" : "Minutes",
+  }
   const counts: Record<MeetingSidebarTab, number> = {
     chat: chatCount,
     attendance: attendanceCount,
@@ -56,7 +64,7 @@ export function Sidebar({
                   isActive ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm" : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100",
                 ].join(" ")}
               >
-                <span>{tab.label}</span>
+                <span>{labels[tab.id]}</span>
                 <span className={["ml-2 text-xs", isActive ? "text-gray-500 dark:text-gray-400" : "text-gray-400 dark:text-gray-500"].join(" ")}>
                   {counts[tab.id]}
                 </span>

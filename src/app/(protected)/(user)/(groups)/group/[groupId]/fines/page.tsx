@@ -51,6 +51,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useAuthUserStore } from "@/store/auth/userAuth.store"
 import { useGroupStore } from "@/store/group/groupUser.store"
 import { formatTzs } from "@/lib/vikoba-finance"
+import { useLanguage } from "@/components/language/language-provider"
 
 type IssueFineFormState = Omit<CreateFinePayload, "group_uuid">
 type CategoryFormState = Omit<CreateFineCategoryPayload, "group_uuid">
@@ -115,6 +116,9 @@ export default function GroupFinesPage() {
   const groupId = Array.isArray(params?.groupId) ? params.groupId[0] : params?.groupId
   const { selectedGroup, selectedGroupMembers } = useGroupStore()
   const user = useAuthUserStore((state) => state.user)
+  const { language } = useLanguage()
+  const isSwahili = language === "sw"
+  const tt = (en: string, sw: string) => (isSwahili ? sw : en)
 
   const [fines, setFines] = useState<Fine[]>([])
   const [payments, setPayments] = useState<FinePayment[]>([])
@@ -248,7 +252,7 @@ export default function GroupFinesPage() {
         }
         return f
       }))
-      toast.success("Fine payment recorded successfully.")
+      toast.success(tt("Fine payment recorded successfully.", "Malipo ya faini yamehifadhiwa kwa mafanikio."))
       setIsPaymentModalOpen(false)
     } catch (err) {
       toast.error(getErrorMessage(err))
@@ -269,7 +273,7 @@ export default function GroupFinesPage() {
       }
       const res = await financeServices.createFine(payload)
       setFines([res.data, ...fines])
-      toast.success("Fine issued successfully. An email notification has been sent to the member.")
+      toast.success(tt("Fine issued successfully. An email notification has been sent to the member.", "Faini imetolewa kwa mafanikio. Taarifa ya barua pepe imetumwa kwa mwanachama."))
       setIsIssueModalOpen(false)
     } catch (err) {
       toast.error(getErrorMessage(err))
@@ -286,11 +290,11 @@ export default function GroupFinesPage() {
       if (editingCategoryUuid) {
         const res = await financeServices.updateFineCategory(editingCategoryUuid, categoryForm)
         setCategories(categories.map((c) => (c.uuid === editingCategoryUuid ? res.data : c)))
-        toast.success("Fine category updated successfully.")
+        toast.success(tt("Fine category updated successfully.", "Aina ya faini imesasishwa kwa mafanikio."))
       } else {
         const res = await financeServices.createFineCategory({ ...categoryForm, group_uuid: groupId })
         setCategories([...categories, res.data])
-        toast.success("Fine category created successfully.")
+        toast.success(tt("Fine category created successfully.", "Aina ya faini imeundwa kwa mafanikio."))
       }
       setIsCategoryModalOpen(false)
     } catch (err) {
@@ -301,11 +305,11 @@ export default function GroupFinesPage() {
   }
 
   const handleDeleteCategory = async (uuid: string) => {
-    if (!confirm("Are you sure you want to delete this fine category? Fines already issued will not be deleted.")) return
+    if (!confirm(tt("Are you sure you want to delete this fine category? Fines already issued will not be deleted.", "Una uhakika unataka kufuta aina hii ya faini? Faini ambazo tayari zimetolewa hazitafutwa."))) return
     try {
       await financeServices.deleteFineCategory(uuid)
       setCategories(categories.filter(c => c.uuid !== uuid))
-      toast.success("Fine category deleted.")
+      toast.success(tt("Fine category deleted.", "Aina ya faini imefutwa."))
     } catch (err) {
       toast.error(getErrorMessage(err))
     }
@@ -315,8 +319,8 @@ export default function GroupFinesPage() {
     return (
       <div className="w-full p-4 md:p-6 lg:p-8 flex items-center justify-center min-h-[400px]">
         <div className="text-center space-y-2 animate-pulse">
-          <p className="text-sm font-semibold uppercase tracking-[0.15em] text-primary">Workspace</p>
-          <p className="text-muted-foreground text-sm">Loading group fines...</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.15em] text-primary">{tt("Workspace", "Nafasi ya Kazi")}</p>
+          <p className="text-muted-foreground text-sm">{tt("Loading group fines...", "Inapakia faini za kikundi...")}</p>
         </div>
       </div>
     )
@@ -336,23 +340,23 @@ export default function GroupFinesPage() {
                   <FileText className="h-6 w-6" />
                 </div>
                 <Badge variant="secondary" className="rounded-full px-3 py-1 uppercase tracking-[0.18em]">
-                  {canManageFines ? "Finance operations" : "Member view"}
+                  {canManageFines ? tt("Finance operations", "Shughuli za fedha") : tt("Member view", "Mwonekano wa mwanachama")}
                 </Badge>
               </div>
               <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-                Fines & Penalties
+                {tt("Fines & Penalties", "Faini na Adhabu")}
               </h1>
               <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
                 {canManageFines
-                  ? "Issue penalties, define fine categories, and track payments to ensure members follow group rules."
-                  : "Review your group fines, balances, and payment history."}
+                  ? tt("Issue penalties, define fine categories, and track payments to ensure members follow group rules.", "Toa adhabu, bainisha aina za faini, na fuatilia malipo ili wanachama wafuate sheria za kikundi.")
+                  : tt("Review your group fines, balances, and payment history.", "Kagua faini zako za kikundi, salio, na historia ya malipo.")}
               </p>
             </div>
             {(canManageFines || payableFines.length > 0) && (
               <div className="flex items-center gap-3">
                 {canManageFines ? (
                   <Button variant="outline" onClick={openIssueModal} className="gap-2">
-                    <PlusCircle className="h-4 w-4" /> Issue Fine
+                    <PlusCircle className="h-4 w-4" /> {tt("Issue Fine", "Toa Faini")}
                   </Button>
                 ) : null}
                 <Button
@@ -360,7 +364,7 @@ export default function GroupFinesPage() {
                   disabled={payableFines.length === 0}
                   className="gap-2 bg-orange-600 hover:bg-orange-700 text-white"
                 >
-                  <HandCoins className="h-4 w-4" /> Pay My Fine
+                  <HandCoins className="h-4 w-4" /> {tt("Pay My Fine", "Lipa Faini Yangu")}
                 </Button>
               </div>
             )}
@@ -371,25 +375,25 @@ export default function GroupFinesPage() {
         <div className="grid gap-3 md:grid-cols-4">
           <Card className="border-border/70 bg-card/80">
             <CardContent className="p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Total Fines Issued</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{tt("Total Fines Issued", "Jumla ya Faini Zilizotolewa")}</p>
               <p className="mt-2 text-2xl font-bold text-foreground">{fines.length}</p>
             </CardContent>
           </Card>
           <Card className="border-border/70 bg-card/80">
             <CardContent className="p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Outstanding Balance</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{tt("Outstanding Balance", "Salio Lililosalia")}</p>
               <p className="mt-2 text-2xl font-bold text-foreground">{formatTzs(stats.outstandingBalance)}</p>
             </CardContent>
           </Card>
           <Card className="border-border/70 bg-card/80">
             <CardContent className="p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Unpaid Fines</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{tt("Unpaid Fines", "Faini Zisizolipwa")}</p>
               <p className="mt-2 text-2xl font-bold text-foreground">{stats.unpaidCount}</p>
             </CardContent>
           </Card>
           <Card className="border-border/70 bg-card/80">
             <CardContent className="p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Payments Logged</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{tt("Payments Logged", "Malipo Yaliyorekodiwa")}</p>
               <p className="mt-2 text-2xl font-bold text-foreground">{payments.length}</p>
             </CardContent>
           </Card>
@@ -398,9 +402,9 @@ export default function GroupFinesPage() {
         {/* Main Tabs */}
         <Tabs defaultValue="fines" className="space-y-4">
           <TabsList className="grid w-full grid-cols-3 bg-card/70 max-w-8xl">
-            <TabsTrigger value="fines" className="gap-2"><CalendarRange className="h-4 w-4" /> Fine Ledger</TabsTrigger>
-            <TabsTrigger value="payments" className="gap-2"><ReceiptText className="h-4 w-4" /> Payments</TabsTrigger>
-            <TabsTrigger value="categories" className="gap-2"><Settings2 className="h-4 w-4" /> Categories</TabsTrigger>
+            <TabsTrigger value="fines" className="gap-2"><CalendarRange className="h-4 w-4" /> {tt("Fine Ledger", "Daftari la Faini")}</TabsTrigger>
+            <TabsTrigger value="payments" className="gap-2"><ReceiptText className="h-4 w-4" /> {tt("Payments", "Malipo")}</TabsTrigger>
+            <TabsTrigger value="categories" className="gap-2"><Settings2 className="h-4 w-4" /> {tt("Categories", "Aina")}</TabsTrigger>
           </TabsList>
 
           {/* Fines Tab */}
@@ -409,9 +413,9 @@ export default function GroupFinesPage() {
               <CardContent className="p-6">
                 <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                   <div>
-                    <h2 className="text-xl font-bold tracking-tight text-foreground">Fine Ledger</h2>
+                    <h2 className="text-xl font-bold tracking-tight text-foreground">{tt("Fine Ledger", "Daftari la Faini")}</h2>
                     <p className="text-sm text-muted-foreground">
-                      Review penalties, who issued them, and who they belong to.
+                      {tt("Review penalties, who issued them, and who they belong to.", "Kagua adhabu, nani alizitoa, na zinamhusu nani.")}
                     </p>
                   </div>
 
@@ -422,7 +426,7 @@ export default function GroupFinesPage() {
                       onClick={() => setFineScope("all")}
                       className="rounded-full"
                     >
-                      All fines
+                      {tt("All fines", "Faini zote")}
                     </Button>
                     <Button
                       type="button"
@@ -430,7 +434,7 @@ export default function GroupFinesPage() {
                       onClick={() => setFineScope("mine")}
                       className="rounded-full"
                     >
-                      My fines
+                      {tt("My fines", "Faini zangu")}
                     </Button>
                     <div className="rounded-full border border-border bg-background px-3 py-1 text-xs font-semibold text-muted-foreground">
                       {visibleFines.length} shown
@@ -439,15 +443,15 @@ export default function GroupFinesPage() {
                 </div>
 
                 {loading ? (
-                  <div className="py-10 text-center text-muted-foreground">Loading fines...</div>
+                  <div className="py-10 text-center text-muted-foreground">{tt("Loading fines...", "Inapakia faini...")}</div>
                 ) : visibleFines.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-border/80 bg-background/60 py-12 text-center">
                     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500/10 text-orange-500">
                       <Coins className="h-6 w-6" />
                     </div>
-                    <h3 className="mt-4 text-xl font-bold text-foreground">No fines in this view</h3>
+                    <h3 className="mt-4 text-xl font-bold text-foreground">{tt("No fines in this view", "Hakuna faini katika mwonekano huu")}</h3>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      Switch between all fines and your own fines to see what is available.
+                      {tt("Switch between all fines and your own fines to see what is available.", "Badilisha kati ya faini zote na faini zako mwenyewe ili kuona kilichopo.")}
                     </p>
                   </div>
                 ) : (
@@ -455,15 +459,15 @@ export default function GroupFinesPage() {
                     <table className="min-w-full divide-y divide-border">
                       <thead className="bg-background/80">
                         <tr className="text-left text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                          <th className="px-4 py-3">Member</th>
-                          <th className="px-4 py-3">Issued By</th>
-                          <th className="px-4 py-3">Reason</th>
-                          <th className="px-4 py-3">Amount</th>
-                          <th className="px-4 py-3">Paid</th>
-                          <th className="px-4 py-3">Balance</th>
-                          <th className="px-4 py-3">Due</th>
-                          <th className="px-4 py-3">Status</th>
-                          <th className="px-4 py-3">Action</th>
+                          <th className="px-4 py-3">{tt("Member", "Mwanachama")}</th>
+                          <th className="px-4 py-3">{tt("Issued By", "Iliyotolewa na")}</th>
+                          <th className="px-4 py-3">{tt("Reason", "Sababu")}</th>
+                          <th className="px-4 py-3">{tt("Amount", "Kiasi")}</th>
+                          <th className="px-4 py-3">{tt("Paid", "Kilicholipwa")}</th>
+                          <th className="px-4 py-3">{tt("Balance", "Salio")}</th>
+                          <th className="px-4 py-3">{tt("Due", "Lazima ilipwe")}</th>
+                          <th className="px-4 py-3">{tt("Status", "Hali")}</th>
+                          <th className="px-4 py-3">{tt("Action", "Kitendo")}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border bg-card/40">
@@ -477,7 +481,7 @@ export default function GroupFinesPage() {
                                 <p className="text-[11px] text-muted-foreground">{fine.member_email}</p>
                               </td>
                               <td className="px-4 py-4 text-sm text-muted-foreground">
-                                {fine.issued_by_name || "System"}
+                                {fine.issued_by_name || tt("System", "Mfumo")}
                               </td>
                               <td className="px-4 py-4">
                                 <div className="space-y-1">
@@ -511,11 +515,11 @@ export default function GroupFinesPage() {
                                     className="shrink-0 bg-orange-600 hover:bg-orange-700 text-white"
                                   >
                                     <CreditCard className="mr-2 h-4 w-4" />
-                                    Pay Fine
+                                    {tt("Pay Fine", "Lipa Faini")}
                                   </Button>
                                 ) : (
                                   <span className="text-xs text-muted-foreground">
-                                    {isMine ? "Already paid" : "Owner only"}
+                                    {isMine ? tt("Already paid", "Tayari imelipwa") : tt("Owner only", "Mmiliki pekee")}
                                   </span>
                                 )}
                               </td>
@@ -535,15 +539,15 @@ export default function GroupFinesPage() {
             <Card className="border-border/70 bg-card/80 shadow-sm">
               <CardContent className="p-6">
                 <div className="mb-5">
-                  <h2 className="text-xl font-bold tracking-tight text-foreground">Payment History</h2>
-                  <p className="text-sm text-muted-foreground">Log of all collected fine payments.</p>
+                  <h2 className="text-xl font-bold tracking-tight text-foreground">{tt("Payment History", "Historia ya Malipo")}</h2>
+                  <p className="text-sm text-muted-foreground">{tt("Log of all collected fine payments.", "Rekodi ya malipo yote ya faini yaliyokusanywa.")}</p>
                 </div>
                 {loading ? (
-                  <div className="py-10 text-center text-muted-foreground">Loading payments...</div>
+                  <div className="py-10 text-center text-muted-foreground">{tt("Loading payments...", "Inapakia malipo...")}</div>
                 ) : payments.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-border/80 bg-background/60 py-12 text-center">
                     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary"><ReceiptText className="h-6 w-6" /></div>
-                    <h3 className="mt-4 text-xl font-bold text-foreground">No payments logged yet</h3>
+                    <h3 className="mt-4 text-xl font-bold text-foreground">{tt("No payments logged yet", "Bado hakuna malipo yaliyorekodiwa")}</h3>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -552,10 +556,10 @@ export default function GroupFinesPage() {
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <span className="font-bold text-foreground">{formatTzs(Number(p.amount))}</span>
-                            <Badge variant="secondary" className="text-[10px]">Payment</Badge>
+                            <Badge variant="secondary" className="text-[10px]">{tt("Payment", "Malipo")}</Badge>
                           </div>
                           <p className="text-sm text-foreground font-medium">{p.fine_reason}</p>
-                          <p className="text-xs text-muted-foreground mt-1">Ref: {p.reference || "None"} • Received by {p.received_by_name}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{tt("Ref:", "Rejea:")} {p.reference || tt("None", "Hakuna")} • {tt("Received by", "Imepokelewa na")} {p.received_by_name}</p>
                         </div>
                         <div className="text-right text-sm text-muted-foreground">
                           {formatDateTime(p.paid_at)}
@@ -574,24 +578,24 @@ export default function GroupFinesPage() {
               <CardContent className="p-6">
                 <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <h2 className="text-xl font-bold tracking-tight text-foreground">Fine Categories</h2>
-                    <p className="text-sm text-muted-foreground">Define standard penalties for common violations.</p>
+                  <h2 className="text-xl font-bold tracking-tight text-foreground">{tt("Fine Categories", "Aina za Faini")}</h2>
+                  <p className="text-sm text-muted-foreground">{tt("Define standard penalties for common violations.", "Bainisha adhabu za kawaida kwa makosa yanayojirudia.")}</p>
                   </div>
                   {canManageFines && (
                     <Button variant="outline" onClick={() => openCategoryModal()} className="gap-2">
-                      <ListFilter className="h-4 w-4" /> Add Category
+                      <ListFilter className="h-4 w-4" /> {tt("Add Category", "Ongeza Aina")}
                     </Button>
                   )}
                 </div>
                 
                 {loading ? (
-                  <div className="py-10 text-center text-muted-foreground">Loading categories...</div>
+                  <div className="py-10 text-center text-muted-foreground">{tt("Loading categories...", "Inapakia aina...")}</div>
                 ) : categories.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-border/80 bg-background/60 py-12 text-center">
                     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-muted"><Settings2 className="h-6 w-6 text-muted-foreground" /></div>
-                    <h3 className="mt-4 text-lg font-bold text-foreground">No categories defined</h3>
+                    <h3 className="mt-4 text-lg font-bold text-foreground">{tt("No categories defined", "Hakuna aina zilizofafanuliwa")}</h3>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Create templates for common fines like &quot;Late to meeting&quot; or &quot;Missed contribution&quot;.
+                      {tt('Create templates for common fines like "Late to meeting" or "Missed contribution".', 'Unda violezo vya faini za kawaida kama "Kuchelewa kikaoni" au "Kukosa mchango".')}
                     </p>
                   </div>
                 ) : (
@@ -607,10 +611,10 @@ export default function GroupFinesPage() {
                           {canManageFines && (
                             <div className="flex items-center gap-2 sm:border-l sm:border-border/50 sm:pl-6">
                               <Button variant="ghost" size="sm" onClick={() => openCategoryModal(c)} className="text-foreground hover:bg-muted h-8 px-2">
-                                <Edit2 className="h-4 w-4 mr-1.5" /> Edit
+                                <Edit2 className="h-4 w-4 mr-1.5" /> {tt("Edit", "Hariri")}
                               </Button>
                               <Button variant="ghost" size="sm" onClick={() => handleDeleteCategory(c.uuid)} className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 px-2">
-                                <Trash2 className="h-4 w-4 mr-1.5" /> Delete
+                                <Trash2 className="h-4 w-4 mr-1.5" /> {tt("Delete", "Futa")}
                               </Button>
                             </div>
                           )}
@@ -631,19 +635,19 @@ export default function GroupFinesPage() {
       <Dialog open={isPaymentModalOpen} onOpenChange={(o) => { if (!o && !submitting) setIsPaymentModalOpen(false) }}>
         <DialogContent className="sm:max-w-md p-6">
           <DialogHeader>
-            <DialogTitle>Record Fine Payment</DialogTitle>
-            <DialogDescription>Log a payment received for an outstanding fine.</DialogDescription>
+            <DialogTitle>{tt("Record Fine Payment", "Rekodi Malipo ya Faini")}</DialogTitle>
+            <DialogDescription>{tt("Log a payment received for an outstanding fine.", "Rekodi malipo yaliyopokelewa kwa faini iliyosalia.")}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handlePaymentSubmit} className="space-y-4 mt-4">
             <FieldGroup>
               <Field>
-                <FieldLabel>Select Fine</FieldLabel>
+                <FieldLabel>{tt("Select Fine", "Chagua Faini")}</FieldLabel>
                 <FieldContent>
                   <Select value={paymentForm.fine_id} onValueChange={(val) => {
                     const f = payableFines.find(x => x.uuid === val)
                     setPaymentForm({ ...paymentForm, fine_id: val, amount: f ? f.balance : "" })
                   }}>
-                    <SelectTrigger><SelectValue placeholder="Select fine" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={tt("Select fine", "Chagua faini")} /></SelectTrigger>
                     <SelectContent>
                       {payableFines.map(f => (
                         <SelectItem key={f.uuid} value={f.uuid}>{f.reason} ({formatTzs(Number(f.balance))})</SelectItem>
@@ -653,21 +657,21 @@ export default function GroupFinesPage() {
                 </FieldContent>
               </Field>
               <Field>
-                <FieldLabel>Amount (TZS)</FieldLabel>
+                <FieldLabel>{tt("Amount (TZS)", "Kiasi (TZS)")}</FieldLabel>
                 <FieldContent>
                   <Input type="number" min="1" step="0.01" required value={paymentForm.amount} onChange={e => setPaymentForm({...paymentForm, amount: e.target.value})} />
                 </FieldContent>
               </Field>
               <Field>
-                <FieldLabel>Reference (Optional)</FieldLabel>
+                <FieldLabel>{tt("Reference (Optional)", "Rejea (Si lazima)")}</FieldLabel>
                 <FieldContent>
-                  <Input placeholder="Receipt #" value={paymentForm.reference} onChange={e => setPaymentForm({...paymentForm, reference: e.target.value})} />
+                <Input placeholder={tt("Receipt #", "Namba ya risiti")} value={paymentForm.reference} onChange={e => setPaymentForm({...paymentForm, reference: e.target.value})} />
                 </FieldContent>
               </Field>
             </FieldGroup>
             <div className="flex justify-end gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsPaymentModalOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={submitting}>{submitting ? "Saving..." : "Record Payment"}</Button>
+              <Button type="button" variant="outline" onClick={() => setIsPaymentModalOpen(false)}>{tt("Cancel", "Ghairi")}</Button>
+              <Button type="submit" disabled={submitting}>{submitting ? tt("Saving...", "Inahifadhi...") : tt("Record Payment", "Rekodi Malipo")}</Button>
             </div>
           </form>
         </DialogContent>
@@ -677,16 +681,16 @@ export default function GroupFinesPage() {
       <Dialog open={isIssueModalOpen} onOpenChange={(o) => { if (!o && !submitting) setIsIssueModalOpen(false) }}>
         <DialogContent className="sm:max-w-lg p-6">
           <DialogHeader>
-            <DialogTitle>Issue Penalty</DialogTitle>
-            <DialogDescription>Assign a fine to a group member. They will be notified via email.</DialogDescription>
+            <DialogTitle>{tt("Issue Penalty", "Toa Adhabu")}</DialogTitle>
+            <DialogDescription>{tt("Assign a fine to a group member. They will be notified via email.", "Mpe mwanachama wa kikundi faini. Atajulishwa kupitia barua pepe.")}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleIssueSubmit} className="space-y-4 mt-4">
             <FieldGroup>
               <Field>
-                <FieldLabel>Member</FieldLabel>
+                <FieldLabel>{tt("Member", "Mwanachama")}</FieldLabel>
                 <FieldContent>
                   <Select value={issueForm.membership_uuid} onValueChange={(val) => setIssueForm({...issueForm, membership_uuid: val})}>
-                    <SelectTrigger><SelectValue placeholder="Select member" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={tt("Select member", "Chagua mwanachama")} /></SelectTrigger>
                     <SelectContent>
                       {selectedGroupMembers.filter(m => m.is_active).map(m => (
                         <SelectItem key={m.membership_id} value={m.membership_id}>{m.first_name} {m.last_name} ({m.email})</SelectItem>
@@ -696,7 +700,7 @@ export default function GroupFinesPage() {
                 </FieldContent>
               </Field>
               <Field>
-                <FieldLabel>Fine Category</FieldLabel>
+                <FieldLabel>{tt("Fine Category", "Aina ya Faini")}</FieldLabel>
                 <FieldContent>
                   <Select value={issueForm.fine_category_uuid} onValueChange={(val) => {
                     const cat = categories.find(c => c.uuid === val)
@@ -707,29 +711,29 @@ export default function GroupFinesPage() {
                       amount: cat ? cat.default_amount : "" 
                     })
                   }}>
-                    <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={tt("Select category", "Chagua aina")} /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="custom">Custom Fine (No category)</SelectItem>
+                      <SelectItem value="custom">{tt("Custom Fine (No category)", "Faini ya kawaida (hakuna aina)")}</SelectItem>
                       {categories.map(c => <SelectItem key={c.uuid} value={c.uuid}>{c.name} - {formatTzs(Number(c.default_amount))}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </FieldContent>
               </Field>
               <Field>
-                <FieldLabel>Reason</FieldLabel>
+                <FieldLabel>{tt("Reason", "Sababu")}</FieldLabel>
                 <FieldContent>
-                  <Input required placeholder="E.g. Late for meeting" value={issueForm.reason} onChange={e => setIssueForm({...issueForm, reason: e.target.value})} disabled={issueForm.fine_category_uuid !== 'custom'} />
+                  <Input required placeholder={tt("E.g. Late for meeting", "Mfano: kuchelewa kikaoni")} value={issueForm.reason} onChange={e => setIssueForm({...issueForm, reason: e.target.value})} disabled={issueForm.fine_category_uuid !== 'custom'} />
                 </FieldContent>
               </Field>
               <div className="grid grid-cols-2 gap-4">
                 <Field>
-                  <FieldLabel>Amount (TZS)</FieldLabel>
+                  <FieldLabel>{tt("Amount (TZS)", "Kiasi (TZS)")}</FieldLabel>
                   <FieldContent>
                     <Input required type="number" min="1" step="0.01" value={issueForm.amount} onChange={e => setIssueForm({...issueForm, amount: e.target.value})} />
                   </FieldContent>
                 </Field>
                 <Field>
-                  <FieldLabel>Due Date</FieldLabel>
+                  <FieldLabel>{tt("Due Date", "Tarehe ya Malipo")}</FieldLabel>
                   <FieldContent>
                     <Input required type="date" value={issueForm.due_date} onChange={e => setIssueForm({...issueForm, due_date: e.target.value})} />
                   </FieldContent>
@@ -737,8 +741,8 @@ export default function GroupFinesPage() {
               </div>
             </FieldGroup>
             <div className="flex justify-end gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsIssueModalOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={submitting || !issueForm.membership_uuid}>{submitting ? "Issuing..." : "Issue Fine"}</Button>
+              <Button type="button" variant="outline" onClick={() => setIsIssueModalOpen(false)}>{tt("Cancel", "Ghairi")}</Button>
+              <Button type="submit" disabled={submitting || !issueForm.membership_uuid}>{submitting ? tt("Issuing...", "Inatoa...") : tt("Issue Fine", "Toa Faini")}</Button>
             </div>
           </form>
         </DialogContent>
@@ -748,33 +752,33 @@ export default function GroupFinesPage() {
       <Dialog open={isCategoryModalOpen} onOpenChange={(o) => { if (!o && !submitting) setIsCategoryModalOpen(false) }}>
         <DialogContent className="sm:max-w-md p-6">
           <DialogHeader>
-            <DialogTitle>{editingCategoryUuid ? "Edit Fine Category" : "New Fine Category"}</DialogTitle>
-            <DialogDescription>{editingCategoryUuid ? "Update the details for this penalty." : "Create a reusable fine template for your group."}</DialogDescription>
+            <DialogTitle>{editingCategoryUuid ? tt("Edit Fine Category", "Hariri Aina ya Faini") : tt("New Fine Category", "Aina Mpya ya Faini")}</DialogTitle>
+            <DialogDescription>{editingCategoryUuid ? tt("Update the details for this penalty.", "Sasisha maelezo ya adhabu hii.") : tt("Create a reusable fine template for your group.", "Unda kiolezo cha faini kinachoweza kutumika tena kwa kikundi chako.")}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCategorySubmit} className="space-y-4 mt-4">
             <FieldGroup>
               <Field>
-                <FieldLabel>Category Name</FieldLabel>
+                <FieldLabel>{tt("Category Name", "Jina la Aina")}</FieldLabel>
                 <FieldContent>
-                  <Input required placeholder="E.g. Absence without notice" value={categoryForm.name} onChange={e => setCategoryForm({...categoryForm, name: e.target.value})} />
+                  <Input required placeholder={tt("E.g. Absence without notice", "Mfano: kutohudhuria bila taarifa")} value={categoryForm.name} onChange={e => setCategoryForm({...categoryForm, name: e.target.value})} />
                 </FieldContent>
               </Field>
               <Field>
-                <FieldLabel>Default Amount (TZS)</FieldLabel>
+                <FieldLabel>{tt("Default Amount (TZS)", "Kiasi cha Kawaida (TZS)")}</FieldLabel>
                 <FieldContent>
                   <Input required type="number" min="1" step="0.01" placeholder="5000" value={categoryForm.default_amount} onChange={e => setCategoryForm({...categoryForm, default_amount: e.target.value})} />
                 </FieldContent>
               </Field>
               <Field>
-                <FieldLabel>Description (Optional)</FieldLabel>
+                <FieldLabel>{tt("Description (Optional)", "Maelezo (Si Lazima)")}</FieldLabel>
                 <FieldContent>
-                  <Textarea placeholder="Explain when this fine applies" value={categoryForm.description} onChange={e => setCategoryForm({...categoryForm, description: e.target.value})} />
+                  <Textarea placeholder={tt("Explain when this fine applies", "Eleza wakati faini hii inatumika")} value={categoryForm.description} onChange={e => setCategoryForm({...categoryForm, description: e.target.value})} />
                 </FieldContent>
               </Field>
             </FieldGroup>
             <div className="flex justify-end gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsCategoryModalOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={submitting}>{submitting ? "Saving..." : editingCategoryUuid ? "Update Category" : "Create Category"}</Button>
+              <Button type="button" variant="outline" onClick={() => setIsCategoryModalOpen(false)}>{tt("Cancel", "Ghairi")}</Button>
+              <Button type="submit" disabled={submitting}>{submitting ? tt("Saving...", "Inahifadhi...") : editingCategoryUuid ? tt("Update Category", "Sasisha Aina") : tt("Create Category", "Unda Aina")}</Button>
             </div>
           </form>
         </DialogContent>

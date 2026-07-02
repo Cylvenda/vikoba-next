@@ -47,7 +47,11 @@ export function NavMain({
 
       <SidebarMenu className="space-y-1">
         {items.map((item) => {
-          const isDashboardLink = item.title === "Dashboard" || item.title === "Home" || item.title === "My Groups"
+          const isDashboardLink =
+            item.url === "/home" ||
+            item.url === "/admin" ||
+            item.url === "/groups" ||
+            item.url === "/guide"
           const isActive = pathname === item.url || (!isDashboardLink && pathname.startsWith(item.url + "/"))
           
           return (

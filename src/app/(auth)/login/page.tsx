@@ -14,6 +14,7 @@ import { LoginFormSchema } from "@/components/schema/user-form-schema";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { Spinner } from "@/components/ui/spinner";
+import { useLanguage } from "@/components/language/language-provider";
 
 type LoginFormValues = z.infer<typeof LoginFormSchema>;
 
@@ -21,6 +22,9 @@ export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const { fetchUser } = useAuthUserStore();
+  const { language } = useLanguage();
+  const isSwahili = language === "sw";
+  const tt = (en: string, sw: string) => (isSwahili ? sw : en);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(LoginFormSchema),
@@ -43,19 +47,19 @@ export default function LoginPage() {
         const currentUser = await fetchUser();
 
         if (!currentUser) {
-          toast.error("Login succeeded, but failed to load your profile.");
+          toast.error(tt("Login succeeded, but failed to load your profile.", "Umefanikiwa kuingia, lakini imeshindikana kupakia wasifu wako."));
           return;
         }
 
         if (!currentUser.isActive) {
-          toast.warning("Your account is not activated yet.");
+          toast.warning(tt("Your account is not activated yet.", "Akaunti yako bado haijaamilishwa."));
           return;
         }
 
         router.replace(currentUser.isAdmin ? "/admin" : "/home");
       }
     } catch {
-      toast.error("Login failed. Check credentials.");
+      toast.error(tt("Login failed. Check credentials.", "Kuingia kumeshindikana. Kagua taarifa zako."));
     } finally {
       setLoading(false);
     }
@@ -64,8 +68,8 @@ export default function LoginPage() {
   return (
     <div className="w-full bg-inherit">
       <FormInput
-        title="Welcome Back"
-        description="Login to your Community Hub account to continue"
+        title={tt("Welcome Back", "Karibu Tena")}
+        description={tt("Login to your Community Hub account to continue", "Ingia kwenye akaunti yako ya Community Hub ili uendelee")}
       >
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
           {/* EMAIL */}
@@ -73,18 +77,18 @@ export default function LoginPage() {
             control={form.control}
             name="email"
             type="email"
-            label="Email Address"
-            placeholder="Enter your email"
+            label={tt("Email Address", "Anwani ya barua pepe")}
+            placeholder={tt("Enter your email", "Weka barua pepe yako")}
           />
 
           {/* PASSWORD */}
           <PasswordInput
             control={form.control}
             name="password"
-            label="Password"
-            placeholder="Enter your password"
+            label={tt("Password", "Nenosiri")}
+            placeholder={tt("Enter your password", "Weka nenosiri lako")}
             forgetPassword={{
-              text: "Forgot password?",
+              text: tt("Forgot password?", "Umesahau nenosiri?"),
               location: "/reset",
             }}
           />
@@ -95,17 +99,17 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full py-6 bg-chart-3 text-primary-foreground font-bold hover:bg-chart-2 rounded-xl transition-all duration-300 shadow-md hover:shadow-chart-3/20"
           >
-            {loading ? <Spinner /> : "Sign In"}
+            {loading ? <Spinner /> : tt("Sign In", "Ingia")}
           </Button>
 
           {/* FOOTER REDIRECT */}
           <p className="text-center text-sm text-muted-foreground font-medium">
-            Don’t have an account?{" "}
+            {tt("Don’t have an account?", "Huna akaunti?")}{" "}
             <Link
               href="/register"
               className="text-chart-3 hover:text-chart-2 font-bold hover:underline transition-colors duration-300"
             >
-              Sign up
+              {tt("Sign up", "Jisajili")}
             </Link>
           </p>
         </form>

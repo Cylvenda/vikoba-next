@@ -14,58 +14,54 @@ import {
 } from "@/components/ui/sidebar"
 import { Separator } from "./ui/separator"
 import { useAuthUserStore } from "@/store/auth/userAuth.store"
-import { BellRing, GroupIcon, LayoutDashboard, Monitor, Settings, User, Users } from "lucide-react"
-
-const navMain = [
-  {
-    title: "Dashboard",
-    url: "/admin",
-    icon: (
-      <LayoutDashboard />
-    )
-  },
-  {
-    title: "Users",
-    url: "/admin/users",
-    icon: (
-      <Users />
-    )
-  },
-  {
-    title: "Groups",
-    url: "/admin/groups",
-    icon: (
-      <GroupIcon />
-    )
-  },
-  {
-    title: "Profile",
-    url: "/home/profile",
-    icon: (
-      <User />
-    )
-  },
-  {
-    title: "Notifications",
-    url: "/home/notifications",
-    icon: (
-      <BellRing />
-    )
-  },
-  {
-    title: "Settings",
-    url: "/home/settings",
-    icon: (
-      <Settings />
-    )
-  },
-]
+import { BellRing, BookOpen, GroupIcon, LayoutDashboard, Settings, User, Users } from "lucide-react"
+import { useLanguage } from "@/components/language/language-provider"
+import { getTranslation } from "@/lib/i18n"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = useAuthUserStore((state) => state.user)
+  const { language } = useLanguage()
   const displayName =
     `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "User"
   const roleLabel = user?.isAdmin ? "Admin" : "Error"
+
+  const navMain = [
+    {
+      title: getTranslation(language, "actions.dashboard"),
+      url: "/admin",
+      icon: <LayoutDashboard />,
+    },
+    {
+      title: getTranslation(language, "actions.users"),
+      url: "/admin/users",
+      icon: <Users />,
+    },
+    {
+      title: getTranslation(language, "actions.groups"),
+      url: "/admin/groups",
+      icon: <GroupIcon />,
+    },
+    {
+      title: getTranslation(language, "actions.guide"),
+      url: "/guide",
+      icon: <BookOpen />,
+    },
+    {
+      title: getTranslation(language, "actions.profile"),
+      url: "/home/profile",
+      icon: <User />,
+    },
+    {
+      title: getTranslation(language, "actions.notifications"),
+      url: "/home/notifications",
+      icon: <BellRing />,
+    },
+    {
+      title: getTranslation(language, "actions.settings"),
+      url: "/home/settings",
+      icon: <Settings />,
+    },
+  ]
 
   return (
     <Sidebar collapsible="icon" {...props}>

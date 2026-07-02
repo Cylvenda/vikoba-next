@@ -15,45 +15,48 @@ import {
 import { Separator } from "./ui/separator";
 import { useAuthUserStore } from "@/store/auth/userAuth.store";
 import { BellRing, BookOpen, Cog, House, User } from "lucide-react";
-
-const navMain = [
-  {
-    title: "Home",
-    url: "/home",
-    icon: <House />,
-  },
-  {
-    title: "Guide",
-    url: "/guide",
-    icon: <BookOpen />,
-  },
-  {
-    title: "My Groups",
-    url: "/groups",
-    icon: <User />,
-  },
-  {
-    title: "Notifications",
-    url: "/notifications",
-    icon: <BellRing />,
-  },
-  {
-    title: "Profile",
-    url: "/profile",
-    icon: <User />,
-  },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: <Cog />,
-  },
-];
+import { useLanguage } from "@/components/language/language-provider";
+import { getTranslation } from "@/lib/i18n";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = useAuthUserStore((state) => state.user);
+  const { language } = useLanguage();
   const displayName =
     `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "User";
   const roleLabel = user?.isAdmin ? "Admin" : "Member";
+
+  const navMain = [
+    {
+      title: getTranslation(language, "actions.home"),
+      url: "/home",
+      icon: <House />,
+    },
+    {
+      title: getTranslation(language, "actions.guide"),
+      url: "/guide",
+      icon: <BookOpen />,
+    },
+    {
+      title: getTranslation(language, "actions.myGroups"),
+      url: "/groups",
+      icon: <User />,
+    },
+    {
+      title: getTranslation(language, "actions.notifications"),
+      url: "/notifications",
+      icon: <BellRing />,
+    },
+    {
+      title: getTranslation(language, "actions.profile"),
+      url: "/profile",
+      icon: <User />,
+    },
+    {
+      title: getTranslation(language, "actions.settings"),
+      url: "/settings",
+      icon: <Cog />,
+    },
+  ];
 
   return (
     <Sidebar collapsible="icon" {...props}>

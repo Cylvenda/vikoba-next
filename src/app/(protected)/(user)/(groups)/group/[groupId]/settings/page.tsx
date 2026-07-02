@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuthUserStore } from "@/store/auth/userAuth.store";
 import { useGroupStore } from "@/store/group/groupUser.store";
+import { useLanguage } from "@/components/language/language-provider";
 
 /* ─────────────────────────────────────────────────────────── helpers */
 const SectionHeader = ({
@@ -60,6 +61,8 @@ const GroupSettingsPage = () => {
 
   const { selectedGroup, selectedGroupMembers, fetchGroupById, updateGroup, loading } = useGroupStore();
   const user = useAuthUserStore((state) => state.user);
+  const { language } = useLanguage();
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en;
 
   /* form state — Identity */
   const [name, setName] = useState("");
@@ -116,7 +119,7 @@ const GroupSettingsPage = () => {
   /* ── save handlers ── */
   const handleSaveIdentity = async () => {
     if (!groupId || !name.trim()) {
-      toast.error("Group name cannot be empty.");
+      toast.error(tt("Group name cannot be empty.", "Jina la kikundi haliwezi kuwa tupu."));
       return;
     }
     setIsSaving(true);
@@ -126,7 +129,7 @@ const GroupSettingsPage = () => {
       visibility,
     });
     setIsSaving(false);
-    if (result.success) toast.success("Group identity updated.");
+    if (result.success) toast.success(tt("Group identity updated.", "Utambulisho wa kikundi umesasishwa."));
     else toast.error(result.message);
   };
 
@@ -134,11 +137,11 @@ const GroupSettingsPage = () => {
     const parsedLimit = Number(loanLimit);
     const parsedMinimumSavings = Number(minimumSavingsForLoan);
     if (!Number.isInteger(parsedLimit) || parsedLimit < 1) {
-      toast.error("Loan limit must be at least 1.");
+      toast.error(tt("Loan limit must be at least 1.", "Kikomo cha mikopo lazima kiwe angalau 1."));
       return;
     }
     if (Number.isNaN(parsedMinimumSavings) || parsedMinimumSavings < 0) {
-      toast.error("Minimum savings must be zero or greater.");
+      toast.error(tt("Minimum savings must be zero or greater.", "Akiba ya chini lazima iwe sifuri au zaidi."));
       return;
     }
     setIsSaving(true);
@@ -148,7 +151,7 @@ const GroupSettingsPage = () => {
       default_late_fee_amount: lateFee.trim() || "0",
     });
     setIsSaving(false);
-    if (result.success) toast.success("Financial rules updated.");
+    if (result.success) toast.success(tt("Financial rules updated.", "Kanuni za fedha zimesasishwa."));
     else toast.error(result.message);
   };
 
@@ -159,7 +162,7 @@ const GroupSettingsPage = () => {
     setIsSaving(false);
     if (result.success) {
       setIsActive(newValue);
-      toast.success(newValue ? "Group activated." : "Group deactivated.");
+      toast.success(newValue ? tt("Group activated.", "Kikundi kimewezeshwa.") : tt("Group deactivated.", "Kikundi kimesitishwa."));
     } else {
       toast.error(result.message);
     }
@@ -171,17 +174,17 @@ const GroupSettingsPage = () => {
       <div className="w-full p-4 md:p-8 flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-4 text-muted-foreground animate-pulse">
           <Settings className="h-10 w-10 text-primary/40" />
-          <p className="text-sm font-medium tracking-tight">Loading workspace settings…</p>
+          <p className="text-sm font-medium tracking-tight">{tt("Loading workspace settings...", "Inapakia mipangilio ya kikundi...")}</p>
         </div>
       </div>
     );
   }
 
   const tabs: { key: typeof activeSection; label: string; icon: React.ElementType }[] = [
-    { key: "identity", label: "Identity", icon: Edit3 },
-    { key: "financial", label: "Financial", icon: Coins },
-    { key: "status", label: "Status", icon: ToggleLeft },
-    { key: "info", label: "Info", icon: Info },
+    { key: "identity", label: tt("Identity", "Utambulisho"), icon: Edit3 },
+    { key: "financial", label: tt("Financial", "Fedha"), icon: Coins },
+    { key: "status", label: tt("Status", "Hali"), icon: ToggleLeft },
+    { key: "info", label: tt("Info", "Taarifa"), icon: Info },
   ];
 
   return (
@@ -196,7 +199,7 @@ const GroupSettingsPage = () => {
             </div>
             <div>
               <h1 className="text-2xl font-extrabold tracking-tight text-foreground">{selectedGroup.name}</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">Group Configuration Console</p>
+              <p className="text-sm text-muted-foreground mt-0.5">{tt("Group Configuration Console", "Mipangilio ya Kikundi")}</p>
             </div>
           </div>
 
@@ -208,19 +211,19 @@ const GroupSettingsPage = () => {
                 : "border-destructive/30 bg-destructive/10 text-destructive"
             }`}>
               <span className={`h-1.5 w-1.5 rounded-full ${isActive ? "bg-chart-1" : "bg-destructive"}`} />
-              {isActive ? "Active" : "Inactive"}
+              {isActive ? tt("Active", "Hai") : tt("Inactive", "Kimesitishwa")}
             </span>
 
             {/* visibility badge */}
             <span className="inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">
               {visibility === "PRIVATE" ? <Lock className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
-              {visibility === "PRIVATE" ? "Private" : "Public"}
+              {visibility === "PRIVATE" ? tt("Private", "Faragha") : tt("Public", "Umma")}
             </span>
 
             {!isChairperson && (
               <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-600 dark:text-amber-400">
                 <ShieldAlert className="h-3 w-3" />
-                Read-Only
+                {tt("Read-Only", "Kuangalia Pekee")}
               </span>
             )}
           </div>
@@ -231,8 +234,8 @@ const GroupSettingsPage = () => {
           <div className="rounded-2xl border border-border/80 bg-muted/30 p-4 flex gap-3 text-xs leading-relaxed text-muted-foreground">
             <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-foreground mb-1">View-Only Mode</p>
-              Only the group <span className="font-bold text-primary">Chairperson</span> can modify these settings. You are viewing the current configuration for transparency.
+              <p className="font-bold text-foreground mb-1">{tt("View-Only Mode", "Hali ya Kuangalia Pekee")}</p>
+              {tt("Only the group Chairperson can modify these settings. You are viewing the current configuration for transparency.", "Mwenyekiti wa kikundi pekee anaweza kubadilisha mipangilio hii. Unaiona kwa ajili ya uwazi.")}
             </div>
           </div>
         )}
@@ -260,12 +263,12 @@ const GroupSettingsPage = () => {
           <div className="rounded-[1.5rem] border border-border/80 bg-card/60 backdrop-blur-md p-6 md:p-8 shadow-sm space-y-6">
             <SectionHeader
               icon={Edit3}
-              title="Group Identity"
-              description="Name, description, and visibility settings for this workspace."
+              title={tt("Group Identity", "Utambulisho wa Kikundi")}
+              description={tt("Name, description, and visibility settings for this workspace.", "Jina, maelezo, na mipangilio ya mwonekano wa kikundi.")}
             />
 
             <div className="space-y-5">
-              <Field label="Group Name" hint="Must be unique across all workspaces. Min 3 characters.">
+              <Field label={tt("Group Name", "Jina la Kikundi")} hint={tt("Must be unique across all workspaces. Min 3 characters.", "Lazima liwe la kipekee. Angalau herufi 3.")}>
                 <div className="relative">
                   <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -273,24 +276,24 @@ const GroupSettingsPage = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     disabled={!isChairperson || isSaving}
-                    placeholder="e.g. Vijana Savings Circle"
+                    placeholder={tt("e.g. Vijana Savings Circle", "mf. Kikundi cha Akiba Vijana")}
                     className="pl-10 rounded-xl border-border/80 bg-background/50 focus-visible:ring-primary font-semibold"
                   />
                 </div>
               </Field>
 
-              <Field label="Description" hint="A brief summary of the group's purpose and goals. Optional but recommended.">
+              <Field label={tt("Description", "Maelezo")} hint={tt("A brief summary of the group's purpose and goals. Optional but recommended.", "Muhtasari wa madhumuni na malengo ya kikundi.")}>
                 <Textarea
                   id="group-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   disabled={!isChairperson || isSaving}
-                  placeholder="Describe what this group is about..."
+                  placeholder={tt("Describe what this group is about...", "Eleza madhumuni ya kikundi hiki...")}
                   className="min-h-[100px] rounded-xl border-border/80 bg-background/50 focus-visible:ring-primary resize-none"
                 />
               </Field>
 
-              <Field label="Visibility" hint="Public groups are discoverable. Private groups require an invite or join code.">
+              <Field label={tt("Visibility", "Mwonekano")} hint={tt("Public groups are discoverable. Private groups require an invite or join code.", "Vikundi vya umma vinaweza kutafutwa. Vikundi vya faragha vinahitaji mwaliko au msimbo.")}>
                 <div className="grid grid-cols-2 gap-3">
                   {(["PUBLIC", "PRIVATE"] as const).map((v) => (
                     <button
@@ -309,8 +312,8 @@ const GroupSettingsPage = () => {
                         {v === "PUBLIC" ? <Globe className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
                       </div>
                       <div>
-                        <p className="text-sm font-bold">{v === "PUBLIC" ? "Public" : "Private"}</p>
-                        <p className="text-[11px] mt-0.5">{v === "PUBLIC" ? "Open & discoverable" : "Invite-only"}</p>
+                        <p className="text-sm font-bold">{v === "PUBLIC" ? tt("Public", "Umma") : tt("Private", "Faragha")}</p>
+                        <p className="text-[11px] mt-0.5">{v === "PUBLIC" ? tt("Open & discoverable", "Wazi na kinatafutika") : tt("Invite-only", "Kwa mwaliko pekee")}</p>
                       </div>
                       {visibility === v && (
                         <Check className="h-4 w-4 text-primary ml-auto shrink-0" />
@@ -329,7 +332,7 @@ const GroupSettingsPage = () => {
                   className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-2 px-6"
                 >
                   <Save className="h-4 w-4" />
-                  {isSaving ? "Saving…" : "Save Identity"}
+                  {isSaving ? tt("Saving...", "Inahifadhi...") : tt("Save Identity", "Hifadhi Utambulisho")}
                 </Button>
               </div>
             )}
@@ -341,8 +344,8 @@ const GroupSettingsPage = () => {
           <div className="rounded-[1.5rem] border border-border/80 bg-card/60 backdrop-blur-md p-6 md:p-8 shadow-sm space-y-6">
             <SectionHeader
               icon={Coins}
-              title="Financial Rules"
-              description="Configure loan limits and late-payment penalties for members."
+              title={tt("Financial Rules", "Kanuni za Fedha")}
+              description={tt("Configure loan limits and late-payment penalties for members.", "Weka vikomo vya mikopo na adhabu za kuchelewa kulipa.")}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -353,8 +356,8 @@ const GroupSettingsPage = () => {
                     <Landmark className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-foreground">Loan Frequency Limit</p>
-                    <p className="text-[11px] text-muted-foreground">Max concurrent active loans per member</p>
+                    <p className="text-sm font-bold text-foreground">{tt("Loan Frequency Limit", "Kikomo cha Mikopo")}</p>
+                    <p className="text-[11px] text-muted-foreground">{tt("Max concurrent active loans per member", "Mikopo hai ya juu kwa kila mwanachama")}</p>
                   </div>
                 </div>
                 <div className="relative">
@@ -371,7 +374,7 @@ const GroupSettingsPage = () => {
                   />
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-normal">
-                  Prevents members from holding more than this many outstanding loans simultaneously. Default is <span className="font-semibold text-foreground">1</span>.
+                  {tt("Prevents members from holding more than this many outstanding loans simultaneously. Default is 1.", "Huzuia mwanachama kuwa na mikopo hai zaidi ya idadi hii. Chaguo-msingi ni 1.")}
                 </p>
               </div>
 
@@ -382,8 +385,8 @@ const GroupSettingsPage = () => {
                     <Coins className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-foreground">Minimum Savings to Borrow</p>
-                    <p className="text-[11px] text-muted-foreground">Verified savings required before a member can request a loan</p>
+                    <p className="text-sm font-bold text-foreground">{tt("Minimum Savings to Borrow", "Akiba ya Chini ya Kukopa")}</p>
+                    <p className="text-[11px] text-muted-foreground">{tt("Verified savings required before a member can request a loan", "Akiba iliyothibitishwa inayohitajika kabla ya kuomba mkopo")}</p>
                   </div>
                 </div>
                 <div className="relative">
@@ -400,7 +403,7 @@ const GroupSettingsPage = () => {
                   />
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-normal">
-                  Members whose verified savings are below this amount cannot borrow. Set to <span className="font-semibold text-foreground">0</span> to disable the minimum requirement.
+                  {tt("Members whose verified savings are below this amount cannot borrow. Set to 0 to disable the minimum requirement.", "Wanachama wenye akiba chini ya kiasi hiki hawawezi kukopa. Weka 0 kuondoa sharti hili.")}
                 </p>
               </div>
 
@@ -411,8 +414,8 @@ const GroupSettingsPage = () => {
                     <Percent className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-foreground">Late Repayment Penalty</p>
-                    <p className="text-[11px] text-muted-foreground">Default flat fine for overdue loans (TZS)</p>
+                    <p className="text-sm font-bold text-foreground">{tt("Late Repayment Penalty", "Adhabu ya Kuchelewa Kulipa")}</p>
+                    <p className="text-[11px] text-muted-foreground">{tt("Default flat fine for overdue loans (TZS)", "Faini ya kawaida kwa mikopo iliyochelewa (TZS)")}</p>
                   </div>
                 </div>
                 <div className="relative">
@@ -429,7 +432,7 @@ const GroupSettingsPage = () => {
                   />
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-normal">
-                  Set to <span className="font-semibold text-foreground">0</span> if your group does not impose penalties for late repayments.
+                  {tt("Set to 0 if your group does not impose penalties for late repayments.", "Weka 0 ikiwa kikundi hakitozi adhabu za kuchelewa kulipa.")}
                 </p>
               </div>
             </div>
@@ -442,7 +445,7 @@ const GroupSettingsPage = () => {
                   className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-2 px-6"
                 >
                   <Save className="h-4 w-4" />
-                  {isSaving ? "Saving…" : "Save Financial Rules"}
+                  {isSaving ? tt("Saving...", "Inahifadhi...") : tt("Save Financial Rules", "Hifadhi Kanuni za Fedha")}
                 </Button>
               </div>
             )}
@@ -454,8 +457,8 @@ const GroupSettingsPage = () => {
           <div className="rounded-[1.5rem] border border-border/80 bg-card/60 backdrop-blur-md p-6 md:p-8 shadow-sm space-y-6">
             <SectionHeader
               icon={ToggleLeft}
-              title="Workspace Status"
-              description="Control whether this group is actively operational."
+              title={tt("Workspace Status", "Hali ya Kikundi")}
+              description={tt("Control whether this group is actively operational.", "Dhibiti kama kikundi kinafanya kazi.")}
             />
 
             <div className="rounded-2xl border border-border/80 bg-background/40 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -467,12 +470,12 @@ const GroupSettingsPage = () => {
                 </div>
                 <div>
                   <p className="font-bold text-foreground">
-                    Group is currently <span className={isActive ? "text-chart-1" : "text-destructive"}>{isActive ? "Active" : "Inactive"}</span>
+                    {tt("Group is currently", "Kikundi kwa sasa")} <span className={isActive ? "text-chart-1" : "text-destructive"}>{isActive ? tt("Active", "Hai") : tt("Inactive", "Kimesitishwa")}</span>
                   </p>
                   <p className="text-xs text-muted-foreground mt-1 leading-relaxed max-w-md">
                     {isActive
-                      ? "Members can access all financial operations, meetings, and features. Deactivating will suspend all group activity."
-                      : "This group is suspended. Members cannot perform financial transactions or access group features until reactivated."}
+                      ? tt("Members can access all financial operations, meetings, and features. Deactivating will suspend all group activity.", "Wanachama wanaweza kutumia shughuli zote za fedha, vikao, na vipengele. Kusitisha kutazuia shughuli zote.")
+                      : tt("This group is suspended. Members cannot perform financial transactions or access group features until reactivated.", "Kikundi hiki kimesitishwa. Wanachama hawawezi kufanya miamala hadi kiwezeshwe tena.")}
                   </p>
                 </div>
               </div>
@@ -489,10 +492,10 @@ const GroupSettingsPage = () => {
                   }`}
                 >
                   {isSaving
-                    ? <><RefreshCw className="h-4 w-4 animate-spin" /> Working…</>
+                    ? <><RefreshCw className="h-4 w-4 animate-spin" /> {tt("Working...", "Inafanya kazi...")}</>
                     : isActive
-                    ? <><ToggleLeft className="h-4 w-4" /> Deactivate Group</>
-                    : <><ToggleRight className="h-4 w-4" /> Reactivate Group</>}
+                    ? <><ToggleLeft className="h-4 w-4" /> {tt("Deactivate Group", "Sitisha Kikundi")}</>
+                    : <><ToggleRight className="h-4 w-4" /> {tt("Reactivate Group", "Wezesha Kikundi Tena")}</>}
                 </Button>
               )}
             </div>
@@ -500,7 +503,7 @@ const GroupSettingsPage = () => {
             {isActive && isChairperson && (
               <div className="rounded-2xl border border-amber-500/25 bg-amber-500/5 p-4 flex gap-3 text-xs text-amber-700 dark:text-amber-400">
                 <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-                <p>Deactivating the group will immediately restrict access to all financial and meeting features. This action can be reversed at any time.</p>
+                <p>{tt("Deactivating the group will immediately restrict access to all financial and meeting features. This action can be reversed at any time.", "Kusitisha kikundi kutazuia mara moja shughuli za fedha na vikao. Unaweza kukiwezesha tena baadaye.")}</p>
               </div>
             )}
           </div>
@@ -511,8 +514,8 @@ const GroupSettingsPage = () => {
           <div className="rounded-[1.5rem] border border-border/80 bg-card/60 backdrop-blur-md p-6 md:p-8 shadow-sm space-y-6">
             <SectionHeader
               icon={Info}
-              title="Group Information"
-              description="Read-only metadata and join credentials for this workspace."
+              title={tt("Group Information", "Taarifa za Kikundi")}
+              description={tt("Read-only metadata and join credentials for this workspace.", "Taarifa za kusoma pekee na msimbo wa kujiunga.")}
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -520,7 +523,7 @@ const GroupSettingsPage = () => {
               <div className="col-span-full p-5 rounded-2xl border border-border/80 bg-background/40 space-y-3">
                 <div className="flex items-center gap-2">
                   <Hash className="h-4 w-4 text-primary" />
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Join Code</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{tt("Join Code", "Msimbo wa Kujiunga")}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-3xl font-extrabold tracking-[0.25em] text-foreground font-mono">
@@ -531,58 +534,58 @@ const GroupSettingsPage = () => {
                     className="flex items-center gap-1.5 rounded-xl border border-border/80 bg-muted px-3 py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
                   >
                     {codeCopied ? <Check className="h-3.5 w-3.5 text-chart-1" /> : <Copy className="h-3.5 w-3.5" />}
-                    {codeCopied ? "Copied!" : "Copy"}
+                    {codeCopied ? tt("Copied!", "Imenakiliwa!") : tt("Copy", "Nakili")}
                   </button>
                 </div>
-                <p className="text-[11px] text-muted-foreground">Share this code to allow others to request membership to the group.</p>
+                <p className="text-[11px] text-muted-foreground">{tt("Share this code to allow others to request membership to the group.", "Shiriki msimbo huu ili wengine waombe uanachama.")}</p>
               </div>
 
               {/* Members count */}
               <div className="p-5 rounded-2xl border border-border/80 bg-background/40 space-y-2">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Users className="h-4 w-4" />
-                  <p className="text-xs font-bold uppercase tracking-widest">Total Members</p>
+                  <p className="text-xs font-bold uppercase tracking-widest">{tt("Total Members", "Jumla ya Wanachama")}</p>
                 </div>
                 <p className="text-2xl font-extrabold text-foreground">{selectedGroup.members_count}</p>
-                <p className="text-[11px] text-muted-foreground">Verified active memberships</p>
+                <p className="text-[11px] text-muted-foreground">{tt("Verified active memberships", "Wanachama hai waliothibitishwa")}</p>
               </div>
 
               {/* Created by */}
               <div className="p-5 rounded-2xl border border-border/80 bg-background/40 space-y-2">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <FileText className="h-4 w-4" />
-                  <p className="text-xs font-bold uppercase tracking-widest">Created By</p>
+                  <p className="text-xs font-bold uppercase tracking-widest">{tt("Created By", "Kimeundwa na")}</p>
                 </div>
                 <p className="text-sm font-bold text-foreground truncate">{selectedGroup.created_by}</p>
-                <p className="text-[11px] text-muted-foreground">Group founder / original chairperson</p>
+                <p className="text-[11px] text-muted-foreground">{tt("Group founder / original chairperson", "Mwanzilishi wa kikundi / mwenyekiti wa kwanza")}</p>
               </div>
 
               {/* Created at */}
               <div className="p-5 rounded-2xl border border-border/80 bg-background/40 space-y-2">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Calendar className="h-4 w-4" />
-                  <p className="text-xs font-bold uppercase tracking-widest">Date Founded</p>
+                  <p className="text-xs font-bold uppercase tracking-widest">{tt("Date Founded", "Tarehe ya Kuanzishwa")}</p>
                 </div>
                 <p className="text-sm font-bold text-foreground">
                   {new Date(selectedGroup.created_at).toLocaleDateString("en-GB", {
                     day: "numeric", month: "long", year: "numeric",
                   })}
                 </p>
-                <p className="text-[11px] text-muted-foreground">Group creation timestamp</p>
+                <p className="text-[11px] text-muted-foreground">{tt("Group creation timestamp", "Tarehe ya kuundwa kwa kikundi")}</p>
               </div>
 
               {/* Last updated */}
               <div className="p-5 rounded-2xl border border-border/80 bg-background/40 space-y-2">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <RefreshCw className="h-4 w-4" />
-                  <p className="text-xs font-bold uppercase tracking-widest">Last Updated</p>
+                  <p className="text-xs font-bold uppercase tracking-widest">{tt("Last Updated", "Ilisasishwa Mwisho")}</p>
                 </div>
                 <p className="text-sm font-bold text-foreground">
                   {new Date(selectedGroup.updated_at).toLocaleDateString("en-GB", {
                     day: "numeric", month: "long", year: "numeric",
                   })}
                 </p>
-                <p className="text-[11px] text-muted-foreground">Most recent configuration change</p>
+                <p className="text-[11px] text-muted-foreground">{tt("Most recent configuration change", "Mabadiliko ya mwisho ya mipangilio")}</p>
               </div>
             </div>
           </div>

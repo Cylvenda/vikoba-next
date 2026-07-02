@@ -1,12 +1,17 @@
+"use client"
+
+import { useLanguage } from "@/components/language/language-provider"
+
 const files = [
      { name: 'ProjectPlan.pdf', size: '1.2MB' },
      { name: 'Wireframes.png', size: '3.5MB' },
 ]
 
 export default function SharedFiles() {
+     const { language } = useLanguage()
      return (
           <div className="rounded-2xl bg-card p-4 shadow">
-               <h3 className="text-lg font-bold mb-4">Shared Files</h3>
+               <h3 className="text-lg font-bold mb-4">{language === "sw" ? "Faili Zilizoshirikiwa" : "Shared Files"}</h3>
                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {files.map(f => (
                          <div key={f.name} className="flex flex-col items-center rounded-xl border border-border p-3 transition hover:bg-muted/60">

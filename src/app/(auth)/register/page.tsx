@@ -12,12 +12,15 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useLanguage } from "@/components/language/language-provider";
 
 type RegisterFormValues = z.infer<typeof RegisterFormSchema>;
 
 const Register = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { language } = useLanguage();
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en;
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(RegisterFormSchema),
@@ -34,7 +37,7 @@ const Register = () => {
       const res = await authUserService.userRegister(data);
 
       if (res.status === 201) {
-        toast.success("Account created successfully. Check your email to activate your account.");
+        toast.success(tt("Account created successfully. Check your email to activate your account.", "Akaunti imeundwa. Angalia barua pepe yako ili kuiwezesha."));
         router.push("/login");
       }
     } catch (error: unknown) {
@@ -56,7 +59,7 @@ const Register = () => {
         errorMessage?.email?.[0] ||
         errorMessage?.phone?.[0] ||
         errorMessage?.password?.[0] ||
-        "Registration failed. Please try again.";
+        tt("Registration failed. Please try again.", "Usajili umeshindikana. Tafadhali jaribu tena.");
 
       toast.error(msg);
     } finally {
@@ -67,8 +70,8 @@ const Register = () => {
   return (
     <div className="w-full bg-inherit">
       <FormInput
-        title="Create Account"
-        description="Join Community Hub and launch your VICOBA digital space"
+        title={tt("Create Account", "Fungua Akaunti")}
+        description={tt("Join Community Hub and launch your VICOBA digital space", "Jiunge na Community Hub na uanzishe nafasi yako ya VICOBA mtandaoni")}
       >
         <form
           onSubmit={form.handleSubmit(onSubmitHandler)}
@@ -79,8 +82,8 @@ const Register = () => {
             control={form.control}
             type="email"
             name="email"
-            placeholder="Enter email address"
-            label="Email Address"
+            placeholder={tt("Enter email address", "Ingiza anwani ya barua pepe")}
+            label={tt("Email Address", "Anwani ya Barua Pepe")}
           />
 
           {/* PHONE */}
@@ -88,16 +91,16 @@ const Register = () => {
             control={form.control}
             type="tel"
             name="phone"
-            placeholder="Enter phone number"
-            label="Phone Number"
+            placeholder={tt("Enter phone number", "Ingiza namba ya simu")}
+            label={tt("Phone Number", "Namba ya Simu")}
           />
 
           {/* PASSWORD */}
           <PasswordInput
             control={form.control}
-            label="Password"
+            label={tt("Password", "Nenosiri")}
             name="password"
-            placeholder="Enter password"
+            placeholder={tt("Enter password", "Ingiza nenosiri")}
           />
 
           {/* SUBMIT BUTTON */}
@@ -106,17 +109,17 @@ const Register = () => {
             disabled={loading}
             className="w-full py-6 bg-chart-3 text-primary-foreground font-bold hover:bg-chart-2 rounded-xl transition-all duration-300 shadow-md hover:shadow-chart-3/20"
           >
-            {loading ? <Spinner /> : "Create Account"}
+            {loading ? <Spinner /> : tt("Create Account", "Fungua Akaunti")}
           </Button>
 
           {/* LOGIN REDIRECT LINK */}
           <p className="text-center text-sm text-muted-foreground font-medium">
-            Already have an account?{" "}
+            {tt("Already have an account?", "Tayari una akaunti?")}{" "}
             <Link
               href="/login"
               className="text-chart-3 hover:text-chart-2 font-bold hover:underline transition-colors duration-300"
             >
-              Sign in
+              {tt("Sign in", "Ingia")}
             </Link>
           </p>
         </form>

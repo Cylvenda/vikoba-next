@@ -9,6 +9,7 @@ import { Clock, Edit3, Save, X, CheckCircle, Circle, Play, Plus, Trash2, FileTex
 import { toast } from "react-toastify"
 import { meetingServices } from "@/api/services/meeting.service"
 import type { AgendaItem } from "@/store/meeting/meeting.types"
+import { useLanguage } from "@/components/language/language-provider"
 
 export interface AgendaMinuteNote {
   id?: string
@@ -77,6 +78,8 @@ export function AgendaMinutesPanel({
   onAgendaItemSelect,
   selectedAgendaItemId
 }: AgendaMinutesPanelProps) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const [minuteNotes, setMinuteNotes] = useState<Record<string, AgendaMinuteNote>>({})
   const [standaloneNotes, setStandaloneNotes] = useState<AgendaMinuteNote[]>([])
   const [additionalNotes, setAdditionalNotes] = useState<AdditionalNote[]>([])
@@ -139,7 +142,7 @@ export function AgendaMinutesPanel({
             }
           }
         } else {
-          toast.error("Failed to load meeting minutes")
+          toast.error(language === "sw" ? "Imeshindikana kupakia kumbukumbu za kikao" : "Failed to load meeting minutes")
         }
       }
     }
@@ -170,13 +173,13 @@ export function AgendaMinutesPanel({
             }
           }
         } else {
-          toast.error("Failed to load additional notes")
+          toast.error(language === "sw" ? "Imeshindikana kupakia maelezo ya ziada" : "Failed to load additional notes")
         }
       }
     }
 
     loadAdditionalNotes()
-  }, [meetingId])
+  }, [language, meetingId])
 
   const handleStartAgendaItem = (agendaItemId: string) => {
     if (!isHost) return
@@ -273,9 +276,9 @@ export function AgendaMinutesPanel({
         setEditingAgendaId(null)
         setTempNotes("")
         setTempHostNotes("")
-        toast.success("Notes saved successfully")
+        toast.success(tt("Notes saved successfully", "Maelezo yamehifadhiwa"))
       } else {
-        toast.error("Failed to save notes")
+        toast.error(tt("Failed to save notes", "Imeshindikana kuhifadhi maelezo"))
       }
     } catch (error: unknown) {
       console.error("Error saving notes:", error)
@@ -297,9 +300,9 @@ export function AgendaMinutesPanel({
         setEditingAgendaId(null)
         setTempNotes("")
         setTempHostNotes("")
-        toast.success("Notes saved locally (backend not available)")
+        toast.success(tt("Notes saved locally (backend not available)", "Maelezo yamehifadhiwa kwenye kifaa"))
       } else {
-        toast.error("Failed to save notes")
+        toast.error(tt("Failed to save notes", "Imeshindikana kuhifadhi maelezo"))
       }
     }
   }
@@ -335,13 +338,13 @@ export function AgendaMinutesPanel({
         setTempNotes("")
         setTempHostNotes("")
         setShowStandaloneForm(false)
-        toast.success("Note created successfully")
+        toast.success(tt("Note created successfully", "Maelezo yameundwa"))
       } else {
-        toast.error("Failed to create note")
+        toast.error(tt("Failed to create note", "Imeshindikana kuunda maelezo"))
       }
     } catch (error: unknown) {
       console.error("Error creating standalone note:", error)
-      toast.error("Failed to create note")
+      toast.error(tt("Failed to create note", "Imeshindikana kuunda maelezo"))
     }
   }
 
@@ -371,13 +374,13 @@ export function AgendaMinutesPanel({
         setTempStandaloneTitle("")
         setTempNotes("")
         setTempHostNotes("")
-        toast.success("Note updated successfully")
+        toast.success(tt("Note updated successfully", "Maelezo yamesasishwa"))
       } else {
-        toast.error("Failed to update note")
+        toast.error(tt("Failed to update note", "Imeshindikana kusasisha maelezo"))
       }
     } catch (error: unknown) {
       console.error("Error updating standalone note:", error)
-      toast.error("Failed to update note")
+      toast.error(tt("Failed to update note", "Imeshindikana kusasisha maelezo"))
     }
   }
 
@@ -406,9 +409,9 @@ export function AgendaMinutesPanel({
         setTempAdditionalNotes("")
         setTempAdditionalHostNotes("")
         setShowAdditionalForm(false)
-        toast.success("Additional note created successfully")
+        toast.success(tt("Additional note created successfully", "Maelezo ya ziada yameundwa"))
       } else {
-        toast.error("Failed to create additional note")
+        toast.error(tt("Failed to create additional note", "Imeshindikana kuunda maelezo ya ziada"))
       }
     } catch (error: unknown) {
       console.error("Error creating additional note:", error)
@@ -432,9 +435,9 @@ export function AgendaMinutesPanel({
         setTempAdditionalNotes("")
         setTempAdditionalHostNotes("")
         setShowAdditionalForm(false)
-        toast.success("Additional note saved locally (backend not available)")
+        toast.success(tt("Additional note saved locally (backend not available)", "Maelezo ya ziada yamehifadhiwa kwenye kifaa"))
       } else {
-        toast.error("Failed to create additional note")
+        toast.error(tt("Failed to create additional note", "Imeshindikana kuunda maelezo ya ziada"))
       }
     }
   }
@@ -466,9 +469,9 @@ export function AgendaMinutesPanel({
         setTempAdditionalTitle("")
         setTempAdditionalNotes("")
         setTempAdditionalHostNotes("")
-        toast.success("Additional note updated successfully")
+        toast.success(tt("Additional note updated successfully", "Maelezo ya ziada yamesasishwa"))
       } else {
-        toast.error("Failed to update additional note")
+        toast.error(tt("Failed to update additional note", "Imeshindikana kusasisha maelezo ya ziada"))
       }
     } catch (error: unknown) {
       console.error("Error updating additional note:", error)
@@ -494,9 +497,9 @@ export function AgendaMinutesPanel({
         setTempAdditionalTitle("")
         setTempAdditionalNotes("")
         setTempAdditionalHostNotes("")
-        toast.success("Additional note updated locally (backend not available)")
+        toast.success(tt("Additional note updated locally (backend not available)", "Maelezo ya ziada yamesasishwa kwenye kifaa"))
       } else {
-        toast.error("Failed to update additional note")
+        toast.error(tt("Failed to update additional note", "Imeshindikana kusasisha maelezo ya ziada"))
       }
     }
   }
@@ -509,9 +512,9 @@ export function AgendaMinutesPanel({
 
       if (response.status >= 200 && response.status < 300) {
         setAdditionalNotes(prev => prev.filter(note => note.id !== noteId))
-        toast.success("Additional note deleted successfully")
+        toast.success(tt("Additional note deleted successfully", "Maelezo ya ziada yamefutwa"))
       } else {
-        toast.error("Failed to delete additional note")
+        toast.error(tt("Failed to delete additional note", "Imeshindikana kufuta maelezo ya ziada"))
       }
     } catch (error: unknown) {
       console.error("Error deleting additional note:", error)
@@ -521,9 +524,9 @@ export function AgendaMinutesPanel({
         const updatedNotes = additionalNotes.filter(note => note.id !== noteId)
         setAdditionalNotes(updatedNotes)
         localStorage.setItem(`additional_notes_${meetingId}`, JSON.stringify(updatedNotes))
-        toast.success("Additional note deleted locally (backend not available)")
+        toast.success(tt("Additional note deleted locally (backend not available)", "Maelezo ya ziada yamefutwa kwenye kifaa"))
       } else {
-        toast.error("Failed to delete additional note")
+        toast.error(tt("Failed to delete additional note", "Imeshindikana kufuta maelezo ya ziada"))
       }
     }
   }
@@ -573,7 +576,7 @@ export function AgendaMinutesPanel({
           size="sm"
           onClick={() => setShowAdditionalNotes(!showAdditionalNotes)}
         >
-          {showAdditionalNotes ? "Hide Notes" : "Show Notes"}
+          {showAdditionalNotes ? tt("Hide Notes", "Ficha Maelezo") : tt("Show Notes", "Onyesha Maelezo")}
         </Button>
         <div className="flex gap-2 items-center justify-between">
 
@@ -598,9 +601,9 @@ export function AgendaMinutesPanel({
 
                   const response = await meetingServices.saveAllAgendaMinuteNotes(meetingId, notesArray)
                   if (response.status >= 200 && response.status < 300) {
-                    toast.success("All minutes saved successfully")
+                    toast.success(tt("All minutes saved successfully", "Kumbukumbu zote zimehifadhiwa"))
                   } else {
-                    toast.error("Failed to save some minutes")
+                    toast.error(tt("Failed to save some minutes", "Baadhi ya kumbukumbu hazikuhifadhiwa"))
                   }
                 } catch (error: unknown) {
                   console.error("Error saving all notes:", error)
@@ -608,9 +611,9 @@ export function AgendaMinutesPanel({
                   if (getErrorStatus(error) === 404) {
                     // Backend not available, save to local storage
                     localStorage.setItem(`agenda_minutes_${meetingId}`, JSON.stringify(minuteNotes))
-                    toast.success("All minutes saved locally (backend not available)")
+                    toast.success(tt("All minutes saved locally (backend not available)", "Kumbukumbu zote zimehifadhiwa kwenye kifaa"))
                   } else {
-                    toast.error("Failed to save minutes")
+                    toast.error(tt("Failed to save minutes", "Imeshindikana kuhifadhi kumbukumbu"))
                   }
                 } finally {
                   setLoading(false)
@@ -618,7 +621,7 @@ export function AgendaMinutesPanel({
               }}
               disabled={loading}
             >
-              {loading ? "Saving..." : "Save All"}
+              {loading ? tt("Saving...", "Inahifadhi...") : tt("Save All", "Hifadhi Zote")}
             </Button>
           )}
         </div>
@@ -646,7 +649,7 @@ export function AgendaMinutesPanel({
                       <div className="flex-1">
                         <h4 className="font-medium text-sm mb-1">{agendaItem.title}</h4>
                         <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
-                          <span>Order: {agendaItem.order + 1}</span>
+                          <span>{tt("Order:", "Mpangilio:")} {agendaItem.order + 1}</span>
                           {notes.startTime && (
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
@@ -671,7 +674,7 @@ export function AgendaMinutesPanel({
                               className="text-xs"
                             >
                               <Play className="w-3 h-3 mr-1" />
-                              Start
+                              {tt("Start", "Anza")}
                             </Button>
                           )}
 
@@ -686,7 +689,7 @@ export function AgendaMinutesPanel({
                               className="text-xs"
                             >
                               <CheckCircle className="w-3 h-3 mr-1" />
-                              Complete
+                              {tt("Complete", "Kamilisha")}
                             </Button>
                           )}
 
@@ -710,22 +713,22 @@ export function AgendaMinutesPanel({
                   {isEditing ? (
                     <div className="space-y-3" onClick={(e) => e.stopPropagation()}>
                       <div>
-                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Minutes</label>
+                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{tt("Minutes", "Kumbukumbu")}</label>
                         <Textarea
                           value={tempNotes}
                           onChange={(e) => setTempNotes(e.target.value)}
-                          placeholder="Enter meeting minutes..."
+                          placeholder={tt("Enter meeting minutes...", "Ingiza kumbukumbu za kikao...")}
                           className="app-scrollbar min-h-20 text-sm mt-1"
                         />
                       </div>
 
                       {isHost && (
                         <div>
-                          <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Host Comments</label>
+                          <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{tt("Host Comments", "Maoni ya Mwenyeji")}</label>
                           <Textarea
                             value={tempHostNotes}
                             onChange={(e) => setTempHostNotes(e.target.value)}
-                            placeholder="Add private host comments and observations..."
+                            placeholder={tt("Add private host comments and observations...", "Ongeza maoni binafsi ya mwenyeji...")}
                             className="app-scrollbar min-h-15 text-sm mt-1 border-blue-200 dark:border-blue-700 focus:border-blue-400 dark:focus:border-blue-500"
                           />
                         </div>
@@ -738,7 +741,7 @@ export function AgendaMinutesPanel({
                           className="text-xs"
                         >
                           <Save className="w-3 h-3 mr-1" />
-                          Save
+                          {tt("Save", "Hifadhi")}
                         </Button>
                         <Button
                           size="sm"
@@ -747,7 +750,7 @@ export function AgendaMinutesPanel({
                           className="text-xs"
                         >
                           <X className="w-3 h-3 mr-1" />
-                          Cancel
+                          {tt("Cancel", "Ghairi")}
                         </Button>
                       </div>
                     </div>
@@ -755,14 +758,14 @@ export function AgendaMinutesPanel({
                     <div className="space-y-3">
                       {notes.notes && (
                         <div>
-                          <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Minutes:</p>
+                          <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{tt("Minutes:", "Kumbukumbu:")}</p>
                           <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{notes.notes}</p>
                         </div>
                       )}
 
                       {isHost && notes.hostNotes && (
                         <div>
-                          <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Host Comments:</p>
+                          <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{tt("Host Comments:", "Maoni ya Mwenyeji:")}</p>
                           <p className="text-sm text-blue-600 dark:text-blue-400 whitespace-pre-wrap bg-blue-50 dark:bg-blue-500/10 p-2 rounded border border-blue-200 dark:border-blue-700">
                             {notes.hostNotes}
                           </p>
@@ -772,10 +775,10 @@ export function AgendaMinutesPanel({
                       {!notes.notes && !notes.hostNotes && (
                         <div className="text-center py-3 text-gray-600 dark:text-gray-400 text-sm">
                           <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
-                          <p>No minutes recorded yet</p>
+                          <p>{tt("No minutes recorded yet", "Bado hakuna kumbukumbu")}</p>
                           {isHost && (
                             <p className="text-xs mt-1">
-                              Click the edit button to add minutes and comments
+                              {tt("Click the edit button to add minutes and comments", "Bofya hariri kuongeza kumbukumbu na maoni")}
                             </p>
                           )}
                         </div>
@@ -791,14 +794,14 @@ export function AgendaMinutesPanel({
           {agendaItems.length === 0 && (
             <div className="mt-2">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-md font-semibold text-gray-800 dark:text-gray-200">Meeting Notes</h4>
+                <h4 className="text-md font-semibold text-gray-800 dark:text-gray-200">{tt("Meeting Notes", "Maelezo ya Kikao")}</h4>
                 {isHost && !showStandaloneForm && (
                   <Button
                     size="sm"
                     onClick={() => setShowStandaloneForm(true)}
                   >
                     <Plus className="w-3 h-3 mr-1" />
-                    Add Note
+                    {tt("Add Note", "Ongeza Maelezo")}
                   </Button>
                 )}
               </div>
@@ -809,30 +812,30 @@ export function AgendaMinutesPanel({
                   <CardContent className="p-4">
                     <div className="space-y-3">
                       <div>
-                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Title</label>
+                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{tt("Title", "Kichwa")}</label>
                         <Input
                           value={tempStandaloneTitle}
                           onChange={(e) => setTempStandaloneTitle(e.target.value)}
-                          placeholder="Note title or topic..."
+                          placeholder={tt("Note title or topic...", "Kichwa au mada ya maelezo...")}
                           className="text-sm mt-1"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Notes</label>
+                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{tt("Notes", "Maelezo")}</label>
                         <Textarea
                           value={tempNotes}
                           onChange={(e) => setTempNotes(e.target.value)}
-                          placeholder="Enter meeting notes..."
+                          placeholder={tt("Enter meeting notes...", "Ingiza maelezo ya kikao...")}
                           className="app-scrollbar min-h-20 text-sm mt-1"
                         />
                       </div>
                       {isHost && (
                         <div>
-                          <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Host Notes</label>
+                          <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{tt("Host Notes", "Maelezo ya Mwenyeji")}</label>
                           <Textarea
                             value={tempHostNotes}
                             onChange={(e) => setTempHostNotes(e.target.value)}
-                            placeholder="Add private host notes..."
+                            placeholder={tt("Add private host notes...", "Ongeza maelezo binafsi ya mwenyeji...")}
                             className="app-scrollbar min-h-15 text-sm mt-1 border-blue-200 dark:border-blue-700 focus:border-blue-400 dark:focus:border-blue-500"
                           />
                         </div>
@@ -844,7 +847,7 @@ export function AgendaMinutesPanel({
                           disabled={!tempStandaloneTitle.trim()}
                         >
                           <Save className="w-3 h-3 mr-1" />
-                          Create
+                          {tt("Create", "Unda")}
                         </Button>
                         <Button
                           size="sm"
@@ -852,7 +855,7 @@ export function AgendaMinutesPanel({
                           onClick={handleCancelStandaloneEdit}
                         >
                           <X className="w-3 h-3 mr-1" />
-                          Cancel
+                          {tt("Cancel", "Ghairi")}
                         </Button>
                       </div>
                     </div>
@@ -868,7 +871,7 @@ export function AgendaMinutesPanel({
                       {editingStandaloneId === note.id ? (
                         <div className="space-y-3">
                           <div>
-                            <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Title</label>
+                            <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{tt("Title", "Kichwa")}</label>
                             <Input
                               value={tempStandaloneTitle}
                               onChange={(e) => setTempStandaloneTitle(e.target.value)}
@@ -876,7 +879,7 @@ export function AgendaMinutesPanel({
                             />
                           </div>
                           <div>
-                            <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Notes</label>
+                            <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{tt("Notes", "Maelezo")}</label>
                             <Textarea
                               value={tempNotes}
                               onChange={(e) => setTempNotes(e.target.value)}
@@ -885,7 +888,7 @@ export function AgendaMinutesPanel({
                           </div>
                           {isHost && (
                             <div>
-                              <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Host Notes</label>
+                              <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{tt("Host Notes", "Maelezo ya Mwenyeji")}</label>
                               <Textarea
                                 value={tempHostNotes}
                                 onChange={(e) => setTempHostNotes(e.target.value)}
@@ -900,7 +903,7 @@ export function AgendaMinutesPanel({
                               disabled={!tempStandaloneTitle.trim()}
                             >
                               <Save className="w-3 h-3 mr-1" />
-                              Update
+                              {tt("Update", "Sasisha")}
                             </Button>
                             <Button
                               size="sm"
@@ -908,7 +911,7 @@ export function AgendaMinutesPanel({
                               onClick={handleCancelStandaloneEdit}
                             >
                               <X className="w-3 h-3 mr-1" />
-                              Cancel
+                              {tt("Cancel", "Ghairi")}
                             </Button>
                           </div>
                         </div>
@@ -928,13 +931,13 @@ export function AgendaMinutesPanel({
                           </div>
                           {note.notes && (
                             <div>
-                              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Notes:</p>
+                              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{tt("Notes:", "Maelezo:")}</p>
                               <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{note.notes}</p>
                             </div>
                           )}
                           {isHost && note.hostNotes && (
                             <div>
-                              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Host Notes:</p>
+                              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{tt("Host Notes:", "Maelezo ya Mwenyeji:")}</p>
                               <p className="text-sm text-blue-600 dark:text-blue-400 whitespace-pre-wrap bg-blue-50 dark:bg-blue-500/10 p-2 rounded border border-blue-200 dark:border-blue-700">
                                 {note.hostNotes}
                               </p>
@@ -942,7 +945,7 @@ export function AgendaMinutesPanel({
                           )}
                           {!note.notes && !note.hostNotes && (
                             <div className="text-center py-2 text-gray-600 dark:text-gray-400 text-sm">
-                              <p>No content yet</p>
+                              <p>{tt("No content yet", "Bado hakuna maudhui")}</p>
                             </div>
                           )}
                         </div>
@@ -954,10 +957,10 @@ export function AgendaMinutesPanel({
                 {standaloneNotes.length === 0 && !showStandaloneForm && (
                   <div className="text-center py-6 text-gray-600 dark:text-gray-400 text-sm">
                     <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p>No meeting notes yet</p>
+                    <p>{tt("No meeting notes yet", "Bado hakuna maelezo ya kikao")}</p>
                     {isHost && (
                       <p className="text-xs mt-1">
-                        Click &quot;Add Note&quot; to create meeting notes.
+                        {tt("Click Add Note to create meeting notes.", "Bofya Ongeza Maelezo kuunda maelezo ya kikao.")}
                       </p>
                     )}
                   </div>
@@ -971,14 +974,14 @@ export function AgendaMinutesPanel({
         {showAdditionalNotes && (
           <div className="mt-4 border-t pt-4">
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-md font-semibold text-gray-800 dark:text-gray-200">Additional Notes</h4>
+              <h4 className="text-md font-semibold text-gray-800 dark:text-gray-200">{tt("Additional Notes", "Maelezo ya Ziada")}</h4>
               {isHost && (
                 <Button
                   size="sm"
                   onClick={() => setShowAdditionalForm(true)}
                 >
                   <Plus className="w-3 h-3 mr-1" />
-                  Add Note
+                  {tt("Add Note", "Ongeza Maelezo")}
                 </Button>
               )}
             </div>
@@ -989,32 +992,32 @@ export function AgendaMinutesPanel({
                 <CardContent className="p-4">
                   <div className="space-y-3">
                     <div>
-                      <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Title</label>
+                      <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{tt("Title", "Kichwa")}</label>
                       <Input
                         value={tempAdditionalTitle}
                         onChange={(e) => setTempAdditionalTitle(e.target.value)}
-                        placeholder="Note title or topic..."
+                        placeholder={tt("Note title or topic...", "Kichwa au mada ya maelezo...")}
                         className="text-sm mt-1"
                       />
                     </div>
 
                     <div>
-                      <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Notes</label>
+                      <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{tt("Notes", "Maelezo")}</label>
                       <Textarea
                         value={tempAdditionalNotes}
                         onChange={(e) => setTempAdditionalNotes(e.target.value)}
-                        placeholder="Enter additional notes..."
+                        placeholder={tt("Enter additional notes...", "Ingiza maelezo ya ziada...")}
                         className="app-scrollbar min-h-20 text-sm mt-1"
                       />
                     </div>
 
                     {isHost && (
                       <div>
-                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Host Notes</label>
+                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{tt("Host Notes", "Maelezo ya Mwenyeji")}</label>
                         <Textarea
                           value={tempAdditionalHostNotes}
                           onChange={(e) => setTempAdditionalHostNotes(e.target.value)}
-                          placeholder="Add private host notes..."
+                          placeholder={tt("Add private host notes...", "Ongeza maelezo binafsi ya mwenyeji...")}
                           className="app-scrollbar min-h-15 text-sm mt-1"
                         />
                       </div>
@@ -1027,7 +1030,7 @@ export function AgendaMinutesPanel({
                         disabled={!tempAdditionalTitle.trim()}
                       >
                         <Save className="w-3 h-3 mr-1" />
-                        Create
+                        {tt("Create", "Unda")}
                       </Button>
                       <Button
                         size="sm"
@@ -1035,7 +1038,7 @@ export function AgendaMinutesPanel({
                         onClick={handleCancelAdditionalEdit}
                       >
                         <X className="w-3 h-3 mr-1" />
-                        Cancel
+                        {tt("Cancel", "Ghairi")}
                       </Button>
                     </div>
                   </div>
@@ -1051,7 +1054,7 @@ export function AgendaMinutesPanel({
                     {editingAdditionalId === note.id ? (
                       <div className="space-y-3">
                         <div>
-                          <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Title</label>
+                          <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{tt("Title", "Kichwa")}</label>
                           <Input
                             value={tempAdditionalTitle}
                             onChange={(e) => setTempAdditionalTitle(e.target.value)}
@@ -1060,7 +1063,7 @@ export function AgendaMinutesPanel({
                         </div>
 
                         <div>
-                          <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Notes</label>
+                          <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{tt("Notes", "Maelezo")}</label>
                           <Textarea
                             value={tempAdditionalNotes}
                             onChange={(e) => setTempAdditionalNotes(e.target.value)}
@@ -1070,7 +1073,7 @@ export function AgendaMinutesPanel({
 
                         {isHost && (
                           <div>
-                            <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Host Notes</label>
+                            <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{tt("Host Notes", "Maelezo ya Mwenyeji")}</label>
                             <Textarea
                               value={tempAdditionalHostNotes}
                               onChange={(e) => setTempAdditionalHostNotes(e.target.value)}
@@ -1086,7 +1089,7 @@ export function AgendaMinutesPanel({
                             disabled={!tempAdditionalTitle.trim()}
                           >
                             <Save className="w-3 h-3 mr-1" />
-                            Update
+                            {tt("Update", "Sasisha")}
                           </Button>
                           <Button
                             size="sm"
@@ -1094,7 +1097,7 @@ export function AgendaMinutesPanel({
                             onClick={handleCancelAdditionalEdit}
                           >
                             <X className="w-3 h-3 mr-1" />
-                            Cancel
+                            {tt("Cancel", "Ghairi")}
                           </Button>
                         </div>
                       </div>
@@ -1126,22 +1129,22 @@ export function AgendaMinutesPanel({
 
                         {note.notes && (
                           <div>
-                            <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Notes:</p>
+                            <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{tt("Notes:", "Maelezo:")}</p>
                             <p className="text-sm">{note.notes}</p>
                           </div>
                         )}
 
                         {isHost && note.hostNotes && (
                           <div>
-                            <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Host Notes:</p>
+                            <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{tt("Host Notes:", "Maelezo ya Mwenyeji:")}</p>
                             <p className="text-sm text-blue-600 dark:text-blue-400">{note.hostNotes}</p>
                           </div>
                         )}
 
                         <div className="text-xs text-gray-600 dark:text-gray-400">
-                          Created: {new Date(note.createdAt).toLocaleString()}
+                          {tt("Created:", "Imeundwa:")} {new Date(note.createdAt).toLocaleString()}
                           {note.createdByName && (
-                            <span> by {note.createdByName}</span>
+                            <span> {tt("by", "na")} {note.createdByName}</span>
                           )}
                         </div>
                       </div>
@@ -1153,10 +1156,10 @@ export function AgendaMinutesPanel({
               {additionalNotes.length === 0 && !showAdditionalForm && (
                 <div className="text-center py-4 text-gray-600 dark:text-gray-400 text-sm">
                   <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p>No additional notes yet</p>
+                  <p>{tt("No additional notes yet", "Bado hakuna maelezo ya ziada")}</p>
                   {isHost && (
                     <p className="text-xs mt-1">
-                      Click &quot;Add Note&quot; to create additional notes for topics outside the agenda.
+                      {tt("Click Add Note to create additional notes for topics outside the agenda.", "Bofya Ongeza Maelezo kuunda maelezo ya mada zilizo nje ya ajenda.")}
                     </p>
                   )}
                 </div>

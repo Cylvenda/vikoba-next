@@ -4,10 +4,13 @@ import { useGroupStore } from "@/store/group/groupUser.store"
 import { useMeetingStore } from "@/store/meeting/meeting.store"
 import { useMemo } from "react"
 import { getMeetingDetailHref, getMeetingSessionHref } from "@/lib/meeting-routes"
+import { useLanguage } from "@/components/language/language-provider"
 
 const MeetingsList = () => {
      const { selectedGroup } = useGroupStore()
      const { meetings } = useMeetingStore()
+     const { language } = useLanguage()
+     const tt = (en: string, sw: string) => language === "sw" ? sw : en
      const groupMeetings = useMemo(() => {
           return meetings
                .filter((meeting) => meeting.group === selectedGroup?.id)
@@ -19,7 +22,7 @@ const MeetingsList = () => {
           <div className="rounded-[1.5rem] border border-border/50 bg-card/70 p-4 shadow-sm">
                <div className="divide-y divide-border/40">
                     {groupMeetings.length === 0 && (
-                         <p className="py-6 text-sm text-muted-foreground">No scheduled or active meetings for this group yet.</p>
+                         <p className="py-6 text-sm text-muted-foreground">{tt("No scheduled or active meetings for this group yet.", "Bado hakuna vikao vilivyopangwa au vinavyoendelea katika kikundi hiki.")}</p>
                     )}
                     {groupMeetings.map((m) => (
                          <div key={m.id} className="flex flex-col gap-4 py-4 lg:flex-row lg:items-center lg:gap-6">
@@ -27,7 +30,7 @@ const MeetingsList = () => {
                                    const meetingHref = m.status === "ongoing"
                                         ? getMeetingSessionHref(m.id, m.group)
                                         : getMeetingDetailHref(m.id, m.group)
-                                   const meetingLabel = m.status === "ongoing" ? "Join Session" : "Open Details"
+                                   const meetingLabel = m.status === "ongoing" ? tt("Join Session", "Jiunge na Kikao") : tt("Open Details", "Fungua Maelezo")
                                    const statusClassName =
                                         m.status === "ongoing"
                                              ? "bg-green-500/15 text-green-700"
@@ -69,14 +72,14 @@ const MeetingsList = () => {
                                                             </span>
                                                             <span className="inline-flex items-center gap-1">
                                                                  <Radio className="size-3.5" />
-                                                                 Host: {m.host_email}
+                                                                 {tt("Host:", "Mwenyeji:")} {m.host_email}
                                                             </span>
                                                        </div>
                                                   </div>
 
                                                   <div className="flex flex-wrap items-center gap-3">
                                                        <p className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${statusClassName}`}>
-                                                            {m.status}
+                                                            {m.status === "ongoing" ? tt("ongoing", "kinaendelea") : tt("scheduled", "kimepangwa")}
                                                        </p>
 
                                                        <Link href={meetingHref} className="rounded-xl bg-chart-2 px-3 py-2 text-sm font-semibold text-white transition hover:opacity-90">

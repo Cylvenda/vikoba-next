@@ -3,6 +3,7 @@
 import type { ReactNode } from "react"
 import { DoorOpen, Radio, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useLanguage } from "@/components/language/language-provider"
 
 type TopBarProps = {
   title: string
@@ -12,9 +13,9 @@ type TopBarProps = {
   actions?: ReactNode
 }
 
-function formatUtcLabel(currentUtcIso: string) {
+function formatUtcLabel(currentUtcIso: string, language: "en" | "sw") {
   if (!currentUtcIso) {
-    return "Syncing UTC time..."
+    return language === "sw" ? "Inasawazisha muda wa UTC..." : "Syncing UTC time..."
   }
 
   const date = new Date(currentUtcIso)
@@ -32,12 +33,14 @@ function formatUtcLabel(currentUtcIso: string) {
 }
 
 export function TopBar({ title, connectionLabel, currentUtcIso, onLeave, actions }: TopBarProps) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   return (
     <header className="flex flex-col gap-4 border-b border-gray-200 bg-accent px-5 py-4 backdrop-blur lg:flex-row lg:items-center lg:justify-between">
       <div className="min-w-0">
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
           <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400" />
-          Secure meeting session
+          {tt("Secure meeting session", "Kikao salama")}
         </div>
         <h1 className="mt-2 truncate text-2xl font-semibold text-gray-900 dark:text-gray-100">{title}</h1>
       </div>
@@ -49,7 +52,7 @@ export function TopBar({ title, connectionLabel, currentUtcIso, onLeave, actions
         </div>
 
         <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 shadow-sm">
-          {formatUtcLabel(currentUtcIso)}
+          {formatUtcLabel(currentUtcIso, language)}
         </div>
 
         {actions}
@@ -61,7 +64,7 @@ export function TopBar({ title, connectionLabel, currentUtcIso, onLeave, actions
           className="rounded-2xl px-4"
         >
           <DoorOpen className="size-4" />
-          Leave meeting
+          {tt("Leave meeting", "Ondoka kwenye kikao")}
         </Button>
       </div>
     </header>

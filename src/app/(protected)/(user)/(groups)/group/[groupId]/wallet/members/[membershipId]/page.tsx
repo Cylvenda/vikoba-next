@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatTzs } from "@/lib/vikoba-finance"
+import { useLanguage } from "@/components/language/language-provider"
 
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat("en-TZ", {
@@ -45,6 +46,9 @@ export default function MemberWalletDetailPage() {
   const membershipId = Array.isArray(params?.membershipId) ? params.membershipId[0] : params?.membershipId
   const { selectedGroup, selectedGroupMembers } = useGroupStore()
   const { walletReport, fetchWalletReport } = useFinanceStore()
+  const { language } = useLanguage()
+  const isSwahili = language === "sw"
+  const tt = (en: string, sw: string) => (isSwahili ? sw : en)
 
   const [contributions, setContributions] = useState<Contribution[]>([])
   const [loans, setLoans] = useState<Loan[]>([])
@@ -124,10 +128,11 @@ export default function MemberWalletDetailPage() {
   const wallet = walletReport?.memberWallets?.find((item) => item.membership_uuid === membershipId)
 
   const timeline = useMemo<TimelineItem[]>(() => {
+    const label = (en: string, sw: string) => (isSwahili ? sw : en)
     const contributionItems = contributions.map((item) => ({
       id: item.uuid,
       type: "CONTRIBUTION" as const,
-      title: item.status === "VERIFIED" ? "Verified contribution" : "Pending contribution",
+      title: item.status === "VERIFIED" ? label("Verified contribution", "Mchango uliothibitishwa") : label("Pending contribution", "Mchango unasubiri"),
       amount: Number(item.amount || 0),
       happenedAt: item.paid_at,
       note: item.note,
@@ -137,7 +142,7 @@ export default function MemberWalletDetailPage() {
     const loanItems = loans.map((item) => ({
       id: item.uuid,
       type: "LOAN" as const,
-      title: `Loan ${item.status.toLowerCase().replaceAll("_", " ")}`,
+      title: label(`Loan ${item.status.toLowerCase().replaceAll("_", " ")}`, `Mkopo ${item.status.toLowerCase().replaceAll("_", " ")}`),
       amount: Number(item.principal_amount || 0),
       happenedAt: item.disbursed_at || item.created_at,
       note: item.purpose,
@@ -147,7 +152,7 @@ export default function MemberWalletDetailPage() {
     const loanPaymentItems = loanPayments.map((item) => ({
       id: item.uuid,
       type: "LOAN_REPAYMENT" as const,
-      title: "Loan repayment",
+      title: label("Loan repayment", "Marejesho ya mkopo"),
       amount: Number(item.amount || 0),
       happenedAt: item.paid_at,
       note: item.note,
@@ -157,7 +162,7 @@ export default function MemberWalletDetailPage() {
     const fineItems = fines.map((item) => ({
       id: item.uuid,
       type: "FINE" as const,
-      title: item.status === "PAID" ? "Fine settled" : "Fine issued",
+      title: item.status === "PAID" ? label("Fine settled", "Faini imelipwa") : label("Fine issued", "Faini imetolewa"),
       amount: Number(item.amount || 0),
       happenedAt: item.issued_at,
       note: item.reason,
@@ -167,7 +172,7 @@ export default function MemberWalletDetailPage() {
     const finePaymentItems = finePayments.map((item) => ({
       id: item.uuid,
       type: "FINE_PAYMENT" as const,
-      title: "Fine payment",
+      title: label("Fine payment", "Malipo ya faini"),
       amount: Number(item.amount || 0),
       happenedAt: item.paid_at,
       note: item.note,
@@ -177,7 +182,7 @@ export default function MemberWalletDetailPage() {
     return [...contributionItems, ...loanItems, ...loanPaymentItems, ...fineItems, ...finePaymentItems].sort(
       (left, right) => new Date(right.happenedAt).getTime() - new Date(left.happenedAt).getTime()
     )
-  }, [contributions, finePayments, fines, loanPayments, loans])
+  }, [contributions, finePayments, fines, isSwahili, loanPayments, loans])
 
   const totals = useMemo(() => {
     const totalContributions = contributions
@@ -196,6 +201,8 @@ export default function MemberWalletDetailPage() {
   }, [contributions, fines, loans])
 
   const downloadStatement = () => {
+    if (!member || !selectedGroup) return
+
     const csvEscape = (value: string | number | null | undefined) =>
       `"${String(value ?? "").replaceAll('"', '""')}"`
 
@@ -245,7 +252,7 @@ export default function MemberWalletDetailPage() {
     return (
       <div className="w-full p-4 md:p-6 lg:p-8">
         <div className="rounded-2xl border border-dashed border-border bg-background p-6 text-sm text-muted-foreground">
-          Loading member wallet details...
+          {tt("Loading member wallet details...", "Inapakia maelezo ya mkoba wa mwanachama...")}
         </div>
       </div>
     )
@@ -258,11 +265,11 @@ export default function MemberWalletDetailPage() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-chart-2/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-chart-2">
               <WalletCards className="h-3.5 w-3.5" />
-              Member Wallet
+              {tt("Member Wallet", "Mkoba wa Mwanachama")}
             </div>
             <h1 className="mt-3 text-3xl font-black tracking-tight">{member.first_name} {member.last_name}</h1>
             <p className="text-sm text-muted-foreground">
-              Detailed wallet history for this member inside {selectedGroup.name}.
+              {tt("Detailed wallet history for this member inside", "Historia ya kina ya mkoba wa mwanachama huyu ndani ya")} {selectedGroup.name}.
             </p>
           </div>
 
@@ -270,16 +277,16 @@ export default function MemberWalletDetailPage() {
             <div className="flex items-center gap-2 rounded-full border border-border bg-background px-2 py-1">
               <Select value={exportFormat} onValueChange={(value) => setExportFormat(value as "csv" | "xls")}>
                 <SelectTrigger className="h-8 rounded-full border-0 bg-transparent px-3">
-                  <SelectValue placeholder="CSV" />
+                  <SelectValue placeholder={tt("CSV", "CSV")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="csv">CSV export</SelectItem>
-                  <SelectItem value="xls">Excel export</SelectItem>
+                  <SelectItem value="csv">{tt("CSV export", "Hamisha CSV")}</SelectItem>
+                  <SelectItem value="xls">{tt("Excel export", "Hamisha Excel")}</SelectItem>
                 </SelectContent>
               </Select>
               <Button variant="outline" className="rounded-full" onClick={downloadStatement}>
                 <Download className="mr-2 h-4 w-4" />
-                Export
+                {tt("Export", "Hamisha")}
               </Button>
             </div>
             <Button variant="outline" className="rounded-full" onClick={handlePrint}>
@@ -287,10 +294,10 @@ export default function MemberWalletDetailPage() {
               Print
             </Button>
             <Button asChild variant="outline" className="rounded-full">
-              <Link href={`/group/${groupId}/wallet`}>Back to wallet</Link>
+              <Link href={`/group/${groupId}/wallet`}>{tt("Back to wallet", "Rudi kwenye mkoba")}</Link>
             </Button>
             <Button asChild variant="secondary" className="rounded-full">
-              <Link href={`/group/${groupId}`}>Back to dashboard</Link>
+              <Link href={`/group/${groupId}`}>{tt("Back to dashboard", "Rudi kwenye dashibodi")}</Link>
             </Button>
           </div>
         </div>
@@ -298,14 +305,14 @@ export default function MemberWalletDetailPage() {
         <section className="rounded-3xl border border-border/80 bg-card/60 p-6 shadow-sm backdrop-blur-md print:border-black print:bg-white print:shadow-none">
           <div className="flex items-center justify-between gap-3 print:mb-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground print:text-black">Wallet Statement</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground print:text-black">{tt("Wallet Statement", "Taarifa ya Mkoba")}</p>
               <h2 className="mt-1 text-2xl font-black tracking-tight print:text-black">{member.first_name} {member.last_name}</h2>
               <p className="text-sm text-muted-foreground print:text-black">
-                {selectedGroup.name} member wallet statement
+                {selectedGroup.name} {tt("member wallet statement", "taarifa ya mkoba wa mwanachama")}
               </p>
             </div>
             <div className="rounded-2xl border border-border bg-background px-4 py-2 text-right print:border-black">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground print:text-black">Net Balance</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground print:text-black">{tt("Net Balance", "Salio Halisi")}</p>
               <p className="mt-1 text-xl font-extrabold print:text-black">{formatTzs(wallet?.net_balance ?? 0)}</p>
             </div>
           </div>
@@ -313,25 +320,25 @@ export default function MemberWalletDetailPage() {
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4 print:grid-cols-4">
             <Card className="border-border/80 bg-card/60 shadow-sm backdrop-blur-md print:border-black print:bg-white print:shadow-none">
               <CardContent className="p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground print:text-black">Savings</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground print:text-black">{tt("Savings", "Akiba")}</p>
                 <p className="mt-2 text-3xl font-extrabold text-chart-1 print:text-black">{formatTzs(wallet?.savings_balance ?? totals.totalContributions)}</p>
               </CardContent>
             </Card>
             <Card className="border-border/80 bg-card/60 shadow-sm backdrop-blur-md print:border-black print:bg-white print:shadow-none">
               <CardContent className="p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground print:text-black">Loan Outstanding</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground print:text-black">{tt("Loan Outstanding", "Deni la Mkopo")}</p>
                 <p className="mt-2 text-3xl font-extrabold text-destructive print:text-black">{formatTzs(wallet?.loan_outstanding ?? totals.totalLoanBalance)}</p>
               </CardContent>
             </Card>
             <Card className="border-border/80 bg-card/60 shadow-sm backdrop-blur-md print:border-black print:bg-white print:shadow-none">
               <CardContent className="p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground print:text-black">Fine Outstanding</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground print:text-black">{tt("Fine Outstanding", "Deni la Faini")}</p>
                 <p className="mt-2 text-3xl font-extrabold text-amber-500 print:text-black">{formatTzs(wallet?.fine_outstanding ?? totals.totalFineBalance)}</p>
               </CardContent>
             </Card>
             <Card className="border-border/80 bg-card/60 shadow-sm backdrop-blur-md print:border-black print:bg-white print:shadow-none">
               <CardContent className="p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground print:text-black">Net Balance</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground print:text-black">{tt("Net Balance", "Salio Halisi")}</p>
                 <p className="mt-2 text-3xl font-extrabold print:text-black">{formatTzs(wallet?.net_balance ?? 0)}</p>
               </CardContent>
             </Card>
@@ -344,25 +351,25 @@ export default function MemberWalletDetailPage() {
               <div className="border-b border-border/80 px-6 py-5">
                 <div className="flex items-center gap-2">
                   <PiggyBank className="h-4 w-4 text-primary" />
-                  <h2 className="text-lg font-bold">Contributions</h2>
+                  <h2 className="text-lg font-bold">{tt("Contributions", "Michango")}</h2>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">Savings recorded for this member in the group.</p>
+                <p className="mt-1 text-xs text-muted-foreground">{tt("Savings recorded for this member in the group.", "Akiba zilizorekodiwa kwa mwanachama huyu kwenye kikundi.")}</p>
               </div>
               <div className="space-y-3 p-6">
                 {contributions.length > 0 ? contributions.map((item) => (
                   <div key={item.uuid} className="rounded-2xl border border-border bg-background p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold">{item.status}</p>
+                        <p className="font-semibold">{tt(item.status, item.status)}</p>
                         <p className="text-xs text-muted-foreground">{formatDateTime(item.paid_at)}</p>
-                        {item.reference ? <p className="text-[11px] text-muted-foreground">Ref {item.reference}</p> : null}
+                        {item.reference ? <p className="text-[11px] text-muted-foreground">{tt("Ref", "Kumb.")} {item.reference}</p> : null}
                       </div>
                       <p className="font-bold text-chart-1">{formatTzs(Number(item.amount))}</p>
                     </div>
                   </div>
                 )) : (
                   <div className="rounded-2xl border border-dashed border-border bg-background p-6 text-sm text-muted-foreground">
-                    No contributions recorded for this member.
+                    {tt("No contributions recorded for this member.", "Hakuna michango iliyorekodiwa kwa mwanachama huyu.")}
                   </div>
                 )}
               </div>
@@ -374,25 +381,25 @@ export default function MemberWalletDetailPage() {
               <div className="border-b border-border/80 px-6 py-5">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-primary" />
-                  <h2 className="text-lg font-bold">Loans & Fines</h2>
+                  <h2 className="text-lg font-bold">{tt("Loans & Fines", "Mikopo na Faini")}</h2>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">Borrowing and penalty summary for this member.</p>
+                <p className="mt-1 text-xs text-muted-foreground">{tt("Borrowing and penalty summary for this member.", "Muhtasari wa kukopa na adhabu kwa mwanachama huyu.")}</p>
               </div>
               <div className="space-y-4 p-6">
                 <div className="rounded-2xl border border-border bg-background p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Loans</p>
-                  <p className="mt-2 text-lg font-bold">{loans.length} loan(s)</p>
-                  <p className="text-sm text-muted-foreground">Borrowed {formatTzs(totals.totalBorrowed)} total principal.</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">{tt("Loans", "Mikopo")}</p>
+                  <p className="mt-2 text-lg font-bold">{loans.length} {tt("loan(s)", "mkopo")}</p>
+                  <p className="text-sm text-muted-foreground">{tt("Borrowed", "Amechukua")} {formatTzs(totals.totalBorrowed)} {tt("total principal.", "jumla ya mtaji.")}</p>
                 </div>
                 <div className="rounded-2xl border border-border bg-background p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Fines</p>
-                  <p className="mt-2 text-lg font-bold">{fines.length} fine(s)</p>
-                  <p className="text-sm text-muted-foreground">Outstanding balance {formatTzs(totals.totalFineBalance)}.</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">{tt("Fines", "Faini")}</p>
+                  <p className="mt-2 text-lg font-bold">{fines.length} {tt("fine(s)", "faini")}</p>
+                  <p className="text-sm text-muted-foreground">{tt("Outstanding balance", "Salio lililobaki")} {formatTzs(totals.totalFineBalance)}.</p>
                 </div>
                 <div className="rounded-2xl border border-border bg-background p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Payments</p>
-                  <p className="mt-2 text-lg font-bold">{loanPayments.length + finePayments.length} payment(s)</p>
-                  <p className="text-sm text-muted-foreground">Repayments and fine settlements logged for the member.</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">{tt("Payments", "Malipo")}</p>
+                  <p className="mt-2 text-lg font-bold">{loanPayments.length + finePayments.length} {tt("payment(s)", "malipo")}</p>
+                  <p className="text-sm text-muted-foreground">{tt("Repayments and fine settlements logged for the member.", "Marejesho na malipo ya faini yamehifadhiwa kwa mwanachama.")}</p>
                 </div>
               </div>
             </CardContent>
@@ -403,17 +410,17 @@ export default function MemberWalletDetailPage() {
           <div className="border-b border-border/80 px-6 py-5">
             <div className="flex items-center gap-2">
               <ReceiptText className="h-4 w-4 text-primary" />
-              <h2 className="text-lg font-bold">Wallet Timeline</h2>
+              <h2 className="text-lg font-bold">{tt("Wallet Timeline", "Mfuatano wa Mkoba")}</h2>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Combined contribution, loan, repayment, and fine activity for this member.
+              {tt("Combined contribution, loan, repayment, and fine activity for this member.", "Shughuli za michango, mikopo, marejesho, na faini kwa mwanachama huyu.")}
             </p>
           </div>
 
           <div className="space-y-3 p-6">
             {loading ? (
               <div className="rounded-2xl border border-dashed border-border bg-background p-6 text-sm text-muted-foreground">
-                Loading member timeline...
+                {tt("Loading member timeline...", "Inapakia mfuatano wa mwanachama...")}
               </div>
             ) : timeline.length > 0 ? (
               timeline.map((item) => (
@@ -442,7 +449,7 @@ export default function MemberWalletDetailPage() {
               ))
             ) : (
               <div className="rounded-2xl border border-dashed border-border bg-background p-6 text-sm text-muted-foreground">
-                No wallet timeline items found for this member.
+                {tt("No wallet timeline items found for this member.", "Hakuna vipengele vya mfuatano wa mkoba kwa mwanachama huyu.")}
               </div>
             )}
           </div>

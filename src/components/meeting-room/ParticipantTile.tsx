@@ -4,6 +4,7 @@ import { VideoTrack, isTrackReference, type TrackReferenceOrPlaceholder } from "
 import { Hand, Mic, MicOff, MonitorUp, Video, VideoOff } from "lucide-react"
 import { Track } from "livekit-client"
 import type { MeetingParticipantSignalState } from "@/components/meeting-room/types"
+import { useLanguage } from "@/components/language/language-provider"
 
 type ParticipantTileProps = {
   trackRef: TrackReferenceOrPlaceholder
@@ -32,6 +33,8 @@ export function ParticipantTile({
   layout = "grid",
   participantSignal,
 }: ParticipantTileProps) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const participant = trackRef.participant
   const isScreenShare = trackRef.source === Track.Source.ScreenShare
   const showVideo = isTrackReference(trackRef) && trackRef.publication.isSubscribed
@@ -77,23 +80,23 @@ export function ParticipantTile({
       <div className={["absolute left-4 top-4 flex flex-wrap items-center gap-2", isFilmstrip ? "right-4" : ""].join(" ")}>
         {isActiveSpeaker ? (
           <span className="rounded-full bg-emerald-400 px-3 py-1 text-[11px] font-semibold text-emerald-950">
-            Active speaker
+            {tt("Active speaker", "Anazungumza")}
           </span>
         ) : null}
         {isScreenShare ? (
           <span className="rounded-full bg-white/90 dark:bg-gray-800/90 px-3 py-1 text-[11px] font-semibold text-gray-900 dark:text-gray-100">
-            Screen share
+            {tt("Screen share", "Skrini inashirikiwa")}
           </span>
         ) : null}
         {isHost ? (
           <span className="rounded-full bg-amber-300 px-3 py-1 text-[11px] font-semibold text-amber-950">
-            Host
+            {tt("Host", "Mwenyeji")}
           </span>
         ) : null}
         {raisedHand ? (
           <span className="flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-[11px] font-semibold text-primary-foreground">
             <Hand className="size-3" />
-            Hand raised
+            {tt("Hand raised", "Mkono umeinuliwa")}
           </span>
         ) : null}
       </div>
@@ -110,10 +113,10 @@ export function ParticipantTile({
         <div className="min-w-0">
           <p className={["truncate font-semibold text-white", isFilmstrip ? "text-sm" : "text-base"].join(" ")}>
             {label}
-            {isCurrentUser ? " (You)" : ""}
+            {isCurrentUser ? ` (${tt("You", "Wewe")})` : ""}
           </p>
           <p className="mt-1 text-xs text-white/75">
-            {isActiveSpeaker ? "Speaking now" : "Live in room"}
+            {isActiveSpeaker ? tt("Speaking now", "Anazungumza sasa") : tt("Live in room", "Yupo kwenye kikao")}
           </p>
         </div>
 
@@ -125,7 +128,7 @@ export function ParticipantTile({
             ].join(" ")}
           >
             {participant.isMicrophoneEnabled ? <Mic className="size-3.5" /> : <MicOff className="size-3.5" />}
-            Mic
+            {tt("Mic", "Maikrofoni")}
           </span>
           <span
             className={[
@@ -140,7 +143,7 @@ export function ParticipantTile({
             ) : (
               <VideoOff className="size-3.5" />
             )}
-            {isScreenShare ? "Share" : "Cam"}
+            {isScreenShare ? tt("Share", "Skrini") : tt("Cam", "Kamera")}
           </span>
         </div>
       </div>

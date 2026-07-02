@@ -4,6 +4,7 @@ import { useMemo, useState, type FormEvent } from "react"
 import { SendHorizonal } from "lucide-react"
 import type { MeetingChatMessage } from "@/components/meeting-room/types"
 import { Button } from "@/components/ui/button"
+import { useLanguage } from "@/components/language/language-provider"
 
 type ChatPanelProps = {
   messages: MeetingChatMessage[]
@@ -19,6 +20,8 @@ function formatTime(value: string) {
 }
 
 export function ChatPanel({ messages, currentUserId, onSendMessage }: ChatPanelProps) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const [draft, setDraft] = useState("")
 
   const orderedMessages = useMemo(() => messages, [messages])
@@ -78,7 +81,7 @@ export function ChatPanel({ messages, currentUserId, onSendMessage }: ChatPanelP
           <textarea
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
-            placeholder="Write a message..."
+            placeholder={tt("Write a message...", "Andika ujumbe...")}
             className="app-scrollbar min-h-12 flex-1 resize-none rounded-md border-0 bg-transparent px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
           />
           <Button
@@ -87,7 +90,7 @@ export function ChatPanel({ messages, currentUserId, onSendMessage }: ChatPanelP
             disabled={!draft.trim()}
           >
             <SendHorizonal className="size-4" />
-            Send
+            {tt("Send", "Tuma")}
           </Button>
         </div>
       </form>

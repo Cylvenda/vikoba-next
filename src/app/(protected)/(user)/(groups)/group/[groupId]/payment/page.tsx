@@ -25,12 +25,15 @@ import { toast } from "react-toastify"
 import Link from "next/link"
 import { financeServices, type Loan } from "@/api/services/finance.service"
 import { paymentServices } from "@/api/services/payment.service"
+import { useLanguage } from "@/components/language/language-provider"
 
 export default function PaymentPage() {
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
   const groupId = params.groupId as string
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   
   const type = searchParams.get("type") || "unknown"
   const loanId = searchParams.get("id") || ""
@@ -45,14 +48,14 @@ export default function PaymentPage() {
 
   const paymentModeLabel =
     type === "saving" 
-      ? "Savings Deposit"
+      ? tt("Savings Deposit", "Amana ya Akiba")
       : type === "fine"
-        ? "Penalty Settlement"
+        ? tt("Penalty Settlement", "Malipo ya Adhabu")
         : paymentMode === "installment"
-          ? "Installment payment"
+          ? tt("Installment payment", "Malipo ya awamu")
           : paymentMode === "custom"
-            ? "Custom amount"
-            : "Full balance payment"
+            ? tt("Custom amount", "Kiasi maalum")
+            : tt("Full balance payment", "Malipo ya salio lote")
   
   const { selectedGroup, fetchGroupById } = useGroupStore()
   
@@ -108,7 +111,7 @@ export default function PaymentPage() {
         if (!cancelled) {
           toast.error(
             (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
-              (error instanceof Error ? error.message : "Unable to load loan details.")
+              (error instanceof Error ? error.message : (language === "sw" ? "Imeshindikana kupakia maelezo ya mkopo." : "Unable to load loan details."))
           )
           setLoanContext(null)
         }
@@ -124,7 +127,7 @@ export default function PaymentPage() {
     return () => {
       cancelled = true
     }
-  }, [groupId, loanId, type])
+  }, [groupId, language, loanId, type])
 
   const isLoanRepayable = Boolean(
     loanContext && ["ACTIVE", "OVERDUE"].includes(loanContext.status)
@@ -134,31 +137,31 @@ export default function PaymentPage() {
     switch (type) {
       case "loan":
         return {
-          title: "Loan Repayment",
-          description: "Make a payment towards your active or overdue loan balance.",
+          title: tt("Loan Repayment", "Marejesho ya Mkopo"),
+          description: tt("Make a payment towards your active or overdue loan balance.", "Lipa salio la mkopo wako unaoendelea au uliochelewa."),
           backLink: `/group/${groupId}/loans`,
-          backLabel: "Back to Loans"
+          backLabel: tt("Back to Loans", "Rudi kwenye Mikopo")
         }
       case "saving":
         return {
-          title: "Savings Deposit",
-          description: "Add funds to your group savings account.",
+          title: tt("Savings Deposit", "Amana ya Akiba"),
+          description: tt("Add funds to your group savings account.", "Ongeza fedha kwenye akiba yako ya kikundi."),
           backLink: `/group/${groupId}/savings`,
-          backLabel: "Back to Savings"
+          backLabel: tt("Back to Savings", "Rudi kwenye Akiba")
         }
       case "fine":
         return {
-          title: "Fine Payment",
-          description: "Settle an outstanding fine.",
+          title: tt("Fine Payment", "Malipo ya Faini"),
+          description: tt("Settle an outstanding fine.", "Lipa faini ambayo haijalipwa."),
           backLink: `/group/${groupId}/fines`, // Assuming this exists or will exist
-          backLabel: "Back to Fines"
+          backLabel: tt("Back to Fines", "Rudi kwenye Faini")
         }
       default:
         return {
-          title: "Secure Payment",
-          description: "Complete your transaction.",
+          title: tt("Secure Payment", "Malipo Salama"),
+          description: tt("Complete your transaction.", "Kamilisha muamala wako."),
           backLink: `/group/${groupId}`,
-          backLabel: "Back to Group"
+          backLabel: tt("Back to Group", "Rudi kwenye Kikundi")
         }
     }
   }
@@ -172,31 +175,31 @@ export default function PaymentPage() {
     
     if (paymentMethod === "mobile") {
       if (!phoneNumber.trim()) {
-        newErrors.phone = "Phone number is required"
+        newErrors.phone = tt("Phone number is required", "Namba ya simu inahitajika")
       } else if (phoneNumber.replace(/\D/g, '').length < 10) {
-        newErrors.phone = "Enter a valid phone number"
+        newErrors.phone = tt("Enter a valid phone number", "Ingiza namba sahihi ya simu")
       }
     } else {
       if (!cardNumber.trim()) {
-        newErrors.cardNumber = "Card number is required"
+        newErrors.cardNumber = tt("Card number is required", "Namba ya kadi inahitajika")
       } else if (cardNumber.replace(/\D/g, '').length < 15) {
-        newErrors.cardNumber = "Enter a valid card number"
+        newErrors.cardNumber = tt("Enter a valid card number", "Ingiza namba sahihi ya kadi")
       }
       
       if (!expiry.trim()) {
-        newErrors.expiry = "Required"
+        newErrors.expiry = tt("Required", "Inahitajika")
       } else if (expiry.length < 5) {
-        newErrors.expiry = "Use MM/YY"
+        newErrors.expiry = tt("Use MM/YY", "Tumia MM/YY")
       }
       
       if (!cvc.trim()) {
-        newErrors.cvc = "Required"
+        newErrors.cvc = tt("Required", "Inahitajika")
       } else if (cvc.length < 3) {
-        newErrors.cvc = "Invalid CVC"
+        newErrors.cvc = tt("Invalid CVC", "CVC si sahihi")
       }
       
       if (!nameOnCard.trim()) {
-        newErrors.nameOnCard = "Name is required"
+        newErrors.nameOnCard = tt("Name is required", "Jina linahitajika")
       }
     }
 
@@ -212,10 +215,10 @@ export default function PaymentPage() {
     if (type === "loan" && (!loanContext || !isLoanRepayable)) {
       toast.error(
         loanContext?.status === "PENDING"
-          ? "This loan is still pending approval."
+          ? tt("This loan is still pending approval.", "Mkopo huu bado unasubiri idhini.")
           : loanContext?.status === "APPROVED"
-            ? "This loan has not been disbursed yet."
-            : "Repayments are only allowed for active or overdue loans."
+            ? tt("This loan has not been disbursed yet.", "Mkopo huu bado haujatolewa.")
+            : tt("Repayments are only allowed for active or overdue loans.", "Marejesho yanaruhusiwa kwa mikopo inayoendelea au iliyochelewa pekee.")
       )
       return
     }
@@ -224,7 +227,7 @@ export default function PaymentPage() {
 
     try {
       if (type === "loan") {
-        if (!loanId) throw new Error("Loan ID is missing.")
+        if (!loanId) throw new Error(tt("Loan ID is missing.", "Kitambulisho cha mkopo kinakosekana."))
         
         const backendMethod = paymentMethod === "mobile" ? "MOBILE_MONEY" : "CREDIT_CARD"
         const reference = paymentMethod === "mobile" ? phoneNumber : cardNumber.replace(/\s/g, "")
@@ -247,7 +250,7 @@ export default function PaymentPage() {
           })
         }
       } else if (type === "saving") {
-        if (!loanId) throw new Error("Contribution ID is missing.")
+        if (!loanId) throw new Error(tt("Contribution ID is missing.", "Kitambulisho cha mchango kinakosekana."))
 
         if (paymentMethod === "mobile") {
           const res = await paymentServices.initiateCollection({
@@ -260,10 +263,10 @@ export default function PaymentPage() {
           pollTransactionStatus(res.data.transaction_uuid)
           return
         } else {
-          throw new Error("Credit Card payments for savings are coming soon. Please use Mobile Money.")
+          throw new Error(tt("Credit Card payments for savings are coming soon. Please use Mobile Money.", "Malipo ya akiba kwa kadi yanakuja hivi karibuni. Tafadhali tumia fedha za simu."))
         }
       } else if (type === "fine") {
-        if (!loanId) throw new Error("Fine ID is missing.")
+        if (!loanId) throw new Error(tt("Fine ID is missing.", "Kitambulisho cha faini kinakosekana."))
 
         if (paymentMethod === "mobile") {
           const res = await paymentServices.initiateCollection({
@@ -276,12 +279,12 @@ export default function PaymentPage() {
           pollTransactionStatus(res.data.transaction_uuid)
           return
         } else {
-          throw new Error("Credit Card payments for fines are coming soon. Please use Mobile Money.")
+          throw new Error(tt("Credit Card payments for fines are coming soon. Please use Mobile Money.", "Malipo ya faini kwa kadi yanakuja hivi karibuni. Tafadhali tumia fedha za simu."))
         }
       }
 
       setIsSuccess(true)
-      toast.success("Payment processed successfully!")
+      toast.success(tt("Payment processed successfully!", "Malipo yamekamilika kwa mafanikio!"))
 
       // Redirect back after short delay showing success state
       setTimeout(() => {
@@ -291,7 +294,7 @@ export default function PaymentPage() {
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
-        (err instanceof Error ? err.message : "Payment failed. Please try again.")
+        (err instanceof Error ? err.message : tt("Payment failed. Please try again.", "Malipo yameshindikana. Tafadhali jaribu tena."))
       toast.error(message)
       setIsProcessing(false)
     }
@@ -311,7 +314,7 @@ export default function PaymentPage() {
           clearInterval(interval)
           setIsPolling(false)
           setIsSuccess(true)
-          toast.success("Payment processed successfully!")
+          toast.success(tt("Payment processed successfully!", "Malipo yamekamilika kwa mafanikio!"))
           setTimeout(() => {
             router.push(contextInfo.backLink)
             router.refresh()
@@ -321,13 +324,13 @@ export default function PaymentPage() {
           setIsPolling(false)
           setIsProcessing(false)
           setIsFailed(true)
-          setFailMessage("Payment failed or was rejected. Please try again.")
+          setFailMessage(tt("Payment failed or was rejected. Please try again.", "Malipo yameshindikana au yamekataliwa. Tafadhali jaribu tena."))
         } else if (status === "EXPIRED") {
           clearInterval(interval)
           setIsPolling(false)
           setIsProcessing(false)
           setIsFailed(true)
-          setFailMessage("Payment prompt expired. Please try again.")
+          setFailMessage(tt("Payment prompt expired. Please try again.", "Ombi la malipo limepitwa na muda. Tafadhali jaribu tena."))
         }
         
         if (attempts >= maxAttempts) {
@@ -335,7 +338,7 @@ export default function PaymentPage() {
           setIsPolling(false)
           setIsProcessing(false)
           setIsFailed(true)
-          setFailMessage("We couldn't verify the payment status in time. Please check your group dashboard later.")
+          setFailMessage(tt("We couldn't verify the payment status in time. Please check your group dashboard later.", "Hatukuweza kuthibitisha malipo kwa wakati. Tafadhali kagua dashibodi ya kikundi baadaye."))
         }
       } catch (err) {
         console.error("Polling error", err)
@@ -385,9 +388,9 @@ export default function PaymentPage() {
             <div className="mb-6 rounded-full bg-muted/30 p-4">
               <Loader2 className="h-16 w-16 animate-spin text-muted-foreground" />
             </div>
-            <h2 className="mb-2 text-3xl font-extrabold text-foreground">Loading payment details</h2>
+            <h2 className="mb-2 text-3xl font-extrabold text-foreground">{tt("Loading payment details", "Inapakia maelezo ya malipo")}</h2>
             <p className="max-w-md text-muted-foreground">
-              We are checking the loan status before allowing repayment.
+              {tt("We are checking the loan status before allowing repayment.", "Tunakagua hali ya mkopo kabla ya kuruhusu marejesho.")}
             </p>
           </div>
         ) : type === "loan" && !isLoanRepayable ? (
@@ -396,21 +399,21 @@ export default function PaymentPage() {
               <Lock className="h-16 w-16 text-amber-600" />
             </div>
             <h2 className="mb-2 text-3xl font-extrabold text-foreground">
-              Loan not ready for repayment
+              {tt("Loan not ready for repayment", "Mkopo hauko tayari kurejeshwa")}
             </h2>
             <p className="max-w-md text-muted-foreground">
               {loanContext?.status === "PENDING"
-                ? "This is only a loan request. Members must approve it first before the treasurer can disburse funds and repayments can begin."
+                ? tt("This is only a loan request. Members must approve it first before the treasurer can disburse funds and repayments can begin.", "Hili ni ombi la mkopo tu. Lazima liidhinishwe kabla ya mweka hazina kutoa fedha na marejesho kuanza.")
                 : loanContext?.status === "APPROVED"
-                  ? "This loan has been approved, but it has not been disbursed yet. Repayment starts only after disbursement."
-                  : "Only active or overdue loans can be repaid."}
+                  ? tt("This loan has been approved, but it has not been disbursed yet. Repayment starts only after disbursement.", "Mkopo umeidhinishwa lakini bado haujatolewa. Marejesho huanza baada ya kutolewa.")
+                  : tt("Only active or overdue loans can be repaid.", "Mikopo inayoendelea au iliyochelewa pekee inaweza kulipwa.")}
             </p>
             <div className="mt-8 flex gap-4">
               <Button onClick={() => router.push(`/group/${groupId}/loans`)}>
-                Back to Loans
+                {tt("Back to Loans", "Rudi kwenye Mikopo")}
               </Button>
               <Button variant="outline" onClick={() => router.push(`/group/${groupId}`)}>
-                Back to Dashboard
+                {tt("Back to Dashboard", "Rudi kwenye Dashibodi")}
               </Button>
             </div>
           </div>
@@ -419,10 +422,9 @@ export default function PaymentPage() {
             <div className="mb-6 rounded-full bg-green-500/20 p-4">
               <CheckCircle2 className="h-16 w-16 text-green-500" />
             </div>
-            <h2 className="mb-2 text-3xl font-extrabold text-foreground">Payment Successful</h2>
+            <h2 className="mb-2 text-3xl font-extrabold text-foreground">{tt("Payment Successful", "Malipo Yamefanikiwa")}</h2>
             <p className="text-muted-foreground max-w-md">
-              Your transaction of <span className="font-bold text-foreground">{formatTzs(amount)}</span> has been processed successfully. 
-              Redirecting you back...
+              {tt("Your transaction of", "Muamala wako wa")} <span className="font-bold text-foreground">{formatTzs(amount)}</span> {tt("has been processed successfully. Redirecting you back...", "umekamilika kwa mafanikio. Unarudishwa...")}
             </p>
           </div>
         ) : isFailed ? (
@@ -430,16 +432,16 @@ export default function PaymentPage() {
             <div className="mb-6 rounded-full bg-destructive/20 p-4">
               <XCircle className="h-16 w-16 text-destructive" />
             </div>
-            <h2 className="mb-2 text-3xl font-extrabold text-foreground">Payment Failed</h2>
+            <h2 className="mb-2 text-3xl font-extrabold text-foreground">{tt("Payment Failed", "Malipo Yameshindikana")}</h2>
             <p className="text-muted-foreground max-w-md mb-8">
               {failMessage}
             </p>
             <div className="flex gap-4">
               <Button onClick={() => { setIsFailed(false); setIsProcessing(false) }} variant="outline">
-                Try Again
+                {tt("Try Again", "Jaribu Tena")}
               </Button>
               <Button onClick={() => router.push(`/group/${groupId}`)}>
-                Back to Dashboard
+                {tt("Back to Dashboard", "Rudi kwenye Dashibodi")}
               </Button>
             </div>
           </div>
@@ -451,16 +453,16 @@ export default function PaymentPage() {
                 <Smartphone className="h-12 w-12 text-chart-3 animate-pulse" />
               </div>
             </div>
-            <h2 className="mb-2 text-3xl font-extrabold text-foreground">Payment Initiated Successfully</h2>
+            <h2 className="mb-2 text-3xl font-extrabold text-foreground">{tt("Payment Initiated Successfully", "Malipo Yameanzishwa")}</h2>
             <p className="text-muted-foreground max-w-md mb-2">
-              Please check your phone for the Mobile Money prompt and enter your PIN to complete the transaction.
+              {tt("Please check your phone for the Mobile Money prompt and enter your PIN to complete the transaction.", "Angalia simu yako kwa ombi la malipo na uingize PIN kukamilisha muamala.")}
             </p>
             <div className="flex items-center gap-2 text-sm font-medium text-chart-4 mb-8">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Waiting for confirmation...
+              {tt("Waiting for confirmation...", "Inasubiri uthibitisho...")}
             </div>
             <Button variant="ghost" onClick={() => router.push(`/group/${groupId}`)} className="text-muted-foreground">
-              Taking too long? Return to Dashboard
+              {tt("Taking too long? Return to Dashboard", "Inachukua muda? Rudi kwenye Dashibodi")}
             </Button>
           </div>
         ) : (
@@ -471,13 +473,13 @@ export default function PaymentPage() {
               <div className="sticky top-8 overflow-hidden rounded-3xl border border-border/60 bg-card shadow-lg">
                 <div className="bg-chart-3/10 p-8 pb-12">
                   <Badge variant="outline" className="mb-4 bg-background/50 backdrop-blur-sm border-chart-3/30 text-chart-3">
-                    {selectedGroup?.name || "Group Payment"}
+                    {selectedGroup?.name || tt("Group Payment", "Malipo ya Kikundi")}
                   </Badge>
                   <h1 className="text-2xl font-bold text-foreground">{contextInfo.title}</h1>
                   <p className="mt-2 text-sm text-muted-foreground">{contextInfo.description}</p>
                   {type === "loan" && loanContext ? (
                     <p className="mt-2 text-xs font-medium text-muted-foreground">
-                      Loan status:{" "}
+                      {tt("Loan status:", "Hali ya mkopo:")}{" "}
                       <span className="font-semibold text-foreground">
                         {loanContext.status.toLowerCase().replaceAll("_", " ")}
                       </span>
@@ -487,7 +489,7 @@ export default function PaymentPage() {
                 
                 <div className="-mt-6 rounded-t-3xl bg-card p-8 shadow-[0_-8px_30px_-15px_rgba(0,0,0,0.1)]">
                   <div className="mb-6 flex items-center justify-between border-b border-border/40 pb-6">
-                    <span className="text-muted-foreground font-medium">Total due</span>
+                    <span className="text-muted-foreground font-medium">{tt("Total due", "Jumla inayodaiwa")}</span>
                     <span className="text-2xl font-extrabold text-foreground tracking-tight">
                       {formatTzs(amount)}
                     </span>
@@ -497,11 +499,11 @@ export default function PaymentPage() {
                     <div className="mb-6 rounded-2xl border border-chart-3/20 bg-chart-3/5 p-4">
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center justify-between gap-3">
-                          <span className="text-muted-foreground">Principal and interest</span>
+                          <span className="text-muted-foreground">{tt("Principal and interest", "Mtaji na riba")}</span>
                           <span className="font-semibold text-foreground">{formatTzs(principalAndInterestAmount)}</span>
                         </div>
                         <div className="flex items-center justify-between gap-3">
-                          <span className="text-muted-foreground">Late fee penalty</span>
+                          <span className="text-muted-foreground">{tt("Late fee penalty", "Adhabu ya kuchelewa")}</span>
                           <span className="font-semibold text-chart-3">{formatTzs(lateFeeAmount)}</span>
                         </div>
                       </div>
@@ -511,7 +513,7 @@ export default function PaymentPage() {
                   <div className="mb-6 rounded-2xl border border-border/60 bg-muted/20 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                        {type === "saving" ? "Contribution Plan" : type === "fine" ? "Penalty Plan" : "Repayment plan"}
+                        {type === "saving" ? tt("Contribution Plan", "Mpango wa Mchango") : type === "fine" ? tt("Penalty Plan", "Mpango wa Adhabu") : tt("Repayment plan", "Mpango wa Marejesho")}
                       </span>
                       <Badge variant="secondary" className="uppercase">
                         {paymentModeLabel}
@@ -519,22 +521,20 @@ export default function PaymentPage() {
                     </div>
                     <p className="mt-2 text-sm text-muted-foreground">
                       {type === "saving"
-                        ? "You are adding funds to your group savings account."
+                        ? tt("You are adding funds to your group savings account.", "Unaongeza fedha kwenye akiba yako ya kikundi.")
                         : type === "fine"
-                          ? "You are settling an outstanding group penalty."
+                          ? tt("You are settling an outstanding group penalty.", "Unalipa adhabu ya kikundi ambayo haijalipwa.")
                           : paymentMode === "installment"
                             ? installmentNumber
-                              ? `You selected installment #${installmentNumber} for this loan.`
-                              : "You selected the next installment for this loan."
+                              ? `${tt("You selected installment", "Umechagua awamu")} #${installmentNumber} ${tt("for this loan.", "kwa mkopo huu.")}`
+                              : tt("You selected the next installment for this loan.", "Umechagua awamu inayofuata ya mkopo huu.")
                             : paymentMode === "custom"
-                              ? "You chose a custom repayment amount."
-                              : "You chose to clear the remaining balance on this loan."}
+                              ? tt("You chose a custom repayment amount.", "Umechagua kiasi maalum cha marejesho.")
+                              : tt("You chose to clear the remaining balance on this loan.", "Umechagua kulipa salio lote la mkopo huu.")}
                     </p>
                     {hasLateFee ? (
                       <p className="mt-2 text-sm font-medium text-chart-3">
-                        This amount includes {formatTzs(lateFeeAmount)} in late fees
-                        across {overdueInstallments || 1} overdue installment
-                        {(overdueInstallments || 1) === 1 ? "" : "s"}.
+                        {tt("This amount includes", "Kiasi hiki kinajumuisha")} {formatTzs(lateFeeAmount)} {tt("in late fees across", "ya ada za kuchelewa kwa")} {overdueInstallments || 1} {tt("overdue installment(s).", "awamu zilizochelewa.")}
                       </p>
                     ) : null}
                   </div>
@@ -543,8 +543,8 @@ export default function PaymentPage() {
                     <div className="flex items-center gap-3 rounded-xl bg-muted/40 p-4 border border-border/40">
                       <ShieldCheck className="h-5 w-5 text-chart-2 shrink-0" />
                       <div>
-                        <p className="text-sm font-semibold">Secure checkout</p>
-                        <p className="text-xs text-muted-foreground">End-to-end encrypted processing.</p>
+                        <p className="text-sm font-semibold">{tt("Secure checkout", "Malipo salama")}</p>
+                        <p className="text-xs text-muted-foreground">{tt("End-to-end encrypted processing.", "Uchakataji uliosimbwa kwa usalama.")}</p>
                       </div>
                     </div>
                   </div>
@@ -556,8 +556,8 @@ export default function PaymentPage() {
             <div className="lg:col-span-3">
               <Card className="border-border/60 shadow-lg rounded-3xl overflow-hidden">
                 <CardHeader className="bg-muted/30 pb-4 border-b border-border/40">
-                  <CardTitle className="text-xl">Select Payment Method</CardTitle>
-                  <CardDescription>Choose how you want to pay</CardDescription>
+                  <CardTitle className="text-xl">{tt("Select Payment Method", "Chagua Njia ya Malipo")}</CardTitle>
+                  <CardDescription>{tt("Choose how you want to pay", "Chagua jinsi unavyotaka kulipa")}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-6 md:p-8">
                   <form onSubmit={handlePayment}>
@@ -568,14 +568,14 @@ export default function PaymentPage() {
                           className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm text-sm font-medium transition-all"
                         >
                           <Smartphone className="mr-2 h-4 w-4" />
-                          Mobile Money
+                          {tt("Mobile Money", "Fedha za Simu")}
                         </TabsTrigger>
                         <TabsTrigger 
                           value="card"
                           className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm text-sm font-medium transition-all"
                         >
                           <CreditCard className="mr-2 h-4 w-4" />
-                          Credit Card
+                          {tt("Credit Card", "Kadi ya Malipo")}
                         </TabsTrigger>
                       </TabsList>
 
@@ -584,7 +584,7 @@ export default function PaymentPage() {
                         <TabsContent value="mobile" className="space-y-6 mt-0 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
                           <div className="space-y-4">
                             <div className="space-y-2">
-                              <Label htmlFor="provider">Network Provider</Label>
+                              <Label htmlFor="provider">{tt("Network Provider", "Mtandao wa Simu")}</Label>
                               <div className="grid grid-cols-3 gap-3">
                                 {["M-Pesa", "Tigo Pesa", "Airtel"].map((provider) => (
                                   <div 
@@ -598,7 +598,7 @@ export default function PaymentPage() {
                             </div>
                             
                             <div className="space-y-2 pt-2">
-                              <Label htmlFor="phone">Phone Number</Label>
+                              <Label htmlFor="phone">{tt("Phone Number", "Namba ya Simu")}</Label>
                               <Input 
                                 id="phone" 
                                 placeholder="e.g. 0700 000 000" 
@@ -617,7 +617,7 @@ export default function PaymentPage() {
                                 <p className="text-xs text-destructive mt-1 font-medium">{errors.phone}</p>
                               ) : (
                                 <p className="text-xs text-muted-foreground mt-1 text-right">
-                                  You will receive a prompt on your phone to enter your PIN.
+                                  {tt("You will receive a prompt on your phone to enter your PIN.", "Utapokea ombi kwenye simu yako la kuingiza PIN.")}
                                 </p>
                               )}
                             </div>
@@ -628,7 +628,7 @@ export default function PaymentPage() {
                         <TabsContent value="card" className="space-y-6 mt-0 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
                           <div className="space-y-5">
                             <div className="space-y-2">
-                              <Label htmlFor="cardNumber">Card Number</Label>
+                              <Label htmlFor="cardNumber">{tt("Card Number", "Namba ya Kadi")}</Label>
                               <div className="relative">
                                 <Input 
                                   id="cardNumber" 
@@ -651,7 +651,7 @@ export default function PaymentPage() {
                             
                             <div className="grid grid-cols-2 gap-5">
                               <div className="space-y-2">
-                                <Label htmlFor="expiry">Expiration Date</Label>
+                                <Label htmlFor="expiry">{tt("Expiration Date", "Tarehe ya Kuisha")}</Label>
                                 <Input 
                                   id="expiry" 
                                   placeholder="MM/YY" 
@@ -669,7 +669,7 @@ export default function PaymentPage() {
                                 {errors.expiry && <p className="text-xs text-destructive mt-1 font-medium">{errors.expiry}</p>}
                               </div>
                               <div className="space-y-2">
-                                <Label htmlFor="cvc">CVC</Label>
+                                <Label htmlFor="cvc">{tt("CVC", "CVC")}</Label>
                                 <div className="relative">
                                   <Input 
                                     id="cvc" 
@@ -693,7 +693,7 @@ export default function PaymentPage() {
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="nameOnCard">Name on Card</Label>
+                              <Label htmlFor="nameOnCard">{tt("Name on Card", "Jina kwenye Kadi")}</Label>
                               <Input 
                                 id="nameOnCard" 
                                 placeholder="JANE DOE" 
@@ -723,18 +723,18 @@ export default function PaymentPage() {
                           {isProcessing ? (
                             <>
                               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                              Processing Securely...
+                              {tt("Processing Securely...", "Inachakata kwa usalama...")}
                             </>
                           ) : (
                             <>
                               <Lock className="mr-2 h-5 w-5 opacity-70" />
-                              Pay {formatTzs(amount)}
+                              {tt("Pay", "Lipa")} {formatTzs(amount)}
                             </>
                           )}
                         </Button>
                         <p className="text-center text-xs text-muted-foreground mt-4 flex items-center justify-center gap-1.5">
                           <ShieldCheck className="h-3.5 w-3.5" />
-                          Payments are secure and encrypted
+                          {tt("Payments are secure and encrypted", "Malipo ni salama na yamesimbwa")}
                         </p>
                       </div>
                     </Tabs>

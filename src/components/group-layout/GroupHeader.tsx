@@ -16,6 +16,7 @@ import { useMeetingStore } from '@/store/meeting/meeting.store'
 import { useRouter } from 'next/navigation'
 import { useAuthUserStore } from '@/store/auth/userAuth.store'
 import { getMeetingSessionHref } from '@/lib/meeting-routes'
+import { useLanguage } from '@/components/language/language-provider'
 
 export default function GroupHeader() {
      const [isInviteOpen, setIsInviteOpen] = useState(false)
@@ -35,6 +36,8 @@ export default function GroupHeader() {
      
      const router = useRouter()
      const { user } = useAuthUserStore()
+     const { language } = useLanguage()
+     const tt = (en: string, sw: string) => language === "sw" ? sw : en
 
      const { selectedGroup, invitationLoading, sendGroupInvitation, selectedGroupMembers } = useGroupStore()
      const { createMeeting, createInstantMeeting, loading } = useMeetingStore()
@@ -42,7 +45,7 @@ export default function GroupHeader() {
      const handleCopyCode = () => {
           if (selectedGroup?.join_code) {
                navigator.clipboard.writeText(selectedGroup.join_code)
-               toast.success("Join code copied to clipboard!")
+               toast.success(tt("Join code copied to clipboard!", "Msimbo wa kujiunga umenakiliwa!"))
           }
      }
 
@@ -59,12 +62,12 @@ export default function GroupHeader() {
           const trimmedEmail = inviteEmail.trim().toLowerCase()
 
           if (!selectedGroup?.id) {
-               toast.error("No group selected.")
+               toast.error(tt("No group selected.", "Hakuna kikundi kilichochaguliwa."))
                return
           }
 
           if (!trimmedEmail) {
-               toast.error("Email is required.")
+               toast.error(tt("Email is required.", "Barua pepe inahitajika."))
                return
           }
 
@@ -89,12 +92,12 @@ export default function GroupHeader() {
           event.preventDefault()
 
           if (!selectedGroup?.id) {
-               toast.error("No group selected.")
+               toast.error(tt("No group selected.", "Hakuna kikundi kilichochaguliwa."))
                return
           }
 
           if (!meetingDate || !meetingStartTime) {
-               toast.error("Date and start time are required.")
+               toast.error(tt("Date and start time are required.", "Tarehe na muda wa kuanza vinahitajika."))
                return
           }
 
@@ -129,12 +132,12 @@ export default function GroupHeader() {
           event.preventDefault()
 
           if (!selectedGroup?.id) {
-               toast.error("No group selected.")
+               toast.error(tt("No group selected.", "Hakuna kikundi kilichochaguliwa."))
                return
           }
 
           const result = await createInstantMeeting({
-               title: instantTitle.trim() || `Instant Session - ${selectedGroup.name}`,
+               title: instantTitle.trim() || `${tt("Instant Session", "Kikao cha Papo Hapo")} - ${selectedGroup.name}`,
                description: instantDescription.trim() || undefined,
                group: selectedGroup.id,
           })
@@ -165,19 +168,19 @@ export default function GroupHeader() {
                               <h1 className="text-3xl font-extrabold tracking-tight text-foreground">{selectedGroup?.name}</h1>
                               <p className="text-sm font-medium text-muted-foreground mt-1">
                                    <span className="uppercase tracking-widest text-[10px] bg-muted px-2 py-0.5 rounded-full mr-2 border border-border/60">
-                                        {selectedGroup?.is_private ? "Private" : "Public"} Group
+                                        {selectedGroup?.is_private ? tt("Private", "Faragha") : tt("Public", "Umma")} {tt("Group", "Kikundi")}
                                    </span>
                                    {selectedGroup?.join_code && (
                                         <button 
                                              onClick={handleCopyCode}
                                              className="uppercase tracking-widest text-[10px] bg-green-300  px-2 py-0.5 cursor-pointer rounded-full mr-2 border border-chart-1/30 hover:bg-chart-1/20 transition-colors items-center gap-1.5 inline-flex"
-                                             title="Click to copy join code"
+                                             title={tt("Click to copy join code", "Bofya kunakili msimbo")}
                                         >
-                                             Join Code: <span className="font-bold">{selectedGroup.join_code}</span>
+                                             {tt("Join Code:", "Msimbo:")} <span className="font-bold">{selectedGroup.join_code}</span>
                                              <Copy className="w-3 h-3" />
                                         </button>
                                    )}
-                                   {memberCount} Members • Created {formatUTCDate(selectedGroup?.created_at || "")}
+                                   {memberCount} {tt("Members", "Wanachama")} • {tt("Created", "Kimeundwa")} {formatUTCDate(selectedGroup?.created_at || "")}
                               </p>
                          </div>
                     </div>
@@ -189,16 +192,16 @@ export default function GroupHeader() {
                               onClick={() => setIsInviteOpen(true)}
                               disabled={!selectedGroup?.id}
                          >
-                              <Users className="w-4 h-4 mr-2" /> Invite Members
+                              <Users className="w-4 h-4 mr-2" /> {tt("Invite Members", "Alika Wanachama")}
                          </Button>
                          
                          {isLeader && (
                               <>
                                    <Button className="bg-chart-4 hover:bg-chart-4/90 text-white font-bold shadow-md" onClick={() => setIsInstantOpen(true)} disabled={!selectedGroup?.id}>
-                                        <Play className="w-4 h-4 mr-2" /> Start Instant Session
+                                        <Play className="w-4 h-4 mr-2" /> {tt("Start Instant Session", "Anzisha Kikao cha Papo Hapo")}
                                    </Button>
                                    <Button className="bg-chart-3 hover:bg-chart-2 text-primary-foreground font-bold shadow-md" onClick={() => setIsScheduleOpen(true)} >
-                                        <CalendarPlus2 className="w-4 h-4 mr-2" /> Schedule Meeting
+                                        <CalendarPlus2 className="w-4 h-4 mr-2" /> {tt("Schedule Meeting", "Panga Kikao")}
                                    </Button>
                               </>
                          )}
@@ -211,15 +214,15 @@ export default function GroupHeader() {
                <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
                     <DialogContent className="sm:max-w-md p-6">
                          <DialogHeader>
-                              <DialogTitle className="text-xl font-extrabold">Invite New Member</DialogTitle>
+                              <DialogTitle className="text-xl font-extrabold">{tt("Invite New Member", "Alika Mwanachama Mpya")}</DialogTitle>
                               <DialogDescription className="mt-1 text-sm text-muted-foreground">
-                                   Send an invitation email to join {selectedGroup?.name}.
+                                   {tt("Send an invitation email to join", "Tuma mwaliko wa barua pepe wa kujiunga na")} {selectedGroup?.name}.
                               </DialogDescription>
                          </DialogHeader>
 
                          <form className="mt-4 space-y-4" onSubmit={handleInviteSubmit}>
                               <div>
-                                   <label htmlFor="invite-email" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Email Address</label>
+                                   <label htmlFor="invite-email" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">{tt("Email Address", "Anwani ya Barua Pepe")}</label>
                                    <Input
                                         id="invite-email"
                                         type="email"
@@ -232,22 +235,22 @@ export default function GroupHeader() {
                               </div>
 
                               <div>
-                                   <label htmlFor="invite-message" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Message (optional)</label>
+                                   <label htmlFor="invite-message" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">{tt("Message (optional)", "Ujumbe (si lazima)")}</label>
                                    <Textarea
                                         id="invite-message"
                                         value={inviteMessage}
                                         onChange={(event) => setInviteMessage(event.target.value)}
-                                        placeholder="Welcome to our group."
+                                        placeholder={tt("Welcome to our group.", "Karibu kwenye kikundi chetu.")}
                                         className="min-h-24 rounded-md"
                                    />
                               </div>
 
                               <div className="flex items-center justify-end gap-3 pt-2">
                                    <Button type="button" variant="ghost" onClick={() => setIsInviteOpen(false)} disabled={invitationLoading} className="rounded-md font-bold">
-                                        Cancel
+                                        {tt("Cancel", "Ghairi")}
                                    </Button>
                                    <Button type="submit" className="rounded-md shadow-md font-bold" disabled={invitationLoading}>
-                                        {invitationLoading ? "Sending..." : "Send Invite"}
+                                        {invitationLoading ? tt("Sending...", "Inatuma...") : tt("Send Invite", "Tuma Mwaliko")}
                                    </Button>
                               </div>
                          </form>
@@ -257,42 +260,42 @@ export default function GroupHeader() {
                <Dialog open={isInstantOpen} onOpenChange={setIsInstantOpen}>
                     <DialogContent className="sm:max-w-xl p-6">
                          <DialogHeader>
-                              <DialogTitle className="text-xl font-extrabold">Start Instant Session</DialogTitle>
+                              <DialogTitle className="text-xl font-extrabold">{tt("Start Instant Session", "Anzisha Kikao cha Papo Hapo")}</DialogTitle>
                               <DialogDescription className="mt-1 text-sm text-muted-foreground">
-                                   Start a live meeting now for {selectedGroup?.name}. Members will receive an email to join immediately.
+                                   {tt("Start a live meeting now for", "Anzisha kikao sasa kwa")} {selectedGroup?.name}. {tt("Members will receive an email to join immediately.", "Wanachama watapokea barua pepe ya kujiunga mara moja.")}
                               </DialogDescription>
                          </DialogHeader>
 
                          <form className="mt-4 space-y-4" onSubmit={handleInstantMeeting}>
                               <div>
-                                   <label htmlFor="instant-title" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Title</label>
+                                   <label htmlFor="instant-title" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">{tt("Title", "Kichwa")}</label>
                                    <Input
                                         id="instant-title"
                                         type="text"
                                         value={instantTitle}
                                         onChange={(event) => setInstantTitle(event.target.value)}
-                                        placeholder={`Instant Session - ${selectedGroup?.name || "Group"}`}
+                                        placeholder={`${tt("Instant Session", "Kikao cha Papo Hapo")} - ${selectedGroup?.name || tt("Group", "Kikundi")}`}
                                         className="rounded-md"
                                    />
                               </div>
 
                               <div>
-                                   <label htmlFor="instant-description" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Agenda / Context</label>
+                                   <label htmlFor="instant-description" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">{tt("Agenda / Context", "Ajenda / Muktadha")}</label>
                                    <Textarea
                                         id="instant-description"
                                         value={instantDescription}
                                         onChange={(event) => setInstantDescription(event.target.value)}
                                         className="min-h-24 rounded-md"
-                                        placeholder="Quick context for members joining now"
+                                        placeholder={tt("Quick context for members joining now", "Maelezo mafupi kwa wanachama wanaojiunga sasa")}
                                    />
                               </div>
 
                               <div className="flex items-center justify-end gap-3 pt-2">
                                    <Button type="button" variant="ghost" onClick={() => setIsInstantOpen(false)} disabled={loading} className="rounded-md font-bold">
-                                        Cancel
+                                        {tt("Cancel", "Ghairi")}
                                    </Button>
                                    <Button type="submit" className="rounded-md shadow-md font-bold" disabled={loading}>
-                                        {loading ? "Starting..." : "Start Now"}
+                                        {loading ? tt("Starting...", "Kinaanza...") : tt("Start Now", "Anzisha Sasa")}
                                    </Button>
                               </div>
                          </form>
@@ -302,49 +305,49 @@ export default function GroupHeader() {
                <Dialog open={isScheduleOpen} onOpenChange={setIsScheduleOpen}>
                     <DialogContent className="sm:max-w-xl p-6">
                          <DialogHeader>
-                              <DialogTitle className="text-xl font-extrabold">Schedule Session</DialogTitle>
+                              <DialogTitle className="text-xl font-extrabold">{tt("Schedule Session", "Panga Kikao")}</DialogTitle>
                               <DialogDescription className="mt-1 text-sm text-muted-foreground">
-                                   Define the date and time for the next formal gathering.
+                                   {tt("Define the date and time for the next formal gathering.", "Weka tarehe na muda wa kikao rasmi kijacho.")}
                               </DialogDescription>
                          </DialogHeader>
 
                          <form className="mt-4 space-y-4" onSubmit={handleScheduleMeeting}>
                               <div>
-                                   <label htmlFor="meeting-title" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Title</label>
+                                   <label htmlFor="meeting-title" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">{tt("Title", "Kichwa")}</label>
                                    <Input
                                         id="meeting-title"
                                         type="text"
                                         value={meetingTitle}
                                         onChange={(event) => setMeetingTitle(event.target.value)}
-                                        placeholder="Weekly Ledger Reconciliation"
+                                        placeholder={tt("Weekly Ledger Reconciliation", "Upatanisho wa Rejista wa Wiki")}
                                         className="rounded-md"
                                         required
                                    />
                               </div>
 
                               <div>
-                                   <label htmlFor="meeting-description" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Description</label>
+                                   <label htmlFor="meeting-description" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">{tt("Description", "Maelezo")}</label>
                                    <Textarea
                                         id="meeting-description"
                                         value={meetingDescription}
                                         onChange={(event) => setMeetingDescription(event.target.value)}
                                         className="min-h-24 rounded-md"
-                                        placeholder="Agenda summary"
+                                        placeholder={tt("Agenda summary", "Muhtasari wa ajenda")}
                                    />
                               </div>
 
                               <div>
-                                   <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Meeting Date</label>
+                                   <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">{tt("Meeting Date", "Tarehe ya Kikao")}</label>
                                    <DatePicker
                                         value={meetingDate}
                                         onChange={setMeetingDate}
-                                        placeholder="Select meeting date"
+                                        placeholder={tt("Select meeting date", "Chagua tarehe ya kikao")}
                                    />
                               </div>
 
                               <div className="grid gap-4 md:grid-cols-2">
                                    <div>
-                                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Start Time</label>
+                                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">{tt("Start Time", "Muda wa Kuanza")}</label>
                                         <TimePicker
                                              value={meetingStartTime}
                                              onChange={setMeetingStartTime}
@@ -352,7 +355,7 @@ export default function GroupHeader() {
                                    </div>
 
                                    <div>
-                                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">End Time (Optional)</label>
+                                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">{tt("End Time (Optional)", "Muda wa Kumaliza (Si Lazima)")}</label>
                                         <TimePicker
                                              value={meetingEndTime}
                                              onChange={setMeetingEndTime}
@@ -362,10 +365,10 @@ export default function GroupHeader() {
 
                               <div className="flex items-center justify-end gap-3 pt-2">
                                    <Button type="button" variant="ghost" onClick={() => setIsScheduleOpen(false)} disabled={loading} className="rounded-md font-bold">
-                                        Cancel
+                                        {tt("Cancel", "Ghairi")}
                                    </Button>
                                    <Button type="submit" className="rounded-md shadow-md font-bold" disabled={loading}>
-                                        {loading ? "Saving..." : "Schedule Meeting"}
+                                        {loading ? tt("Saving...", "Inahifadhi...") : tt("Schedule Meeting", "Panga Kikao")}
                                    </Button>
                               </div>
                          </form>

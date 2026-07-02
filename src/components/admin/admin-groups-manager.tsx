@@ -9,11 +9,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatUTCDate } from "@/hooks/formatted-date"
 import { Input } from "@/components/ui/input"
+import { useLanguage } from "@/components/language/language-provider"
 
 export function AdminGroupsManager({ initialGroups }: { initialGroups: Group[] }) {
   const [groups, setGroups] = useState<Group[]>(initialGroups)
   const [query, setQuery] = useState("")
   const [loadingId, setLoadingId] = useState<string | null>(null)
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
 
   const updateGroup = async (groupId: string, data: Partial<Group>, successMessage: string) => {
     setLoadingId(groupId)
@@ -24,7 +27,7 @@ export function AdminGroupsManager({ initialGroups }: { initialGroups: Group[] }
       )
       toast.success(successMessage)
     } catch {
-      toast.error("Failed to update group.")
+      toast.error(tt("Failed to update group.", "Imeshindikana kusasisha kikundi."))
     } finally {
       setLoadingId(null)
     }
@@ -40,8 +43,8 @@ export function AdminGroupsManager({ initialGroups }: { initialGroups: Group[] }
       <CardHeader className="gap-4 border-b">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <CardTitle>Groups</CardTitle>
-            <CardDescription>Review privacy, update descriptions, and moderate availability.</CardDescription>
+            <CardTitle>{tt("Groups", "Vikundi")}</CardTitle>
+            <CardDescription>{tt("Review privacy, update descriptions, and moderate availability.", "Kagua faragha, sasisha maelezo, na dhibiti upatikanaji.")}</CardDescription>
           </div>
 
           <label className="relative block w-full max-w-md">
@@ -49,7 +52,7 @@ export function AdminGroupsManager({ initialGroups }: { initialGroups: Group[] }
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search by group name or owner"
+              placeholder={tt("Search by group name or owner", "Tafuta kwa jina la kikundi au mmiliki")}
               className="h-10 rounded-2xl pl-9"
             />
           </label>
@@ -59,7 +62,7 @@ export function AdminGroupsManager({ initialGroups }: { initialGroups: Group[] }
       <CardContent className="space-y-4 pt-6">
         {filteredGroups.length === 0 ? (
           <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
-            No groups match your search.
+            {tt("No groups match your search.", "Hakuna vikundi vinavyolingana na utafutaji wako.")}
           </div>
         ) : (
           filteredGroups.map((group) => {
@@ -75,7 +78,7 @@ export function AdminGroupsManager({ initialGroups }: { initialGroups: Group[] }
                       </div>
                       <div>
                         <p className="text-lg font-semibold">{group.name}</p>
-                        <p className="text-sm text-muted-foreground">Owned by {group.created_by}</p>
+                        <p className="text-sm text-muted-foreground">{tt("Owned by", "Kinamilikiwa na")} {group.created_by}</p>
                       </div>
                     </div>
 
@@ -88,7 +91,7 @@ export function AdminGroupsManager({ initialGroups }: { initialGroups: Group[] }
                           )
                         )
                       }
-                      placeholder="Group name"
+                      placeholder={tt("Group name", "Jina la kikundi")}
                       className="h-10 rounded-2xl"
                     />
 
@@ -101,7 +104,7 @@ export function AdminGroupsManager({ initialGroups }: { initialGroups: Group[] }
                           )
                         )
                       }
-                      placeholder="Group description"
+                      placeholder={tt("Group description", "Maelezo ya kikundi")}
                       className="min-h-28 w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                     />
                   </div>
@@ -109,23 +112,23 @@ export function AdminGroupsManager({ initialGroups }: { initialGroups: Group[] }
                   <div className="min-w-full space-y-3 xl:min-w-70">
                     <div className="flex flex-wrap gap-2">
                       <span className="rounded-full bg-background px-3 py-1 text-xs font-medium text-muted-foreground ring-1 ring-border">
-                        {group.is_active ? "Active" : "Inactive"}
+                        {group.is_active ? tt("Active", "Hai") : tt("Inactive", "Kimesitishwa")}
                       </span>
                       <span className="rounded-full bg-background px-3 py-1 text-xs font-medium text-muted-foreground ring-1 ring-border">
-                        {group.is_private ? "Private" : "Public"}
+                        {group.is_private ? tt("Private", "Faragha") : tt("Public", "Umma")}
                       </span>
                       <span className="rounded-full bg-background px-3 py-1 text-xs font-medium text-muted-foreground ring-1 ring-border">
-                        {group.members_count} members
+                        {group.members_count} {tt("members", "wanachama")}
                       </span>
                     </div>
 
                     <div className="rounded-2xl bg-background p-4 text-sm text-muted-foreground ring-1 ring-border">
-                      <p className="font-medium text-foreground">Group details</p>
-                      <p className="mt-2">Created: {formatUTCDate(group.created_at)}</p>
-                      <p>Updated: {formatUTCDate(group.updated_at)}</p>
+                      <p className="font-medium text-foreground">{tt("Group details", "Maelezo ya kikundi")}</p>
+                      <p className="mt-2">{tt("Created:", "Kimeundwa:")} {formatUTCDate(group.created_at)}</p>
+                      <p>{tt("Updated:", "Kimesasishwa:")} {formatUTCDate(group.updated_at)}</p>
                       <p className="mt-2 flex items-center gap-2">
                         <Lock className="size-4" />
-                        {group.is_private ? "Hidden from public discovery" : "Visible to public discovery"}
+                        {group.is_private ? tt("Hidden from public discovery", "Hakionekani kwa umma") : tt("Visible to public discovery", "Kinaonekana kwa umma")}
                       </p>
                     </div>
 
@@ -137,31 +140,31 @@ export function AdminGroupsManager({ initialGroups }: { initialGroups: Group[] }
                           updateGroup(
                             group.id,
                             { name: group.name, description: group.description },
-                            "Group details updated."
+                            tt("Group details updated.", "Maelezo ya kikundi yamesasishwa.")
                           )
                         }
                       >
-                        Save details
+                        {tt("Save details", "Hifadhi maelezo")}
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         disabled={isSaving}
                         onClick={() =>
-                          updateGroup(group.id, { is_active: !group.is_active }, "Group availability updated.")
+                          updateGroup(group.id, { is_active: !group.is_active }, tt("Group availability updated.", "Upatikanaji wa kikundi umesasishwa."))
                         }
                       >
-                        {group.is_active ? "Deactivate" : "Activate"}
+                        {group.is_active ? tt("Deactivate", "Sitisha") : tt("Activate", "Wezesha")}
                       </Button>
                       <Button
                         size="sm"
                         variant="secondary"
                         disabled={isSaving}
                         onClick={() =>
-                          updateGroup(group.id, { is_private: !group.is_private }, "Group privacy updated.")
+                          updateGroup(group.id, { is_private: !group.is_private }, tt("Group privacy updated.", "Faragha ya kikundi imesasishwa."))
                         }
                       >
-                        {group.is_private ? "Make public" : "Make private"}
+                        {group.is_private ? tt("Make public", "Weka umma") : tt("Make private", "Weka faragha")}
                       </Button>
                     </div>
                   </div>

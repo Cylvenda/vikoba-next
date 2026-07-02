@@ -16,26 +16,26 @@ import {
   Sparkles,
   Gavel,
 } from "lucide-react";
+import LanguageToggle from "@/components/language/language-toggle";
+import { useLanguage } from "@/components/language/language-provider";
+import { getTranslation } from "@/lib/i18n";
 import ThemeToggle from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 
 const highlights = [
   {
-    title: "Synchronous Savings (Hisa)",
-    description:
-      "Members buy shares and log savings contributions live during structured meetings. Treasurers verify transaction references on the spot.",
+    titleKey: "landing.highlightSavingsTitle",
+    descriptionKey: "landing.highlightSavingsBody",
     icon: Coins,
   },
   {
-    title: "Structured Live Loan Desk",
-    description:
-      "Submit loan applications live during virtual sessions. Chairpersons approve or reject requests with real-time interest calculation.",
+    titleKey: "landing.highlightLoanTitle",
+    descriptionKey: "landing.highlightLoanBody",
     icon: HandCoins,
   },
   {
-    title: "Granular Role-Based Spaces",
-    description:
-      "Run secure VICOBA groups with dedicated interfaces and permissions for Chairperson, Treasurer, Secretary, and Members.",
+    titleKey: "landing.highlightRoleTitle",
+    descriptionKey: "landing.highlightRoleBody",
     icon: ShieldCheck,
   },
 ];
@@ -43,23 +43,20 @@ const highlights = [
 const workflow = [
   {
     step: "01",
-    title: "Schedule & Convene Sessions",
-    description:
-      "The Chairperson schedules recurring savings and loan meetings. Members receive instant email invites with custom calendar links.",
+    titleKey: "landing.workflow01Title",
+    descriptionKey: "landing.workflow01Body",
     icon: CalendarRange,
   },
   {
     step: "02",
-    title: "Transact & Collaborate Live",
-    description:
-      "Meet via high-fidelity audio/video. Record contributions, request emergency loans, pay outstanding fines, and log roll-call in one view.",
+    titleKey: "landing.workflow02Title",
+    descriptionKey: "landing.workflow02Body",
     icon: Play,
   },
   {
     step: "03",
-    title: "Ledger Audit & Session Wrap",
-    description:
-      "The Treasurer audits payment references, the Secretary publishes live meeting minutes, and the group balance sheet updates automatically.",
+    titleKey: "landing.workflow03Title",
+    descriptionKey: "landing.workflow03Body",
     icon: FileText,
   },
 ];
@@ -71,6 +68,8 @@ const metrics = [
 ];
 
 export default function Home() {
+  const { language } = useLanguage()
+
   return (
     <main className="min-h-screen overflow-hidden bg-background text-foreground font-sans selection:bg-chart-3/30 selection:text-chart-4">
       {/* Background Gradients */}
@@ -100,43 +99,44 @@ export default function Home() {
                     VICOBA Virtual Banking Platform
                   </p>
                 </div>
-              </div>
+                </div>
 
               <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground lg:flex">
                 <a
                   href="#features"
                   className="transition hover:text-foreground"
                 >
-                  Platform Features
+                  {getTranslation(language, "landing.navFeatures")}
                 </a>
                 <a
                   href="#workflow"
                   className="transition hover:text-foreground"
                 >
-                  Meeting Flow
+                  {getTranslation(language, "landing.navWorkflow")}
                 </a>
                 <Link
                   href="/guide"
                   className="transition hover:text-foreground"
                 >
-                  Guide
+                  {getTranslation(language, "landing.navGuide")}
                 </Link>
                 <a
                   href="#transparency"
                   className="transition hover:text-foreground"
                 >
-                  Trust & Safety
+                  {getTranslation(language, "landing.navTrust")}
                 </a>
               </nav>
 
               <div className="flex items-center gap-2">
+                <LanguageToggle compact />
                 <ThemeToggle compact />
                 <Button
                   asChild
                   variant="ghost"
                   className="hidden rounded-full px-4 font-medium sm:inline-flex"
                 >
-                  <Link href="/login">Sign in</Link>
+                  <Link href="/login">{getTranslation(language, "landing.signIn")}</Link>
                 </Button>
                 <Button
                   asChild
@@ -145,7 +145,7 @@ export default function Home() {
                 >
                   <Link href="/guide">
                     <BookOpen className="mr-2 h-4 w-4" />
-                    Guide
+                    {getTranslation(language, "landing.navGuide")}
                   </Link>
                 </Button>
                 <Button
@@ -154,7 +154,7 @@ export default function Home() {
                   className="rounded-full bg-chart-3 px-5 text-primary-foreground font-semibold hover:bg-chart-2 transition-all duration-300 shadow-md hover:shadow-chart-3/20"
                 >
                   <Link href="/register">
-                    Start Platform
+                    {getTranslation(language, "landing.startPlatform")}
                     <ArrowRight className="ml-1 h-4 w-4" />
                   </Link>
                 </Button>
@@ -167,21 +167,19 @@ export default function Home() {
             <div className="max-w-4xl">
               <p className="inline-flex items-center gap-2 rounded-full border border-chart-3/20 bg-chart-3/10 px-4 py-2 text-xs md:text-sm font-semibold text-chart-4 shadow-sm backdrop-blur">
                 <Sparkles size={14} className="animate-pulse" />
-                Collaborative Banking Meets Structured Group Video
+                {getTranslation(language, "landing.heroBadge")}
               </p>
 
               <h1 className="mt-6 text-4xl font-extrabold leading-[1.0] tracking-tight text-foreground md:text-7xl lg:text-8xl">
-                Cooperative banking that runs on{" "}
+                {getTranslation(language, "landing.heroTitleStart")}{" "}
                 <span className="bg-gradient-to-r from-chart-3 to-chart-1 bg-clip-text text-transparent">
-                  structured meetings
+                  {getTranslation(language, "landing.heroTitleHighlight")}
                 </span>
                 .
               </h1>
 
               <p className="mt-6 max-w-2xl text-base leading-8 text-muted-foreground md:text-lg">
-                Community Hub combines secure video-conferencing with real-time
-                VICOBA banking operations—letting groups save, borrow, fine, and
-                record verified minutes inside a single secure virtual space.
+                {getTranslation(language, "landing.heroLead")}
               </p>
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -191,7 +189,7 @@ export default function Home() {
                   className="rounded-full bg-chart-3 px-8 text-primary-foreground font-semibold hover:bg-chart-2 transition-all duration-300 shadow-lg shadow-chart-3/25"
                 >
                   <Link href="/register">
-                    Create VICOBA Group
+                    {getTranslation(language, "landing.createGroup")}
                     <ArrowRight className="ml-1 h-5 w-5" />
                   </Link>
                 </Button>
@@ -201,7 +199,7 @@ export default function Home() {
                   size="lg"
                   className="rounded-full border-border bg-card/70 px-8 font-medium hover:bg-accent backdrop-blur transition-all duration-300"
                 >
-                  <Link href="/login">Access Dashboard</Link>
+                  <Link href="/login">{getTranslation(language, "landing.accessDashboard")}</Link>
                 </Button>
               </div>
 
@@ -319,24 +317,24 @@ export default function Home() {
         >
           <div className="flex max-w-3xl flex-col gap-4 text-left">
             <p className="text-xs font-bold uppercase tracking-[0.28em] text-chart-3">
-              Engineered for Micro-Finance Groups
+              {language === "sw" ? "Imeundwa kwa vikundi vya fedha ndogo" : "Engineered for Micro-Finance Groups"}
             </p>
             <h2 className="text-3xl font-extrabold tracking-tight text-foreground md:text-5xl leading-tight">
-              Moving the entire VICOBA book-keeping ledger directly into your
-              virtual meeting workspace.
+              {language === "sw"
+                ? "Kuleta daftari lote la VICOBA moja kwa moja ndani ya nafasi yako ya mkutano wa mtandaoni."
+                : "Moving the entire VICOBA book-keeping ledger directly into your virtual meeting workspace."}
             </h2>
             <p className="text-muted-foreground max-w-2xl text-sm md:text-base leading-relaxed">
-              Traditional micro-banking depends on everyone showing up in a room
-              to reconcile cash boxes and paper books. Community Hub replaces
-              this offline dependency with robust WebRTC conference channels
-              mapped to a shared digital ledger.
+              {language === "sw"
+                ? "Uhasibu wa jadi wa vikundi unategemea kila mtu kufika chumba kimoja ili kusawazisha fedha na vitabu vya karatasi. Community Hub inabadilisha utegemezi huu kwa kutumia njia imara za mikutano ya WebRTC zilizounganishwa na daftari la kidijitali la pamoja."
+                : "Traditional micro-banking depends on everyone showing up in a room to reconcile cash boxes and paper books. Community Hub replaces this offline dependency with robust WebRTC conference channels mapped to a shared digital ledger."}
             </p>
           </div>
 
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
-            {highlights.map(({ title, description, icon: Icon }) => (
+            {highlights.map(({ titleKey, descriptionKey, icon: Icon }) => (
               <article
-                key={title}
+                key={titleKey}
                 className="group relative rounded-[2rem] border border-border/80 bg-card/60 p-8 shadow-sm backdrop-blur-md transition-all duration-300 hover:scale-102 hover:border-chart-3/20 hover:shadow-xl"
               >
                 <div className="absolute -inset-px rounded-[2rem] bg-gradient-to-tr from-chart-3 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-10" />
@@ -344,10 +342,10 @@ export default function Home() {
                   <Icon size={24} />
                 </div>
                 <h3 className="mt-6 text-xl font-bold text-foreground">
-                  {title}
+                  {getTranslation(language, titleKey)}
                 </h3>
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                  {description}
+                  {getTranslation(language, descriptionKey)}
                 </p>
               </article>
             ))}
@@ -359,15 +357,17 @@ export default function Home() {
           <div className="rounded-[2.5rem] border border-border/70 bg-card/50 px-6 py-10 shadow-2xl shadow-chart-3/5 backdrop-blur-md md:px-12 md:py-16">
             <div className="flex max-w-3xl flex-col gap-4">
               <p className="text-xs font-bold uppercase tracking-[0.28em] text-chart-4">
-                Structured Session Flow
+                {language === "sw" ? "Mtiririko wa kikao uliopangwa" : "Structured Session Flow"}
               </p>
               <h2 className="text-3xl font-extrabold tracking-tight text-foreground md:text-5xl leading-tight">
-                From scheduling session start to signing off the ledger.
+                {language === "sw"
+                  ? "Kuanzia kupanga kikao hadi kufunga daftari."
+                  : "From scheduling session start to signing off the ledger."}
               </h2>
               <p className="text-muted-foreground text-sm md:text-base max-w-2xl leading-relaxed">
-                We make VICOBA management bulletproof. Our layout ensures that
-                no member saves or borrows outside of a transparent, recordable,
-                and democratic group session.
+                {language === "sw"
+                  ? "Tunaifanya usimamizi wa VICOBA uwe imara. Mpangilio wetu unahakikisha hakuna mwanachama anayekusanya akiba au kukopa nje ya kikao cha kikundi kilicho wazi, kinachorekodiwa, na cha kidemokrasia."
+                  : "We make VICOBA management bulletproof. Our layout ensures that no member saves or borrows outside of a transparent, recordable, and democratic group session."}
               </p>
             </div>
 
@@ -386,10 +386,10 @@ export default function Home() {
                     </div>
                   </div>
                   <h3 className="mt-5 text-lg font-bold text-foreground">
-                    {item.title}
+                    {getTranslation(language, item.titleKey)}
                   </h3>
                   <p className="mt-2 text-xs leading-6 text-muted-foreground">
-                    {item.description}
+                    {getTranslation(language, item.descriptionKey)}
                   </p>
                 </article>
               ))}
@@ -405,16 +405,17 @@ export default function Home() {
           <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] items-center">
             <div className="rounded-[2rem] border border-border/80 bg-card/60 p-8 shadow-sm backdrop-blur-md">
               <p className="text-xs font-bold uppercase tracking-[0.28em] text-chart-4">
-                Guaranteed Trust & Integrity
+                {language === "sw" ? "Uaminifu na uthabiti uliohakikishwa" : "Guaranteed Trust & Integrity"}
               </p>
               <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
-                Designed for communities that carry mutual responsibility.
+                {language === "sw"
+                  ? "Imeundwa kwa jamii zinazobeba uwajibikaji wa pamoja."
+                  : "Designed for communities that carry mutual responsibility."}
               </h2>
               <p className="mt-4 text-sm leading-8 text-muted-foreground md:text-base">
-                When financial decisions involve friends and local communities,
-                security and absolute transparency are paramount. Community Hub
-                removes administrative vulnerabilities by combining
-                video-verified attendance with immutable digital logs.
+                {language === "sw"
+                  ? "Wakati maamuzi ya kifedha yanahusisha marafiki na jamii za eneo husika, usalama na uwazi kamili ni muhimu sana. Community Hub huondoa udhaifu wa kiutawala kwa kuunganisha mahudhurio yaliyothibitishwa kwa video na kumbukumbu zisizobadilika za kidijitali."
+                  : "When financial decisions involve friends and local communities, security and absolute transparency are paramount. Community Hub removes administrative vulnerabilities by combining video-verified attendance with immutable digital logs."}
               </p>
             </div>
 
@@ -424,12 +425,12 @@ export default function Home() {
                   <CheckCircle2 size={22} className="text-chart-4" />
                 </div>
                 <h3 className="mt-4 text-base font-bold text-foreground">
-                  Verification Ledger
+                  {language === "sw" ? "Daftari la uthibitisho" : "Verification Ledger"}
                 </h3>
                 <p className="mt-2 text-xs leading-6 text-muted-foreground">
-                  Every savings contribution requires payment reference keys,
-                  which must be cross-checked and verified live by the
-                  Treasurer.
+                  {language === "sw"
+                    ? "Kila mchango wa akiba unahitaji nambari za marejeo ya malipo, ambazo lazima zilinganishwe na kuthibitishwa moja kwa moja na Mweka Hazina."
+                    : "Every savings contribution requires payment reference keys, which must be cross-checked and verified live by the Treasurer."}
                 </p>
               </article>
               <article className="rounded-2xl border border-border/80 bg-card/50 p-6 shadow-sm backdrop-blur-sm transition-all hover:border-chart-3/30">
@@ -437,11 +438,12 @@ export default function Home() {
                   <ShieldCheck size={22} />
                 </div>
                 <h3 className="mt-4 text-base font-bold text-foreground">
-                  Absolute Access Guards
+                  {language === "sw" ? "Mizani ya ufikiaji salama" : "Absolute Access Guards"}
                 </h3>
                 <p className="mt-2 text-xs leading-6 text-muted-foreground">
-                  Strict email confirmation, cryptographically signed video
-                  streams, and protected routes safeguard group capital logs.
+                  {language === "sw"
+                    ? "Uthibitisho mkali wa barua pepe, mitiririko ya video iliyosainiwa kwa njia ya kriptografia, na njia zilizolindwa hulinda kumbukumbu za mtaji wa kikundi."
+                    : "Strict email confirmation, cryptographically signed video streams, and protected routes safeguard group capital logs."}
                 </p>
               </article>
             </div>
@@ -451,11 +453,12 @@ export default function Home() {
           <div className="mt-16 flex flex-col items-start justify-between gap-6 rounded-[2.5rem] border border-border/80 bg-card/80 px-6 py-8 shadow-xl backdrop-blur-md md:flex-row md:items-center md:px-10">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.28em] text-chart-3">
-                Start Secure Group Banking
+                {language === "sw" ? "Anza benki salama ya kikundi" : "Start Secure Group Banking"}
               </p>
               <h2 className="mt-3 text-xl font-bold tracking-tight text-foreground md:text-3xl leading-snug">
-                Bring your next cooperative group, VICOBA, or board into a
-                secure meeting workspace.
+                {language === "sw"
+                  ? "Leta kikundi chako cha ushirika, VICOBA, au bodi kwenye nafasi salama ya mkutano."
+                  : "Bring your next cooperative group, VICOBA, or board into a secure meeting workspace."}
               </h2>
             </div>
 
@@ -465,7 +468,7 @@ export default function Home() {
               className="rounded-full bg-chart-3 px-8 text-primary-foreground font-semibold hover:bg-chart-2 transition-all duration-300 shadow-md"
             >
               <Link href="/register">
-                Open Your Space
+                {language === "sw" ? "Fungua Nafasi Yako" : "Open Your Space"}
                 <ArrowRight className="ml-1 h-5 w-5" />
               </Link>
             </Button>
@@ -491,59 +494,59 @@ export default function Home() {
                 </p>
               </div>
               <h2 className="mt-4 text-lg font-bold tracking-tight text-foreground">
-                Collaborative virtual meetings with a transparent micro-banking
-                flow.
+                {language === "sw"
+                  ? "Mikutano ya mtandaoni ya ushirikiano yenye mtiririko wazi wa benki ndogo."
+                  : "Collaborative virtual meetings with a transparent micro-banking flow."}
               </h2>
               <p className="mt-3 text-xs leading-6 text-muted-foreground">
-                The secure web-based system that powers Village Community
-                Banking and structured cooperative groups. Experience
-                transparent banking and seamless virtual meetings in one elegant
-                platform.
+                {language === "sw"
+                  ? "Mfumo salama wa wavuti unaowawezesha Vikundi vya Akiba na mikutano ya ushirika iliyoandaliwa. Furahia benki iliyo wazi na mikutano isiyo na mshono ndani ya jukwaa moja maridadi."
+                  : "The secure web-based system that powers Village Community Banking and structured cooperative groups. Experience transparent banking and seamless virtual meetings in one elegant platform."}
               </p>
             </div>
 
             <div className="md:ml-auto">
               <p className="text-xs font-bold uppercase tracking-wider text-foreground">
-                Quick Navigation
+                {language === "sw" ? "Urambazaji wa Haraka" : "Quick Navigation"}
               </p>
               <div className="mt-4 flex flex-col gap-2.5 text-xs text-muted-foreground">
                 <a
                   href="#features"
                   className="transition hover:text-foreground"
                 >
-                  Platform Features
+                  {getTranslation(language, "landing.navFeatures")}
                 </a>
                 <a
                   href="#workflow"
                   className="transition hover:text-foreground"
                 >
-                  Meeting Flow
+                  {getTranslation(language, "landing.navWorkflow")}
                 </a>
                 <a
                   href="#transparency"
                   className="transition hover:text-foreground"
                 >
-                  Trust & Safety
+                  {getTranslation(language, "landing.navTrust")}
                 </a>
               </div>
             </div>
 
             <div className="md:ml-auto">
               <p className="text-xs font-bold uppercase tracking-wider text-foreground">
-                Member Portal
+                {language === "sw" ? "Lango la Mwanachama" : "Member Portal"}
               </p>
               <div className="mt-4 flex flex-col gap-2.5 text-xs text-muted-foreground">
                 <Link
                   href="/register"
                   className="transition hover:text-foreground"
                 >
-                  Register VICOBA Group
+                  {language === "sw" ? "Sajili Kikundi cha VICOBA" : "Register VICOBA Group"}
                 </Link>
                 <Link
                   href="/login"
                   className="transition hover:text-foreground"
                 >
-                  Sign In to Space
+                  {language === "sw" ? "Ingia Kwenye Nafasi" : "Sign In to Space"}
                 </Link>
               </div>
             </div>
@@ -552,11 +555,13 @@ export default function Home() {
           <div className="border-t border-border/40 py-6">
             <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between md:px-10">
               <p>
-                &copy; {new Date().getFullYear()} Community Hub. All cooperative
-                banking transactions are verified synchronously.
+                &copy; {new Date().getFullYear()} Community Hub.{" "}
+                {language === "sw"
+                  ? "Miamala yote ya benki ya ushirika huthibitishwa kwa wakati mmoja."
+                  : "All cooperative banking transactions are verified synchronously."}
               </p>
               <p>
-                Designed and Developed by{" "}
+                {language === "sw" ? "Imeundwa na kutengenezwa na" : "Designed and Developed by"}{" "}
                 <a
                   href="mailto:brayanmlawa0917@gmail.com"
                   className="hover:text-chart-3 font-medium transition-colors"

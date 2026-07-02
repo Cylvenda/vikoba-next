@@ -35,9 +35,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useLanguage } from "@/components/language/language-provider"
 
 // ── Invite Modal ──────────────────────────────────────────────────────────────
 function InviteModal({ groupId, onClose }: { groupId: string; onClose: () => void }) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const [email, setEmail] = useState("")
   const [message, setMessage] = useState("")
   const { sendGroupInvitation, invitationLoading } = useGroupStore()
@@ -63,8 +66,8 @@ function InviteModal({ groupId, onClose }: { groupId: string; onClose: () => voi
               <UserPlus className="w-5 h-5" />
             </div>
             <div>
-              <DialogTitle className="text-xl font-extrabold text-left">Invite New Member</DialogTitle>
-              <DialogDescription className="text-xs text-left mt-1">Send an invitation via email</DialogDescription>
+              <DialogTitle className="text-xl font-extrabold text-left">{tt("Invite New Member", "Alika Mwanachama Mpya")}</DialogTitle>
+              <DialogDescription className="text-xs text-left mt-1">{tt("Send an invitation via email", "Tuma mwaliko kupitia barua pepe")}</DialogDescription>
             </div>
           </div>
         </DialogHeader>
@@ -72,7 +75,7 @@ function InviteModal({ groupId, onClose }: { groupId: string; onClose: () => voi
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Email Address *
+              {tt("Email Address *", "Anwani ya Barua Pepe *")}
             </label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -89,13 +92,13 @@ function InviteModal({ groupId, onClose }: { groupId: string; onClose: () => voi
 
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Personal Message <span className="normal-case font-normal">(optional)</span>
+              {tt("Personal Message", "Ujumbe Binafsi")} <span className="normal-case font-normal">({tt("optional", "si lazima")})</span>
             </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={3}
-              placeholder="Add a personal note to your invitation..."
+              placeholder={tt("Add a personal note to your invitation...", "Ongeza ujumbe binafsi kwenye mwaliko...")}
               className="w-full px-4 py-2.5 bg-muted/50 border border-border/60 rounded-xl text-sm font-medium placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-chart-3/40 focus:border-chart-3/60 transition-all resize-none"
             />
           </div>
@@ -107,7 +110,7 @@ function InviteModal({ groupId, onClose }: { groupId: string; onClose: () => voi
               onClick={onClose}
               className="flex-1 rounded-xl font-bold border-border/80"
             >
-              Cancel
+              {tt("Cancel", "Ghairi")}
             </Button>
             <Button
               type="submit"
@@ -115,7 +118,7 @@ function InviteModal({ groupId, onClose }: { groupId: string; onClose: () => voi
               className="flex-1 bg-chart-3 hover:bg-chart-3/90 text-primary-foreground rounded-xl font-bold shadow-sm gap-2"
             >
               <Send className="w-4 h-4" />
-              {invitationLoading ? "Sending..." : "Send Invite"}
+              {invitationLoading ? tt("Sending...", "Inatuma...") : tt("Send Invite", "Tuma Mwaliko")}
             </Button>
           </div>
         </form>
@@ -136,6 +139,8 @@ function ConfirmRemoveModal({
   onClose: () => void
   loading: boolean
 }) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   return (
     <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
       <DialogContent className="sm:max-w-sm p-6">
@@ -145,29 +150,29 @@ function ConfirmRemoveModal({
               <UserMinus className="w-5 h-5" />
             </div>
             <div>
-              <DialogTitle className="text-base font-bold text-foreground text-left">Remove Member</DialogTitle>
-              <DialogDescription className="text-xs text-left mt-1">This action cannot be undone</DialogDescription>
+              <DialogTitle className="text-base font-bold text-foreground text-left">{tt("Remove Member", "Ondoa Mwanachama")}</DialogTitle>
+              <DialogDescription className="text-xs text-left mt-1">{tt("This action cannot be undone", "Kitendo hiki hakiwezi kutenduliwa")}</DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
         <div className="py-2">
           <p className="text-sm text-muted-foreground">
-            Are you sure you want to permanently remove{" "}
-            <span className="font-bold text-foreground">{memberName}</span> from the group?
+            {tt("Are you sure you want to permanently remove", "Una uhakika unataka kumwondoa kabisa")}{" "}
+            <span className="font-bold text-foreground">{memberName}</span> {tt("from the group?", "kwenye kikundi?")}
           </p>
         </div>
 
         <div className="flex gap-3 pt-4 border-t border-border mt-2">
           <Button variant="outline" onClick={onClose} className="flex-1 rounded-xl font-bold border-border/80">
-            Cancel
+            {tt("Cancel", "Ghairi")}
           </Button>
           <Button
             onClick={onConfirm}
             disabled={loading}
             className="flex-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl font-bold"
           >
-            {loading ? "Removing..." : "Yes, Remove"}
+            {loading ? tt("Removing...", "Inaondoa...") : tt("Yes, Remove", "Ndiyo, Ondoa")}
           </Button>
         </div>
       </DialogContent>
@@ -177,24 +182,26 @@ function ConfirmRemoveModal({
 
 // ── Role Badge ─────────────────────────────────────────────────────────────────
 function RoleBadge({ role }: { role: string }) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const config: Record<string, { label: string; icon: React.ReactNode; className: string }> = {
     CHAIRPERSON: {
-      label: "Chairperson",
+      label: tt("Chairperson", "Mwenyekiti"),
       icon: <Shield className="w-3 h-3" />,
       className: "bg-chart-3/15 text-chart-3 border-chart-3/25",
     },
     SECRETARY: {
-      label: "Secretary",
+      label: tt("Secretary", "Katibu"),
       icon: <ShieldCheck className="w-3 h-3" />,
       className: "bg-chart-4/15 text-chart-4 border-chart-4/25",
     },
     TREASURER: {
-      label: "Treasurer",
+      label: tt("Treasurer", "Mweka Hazina"),
       icon: <ShieldCheck className="w-3 h-3" />,
       className: "bg-purple-500/15 text-purple-500 border-purple-500/25",
     },
     MEMBER: {
-      label: "Member",
+      label: tt("Member", "Mwanachama"),
       icon: null,
       className: "bg-muted text-muted-foreground border-border/60",
     },
@@ -210,6 +217,8 @@ function RoleBadge({ role }: { role: string }) {
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function MembersList() {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const { user } = useAuthUserStore()
   const {
     selectedGroupMembers,
@@ -359,28 +368,28 @@ export default function MembersList() {
         <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm flex flex-col gap-2">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Users className="w-4 h-4" />
-            <span className="text-xs font-bold uppercase tracking-widest">Total Members</span>
+            <span className="text-xs font-bold uppercase tracking-widest">{tt("Total Members", "Jumla ya Wanachama")}</span>
           </div>
           <p className="text-2xl font-extrabold text-foreground">{selectedGroupMembers.length}</p>
         </div>
         <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm flex flex-col gap-2">
           <div className="flex items-center gap-2 text-chart-3">
             <CheckCircle2 className="w-4 h-4" />
-            <span className="text-xs font-bold uppercase tracking-widest">Active Members</span>
+            <span className="text-xs font-bold uppercase tracking-widest">{tt("Active Members", "Wanachama Hai")}</span>
           </div>
           <p className="text-2xl font-extrabold text-foreground">{activeMembers.length}</p>
         </div>
         <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm flex flex-col gap-2">
           <div className="flex items-center gap-2 text-green-500">
             <ShieldCheck className="w-4 h-4" />
-            <span className="text-xs font-bold uppercase tracking-widest">Verified</span>
+            <span className="text-xs font-bold uppercase tracking-widest">{tt("Verified", "Waliothibitishwa")}</span>
           </div>
           <p className="text-2xl font-extrabold text-foreground">{selectedGroupMembers.filter((m) => m.is_verified).length}</p>
         </div>
         <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm flex flex-col gap-2">
           <div className="flex items-center gap-2 text-chart-4">
             <ShieldAlert className="w-4 h-4" />
-            <span className="text-xs font-bold uppercase tracking-widest">Pending Requests</span>
+            <span className="text-xs font-bold uppercase tracking-widest">{tt("Pending Requests", "Maombi Yanayosubiri")}</span>
           </div>
           <p className="text-2xl font-extrabold text-foreground">{pendingJoinRequests.length}</p>
         </div>
@@ -392,7 +401,7 @@ export default function MembersList() {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search roster..."
+            placeholder={tt("Search roster...", "Tafuta mwanachama...")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-background border-none rounded-xl text-sm font-medium placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-chart-3/30 transition-all shadow-sm"
@@ -404,7 +413,7 @@ export default function MembersList() {
             className="bg-chart-3 hover:bg-chart-3/90 text-primary-foreground rounded-xl font-bold shadow-sm gap-2 shrink-0 h-9"
           >
             <UserPlus className="w-4 h-4" />
-            Invite Member
+            {tt("Invite Member", "Alika Mwanachama")}
           </Button>
         )}
       </div>
@@ -413,11 +422,11 @@ export default function MembersList() {
         <TabsList className="grid w-full grid-cols-2 bg-card/70">
           <TabsTrigger value="active" className="gap-2">
             <Users className="h-4 w-4" />
-            Active Members
+            {tt("Active Members", "Wanachama Hai")}
           </TabsTrigger>
           <TabsTrigger value="pending" className="gap-2">
             <ShieldAlert className="h-4 w-4" />
-            Pending Requests
+            {tt("Pending Requests", "Maombi Yanayosubiri")}
           </TabsTrigger>
         </TabsList>
 
@@ -425,13 +434,13 @@ export default function MembersList() {
           <div className="space-y-4">
             {loading && selectedGroupMembers.length === 0 ? (
               <div className="rounded-2xl border border-border/50 bg-card/60 py-16 text-center text-muted-foreground">
-                Loading members...
+                {tt("Loading members...", "Inapakia wanachama...")}
               </div>
             ) : activeMembers.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-muted-foreground rounded-2xl border border-border/50 bg-card/60 backdrop-blur-sm">
                 <UserX className="w-10 h-10 mb-3 opacity-25" />
                 <p className="text-sm font-medium">
-                  {searchQuery ? "No active members match your search." : "No active members found for this group."}
+                  {searchQuery ? tt("No active members match your search.", "Hakuna wanachama hai wanaolingana na utafutaji.") : tt("No active members found for this group.", "Hakuna wanachama hai katika kikundi hiki.")}
                 </p>
               </div>
             ) : (
@@ -470,7 +479,7 @@ export default function MembersList() {
                           </span>
                           {isSelf && (
                             <span className="text-[10px] font-bold uppercase tracking-wider text-chart-3 bg-chart-3/10 px-1.5 py-0.5 rounded-full border border-chart-3/20">
-                              You
+                              {tt("You", "Wewe")}
                             </span>
                           )}
                         </div>
@@ -483,13 +492,13 @@ export default function MembersList() {
 
                       <div className="hidden md:flex items-center gap-1 shrink-0">
                         <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-chart-3">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Active
+                          <CheckCircle2 className="w-3.5 h-3.5" /> {tt("Active", "Hai")}
                         </span>
                       </div>
 
                       <div className="hidden lg:block shrink-0">
                         <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border bg-green-500/10 text-green-600 border-green-500/25">
-                          Verified
+                          {tt("Verified", "Amethibitishwa")}
                         </span>
                       </div>
 
@@ -512,12 +521,12 @@ export default function MembersList() {
                               {member.is_active ? (
                                 <>
                                   <ShieldOff className="w-4 h-4 text-orange-500" />
-                                  Deactivate Member
+                                  {tt("Deactivate Member", "Sitisha Mwanachama")}
                                 </>
                               ) : (
                                 <>
                                   <ShieldCheck className="w-4 h-4 text-chart-4" />
-                                  Activate Member
+                                  {tt("Activate Member", "Wezesha Mwanachama")}
                                 </>
                               )}
                             </DropdownMenuItem>
@@ -528,7 +537,7 @@ export default function MembersList() {
                                 <DropdownMenuSub>
                                   <DropdownMenuSubTrigger className="rounded-xl gap-2 font-medium cursor-pointer">
                                     <Shield className="w-4 h-4 text-chart-3" />
-                                    Change Role
+                                    {tt("Change Role", "Badilisha Jukumu")}
                                   </DropdownMenuSubTrigger>
                                   <DropdownMenuPortal>
                                     <DropdownMenuSubContent className="rounded-2xl border border-border/80 shadow-xl min-w-[160px]">
@@ -542,8 +551,8 @@ export default function MembersList() {
                                           {role === "SECRETARY" && <ShieldCheck className="w-4 h-4 text-chart-4" />}
                                           {role === "TREASURER" && <ShieldCheck className="w-4 h-4 text-purple-500" />}
                                           {role === "MEMBER" && <User className="w-4 h-4 text-muted-foreground" />}
-                                          {role.charAt(0) + role.slice(1).toLowerCase()}
-                                          {member.role === role && <span className="ml-auto text-[10px] text-muted-foreground">current</span>}
+                                          {role === "SECRETARY" ? tt("Secretary", "Katibu") : role === "TREASURER" ? tt("Treasurer", "Mweka Hazina") : tt("Member", "Mwanachama")}
+                                          {member.role === role && <span className="ml-auto text-[10px] text-muted-foreground">{tt("current", "sasa")}</span>}
                                         </DropdownMenuItem>
                                       ))}
                                     </DropdownMenuSubContent>
@@ -560,7 +569,7 @@ export default function MembersList() {
                                   className="rounded-xl gap-2 cursor-pointer font-medium text-destructive focus:text-destructive focus:bg-destructive/10"
                                 >
                                   <UserMinus className="w-4 h-4" />
-                                  Remove from Group
+                                  {tt("Remove from Group", "Ondoa Kwenye Kikundi")}
                                 </DropdownMenuItem>
                               </>
                             )}
@@ -581,17 +590,17 @@ export default function MembersList() {
           <div className="space-y-4">
             {!isJoinRequestManager ? (
               <div className="rounded-2xl border border-border/50 bg-card/60 py-16 text-center text-muted-foreground">
-                Pending join requests can only be reviewed by the chairperson or secretary.
+                {tt("Pending join requests can only be reviewed by the chairperson or secretary.", "Maombi ya kujiunga yanaweza kukaguliwa na mwenyekiti au katibu pekee.")}
               </div>
             ) : loading && groupInvitations.length === 0 ? (
               <div className="rounded-2xl border border-border/50 bg-card/60 py-16 text-center text-muted-foreground">
-                Loading pending requests...
+                {tt("Loading pending requests...", "Inapakia maombi yanayosubiri...")}
               </div>
             ) : filteredPendingRequests.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-muted-foreground rounded-2xl border border-border/50 bg-card/60 backdrop-blur-sm">
                 <ShieldAlert className="w-10 h-10 mb-3 opacity-25" />
                 <p className="text-sm font-medium">
-                  {searchQuery ? "No pending requests match your search." : "No pending join requests right now."}
+                  {searchQuery ? tt("No pending requests match your search.", "Hakuna maombi yanayolingana na utafutaji.") : tt("No pending join requests right now.", "Hakuna maombi ya kujiunga kwa sasa.")}
                 </p>
               </div>
             ) : (
@@ -611,15 +620,15 @@ export default function MembersList() {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-bold text-foreground truncate">{invitation.email}</p>
                           <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                            Pending join request
+                            {tt("Pending join request", "Ombi la kujiunga linasubiri")}
                           </p>
                         </div>
                       </div>
                       <p className="text-xs font-medium text-muted-foreground line-clamp-3 min-h-[48px] bg-background/40 p-2 rounded-lg">
-                        {invitation.message || "Requested to join this group."}
+                        {invitation.message || tt("Requested to join this group.", "Ameomba kujiunga na kikundi hiki.")}
                       </p>
                       <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
-                        <span>Requested {new Intl.DateTimeFormat("en-TZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(invitation.created_at))}</span>
+                        <span>{tt("Requested", "Aliomba")} {new Intl.DateTimeFormat("en-TZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(invitation.created_at))}</span>
                         <span>{invitation.invited_by_email}</span>
                       </div>
                       {canRespond ? (
@@ -631,7 +640,7 @@ export default function MembersList() {
                             className="flex-1 bg-chart-3/15 text-chart-3 hover:bg-chart-3/25 border border-chart-3/20 rounded-xl font-bold"
                           >
                             <CheckCircle2 className="w-4 h-4 mr-1" />
-                            Approve
+                            {tt("Approve", "Idhinisha")}
                           </Button>
                           <Button
                             onClick={() => handleRespondToJoinRequest(invitation.invitation_uuid, "decline")}
@@ -641,12 +650,12 @@ export default function MembersList() {
                             className="flex-1 text-destructive hover:bg-destructive/10 border-destructive/20 rounded-xl font-bold bg-background/50"
                           >
                             <X className="w-4 h-4 mr-1" />
-                            Decline
+                            {tt("Decline", "Kataa")}
                           </Button>
                         </div>
                       ) : (
                         <div className="rounded-xl border border-border/60 bg-background/60 px-3 py-2 text-xs text-muted-foreground">
-                          Only the chairperson or secretary can approve or decline join requests.
+                          {tt("Only the chairperson or secretary can approve or decline join requests.", "Mwenyekiti au katibu pekee anaweza kuidhinisha au kukataa maombi.")}
                         </div>
                       )}
                     </div>

@@ -6,6 +6,7 @@ import type { AdminUser } from "@/api/services/admin.service"
 import type { Group } from "@/store/group/group.types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { useLanguage } from "@/components/language/language-provider"
 
 type AdminOverviewProps = {
   users: AdminUser[]
@@ -13,6 +14,8 @@ type AdminOverviewProps = {
 }
 
 export function AdminOverview({ users, groups }: AdminOverviewProps) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const activeUsers = users.filter((user) => user.is_active)
   const staffUsers = users.filter((user) => user.is_staff || user.is_admin)
   const privateGroups = groups.filter((group) => group.is_private)
@@ -21,20 +24,20 @@ export function AdminOverview({ users, groups }: AdminOverviewProps) {
 
   const overviewCards = [
     {
-      title: "Active users",
-      description: "Accounts that can access the workspace right now.",
+      title: tt("Active users", "Watumiaji hai"),
+      description: tt("Accounts that can access the workspace right now.", "Akaunti zinazoweza kufikia mfumo kwa sasa."),
       value: activeUsers.length,
       icon: <UserRound className="size-5" />,
     },
     {
-      title: "Privileged users",
-      description: "Admin or staff accounts with elevated access.",
+      title: tt("Privileged users", "Watumiaji wenye ruhusa"),
+      description: tt("Admin or staff accounts with elevated access.", "Akaunti za wasimamizi au wafanyakazi zenye ruhusa za juu."),
       value: staffUsers.length,
       icon: <ShieldCheck className="size-5" />,
     },
     {
-      title: "Active groups",
-      description: "Groups currently visible and available for meetings.",
+      title: tt("Active groups", "Vikundi hai"),
+      description: tt("Groups currently visible and available for meetings.", "Vikundi vinavyoonekana na vinavyopatikana kwa vikao."),
       value: activeGroups.length,
       icon: <Building2 className="size-5" />,
     },
@@ -51,7 +54,7 @@ export function AdminOverview({ users, groups }: AdminOverviewProps) {
                   {card.icon}
                 </div>
                 <span className="rounded-full bg-chart-2/10 px-3 py-1 text-xs font-semibold text-chart-3">
-                  Live
+                  {tt("Live", "Hai")}
                 </span>
               </div>
               <CardTitle className="text-3xl">{card.value}</CardTitle>
@@ -65,20 +68,20 @@ export function AdminOverview({ users, groups }: AdminOverviewProps) {
       <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <Card className="border-none bg-card shadow-sm">
           <CardHeader>
-            <CardTitle>Workspace snapshot</CardTitle>
-            <CardDescription>Quick totals to guide moderation and access reviews.</CardDescription>
+            <CardTitle>{tt("Workspace snapshot", "Muhtasari wa mfumo")}</CardTitle>
+            <CardDescription>{tt("Quick totals to guide moderation and access reviews.", "Jumla za haraka kwa usimamizi na ukaguzi wa ufikiaji.")}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-2xl bg-muted p-4">
-              <p className="text-sm text-muted-foreground">Total users</p>
+              <p className="text-sm text-muted-foreground">{tt("Total users", "Jumla ya watumiaji")}</p>
               <p className="mt-2 text-3xl font-semibold">{users.length}</p>
             </div>
             <div className="rounded-2xl bg-muted p-4">
-              <p className="text-sm text-muted-foreground">Private groups</p>
+              <p className="text-sm text-muted-foreground">{tt("Private groups", "Vikundi vya faragha")}</p>
               <p className="mt-2 text-3xl font-semibold">{privateGroups.length}</p>
             </div>
             <div className="rounded-2xl bg-muted p-4">
-              <p className="text-sm text-muted-foreground">Tracked memberships</p>
+              <p className="text-sm text-muted-foreground">{tt("Tracked memberships", "Uanachama unaofuatiliwa")}</p>
               <p className="mt-2 text-3xl font-semibold">{totalMembers}</p>
             </div>
           </CardContent>
@@ -86,19 +89,19 @@ export function AdminOverview({ users, groups }: AdminOverviewProps) {
 
         <Card className="border-none bg-card shadow-sm">
           <CardHeader>
-            <CardTitle>Management shortcuts</CardTitle>
-            <CardDescription>Jump straight into the area you need to update.</CardDescription>
+            <CardTitle>{tt("Management shortcuts", "Njia za mkato za usimamizi")}</CardTitle>
+            <CardDescription>{tt("Jump straight into the area you need to update.", "Nenda moja kwa moja kwenye eneo la kusasisha.")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <Button asChild className="w-full justify-between">
               <Link href="/admin/users">
-                Review users
+                {tt("Review users", "Kagua watumiaji")}
                 <span>{users.length}</span>
               </Link>
             </Button>
             <Button asChild variant="outline" className="w-full justify-between">
               <Link href="/admin/groups">
-                Review groups
+                {tt("Review groups", "Kagua vikundi")}
                 <span>{groups.length}</span>
               </Link>
             </Button>

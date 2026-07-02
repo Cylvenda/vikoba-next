@@ -16,6 +16,7 @@ import { useAuthUserStore } from "@/store/auth/userAuth.store"
 import { toast } from "react-toastify"
 import { getMeetingDetailHref, getMeetingSessionHref } from "@/lib/meeting-routes"
 import Link from "next/link"
+import { useLanguage } from "@/components/language/language-provider"
 
 export default function GroupMeetingsPage() {
   const params = useParams<{ groupId: string }>()
@@ -25,6 +26,9 @@ export default function GroupMeetingsPage() {
   const { user } = useAuthUserStore()
   const { selectedGroup, selectedGroupMembers, fetchGroupById, fetchSelectedGroupMembers } = useGroupStore()
   const { meetings, loading, fetchMeetings, createMeeting, createInstantMeeting } = useMeetingStore()
+  const { language } = useLanguage()
+  const isSwahili = language === "sw"
+  const tt = (en: string, sw: string) => (isSwahili ? sw : en)
 
   const [isScheduleOpen, setIsScheduleOpen] = useState(false)
   const [isInstantOpen, setIsInstantOpen] = useState(false)
@@ -93,12 +97,12 @@ export default function GroupMeetingsPage() {
     event.preventDefault()
 
     if (!selectedGroup?.id) {
-         toast.error("No group selected.")
+         toast.error(tt("No group selected.", "Hakuna kikundi kilichochaguliwa."))
          return
     }
 
     if (!meetingDate || !meetingStartTime) {
-         toast.error("Date and start time are required.")
+         toast.error(tt("Date and start time are required.", "Tarehe na muda wa kuanza vinahitajika."))
          return
     }
 
@@ -134,12 +138,12 @@ export default function GroupMeetingsPage() {
     event.preventDefault()
 
     if (!selectedGroup?.id) {
-         toast.error("No group selected.")
+         toast.error(tt("No group selected.", "Hakuna kikundi kilichochaguliwa."))
          return
     }
 
     const result = await createInstantMeeting({
-         title: instantTitle.trim() || `Instant Meeting - ${selectedGroup.name}`,
+         title: instantTitle.trim() || `${tt("Instant Meeting", "Kikao cha Papo Hapo")} - ${selectedGroup.name}`,
          description: instantDescription.trim() || undefined,
          group: selectedGroup.id,
     })
@@ -165,7 +169,7 @@ export default function GroupMeetingsPage() {
         <div className="mx-auto w-full max-w-screen-2xl">
           <Card className="border-none bg-card shadow-sm">
             <CardContent className="py-8 text-center text-muted-foreground">
-              Loading group meetings dashboard...
+              {tt("Loading group meetings dashboard...", "Inapakia dashibodi ya vikao vya kikundi...")}
             </CardContent>
           </Card>
         </div>
@@ -183,19 +187,19 @@ export default function GroupMeetingsPage() {
             <div>
               <h1 className="flex items-center gap-2 text-3xl font-extrabold tracking-tight text-foreground">
                 <CalendarDays className="h-8 w-8 text-chart-3" />
-                Meeting Dashboard
+                {tt("Meeting Dashboard", "Dashibodi ya Vikao")}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Virtual workspace sessions for <span className="font-semibold text-foreground">{selectedGroup.name}</span>
+                {tt("Virtual workspace sessions for", "Vikao vya nafasi ya kazi ya mtandaoni kwa")} <span className="font-semibold text-foreground">{selectedGroup.name}</span>
               </p>
             </div>
             {isLeader && (
               <div className="flex flex-wrap gap-3">
                 <Button className="bg-chart-4 hover:bg-chart-4/90 text-white rounded-md shadow-md font-medium" onClick={() => setIsInstantOpen(true)} disabled={!selectedGroup?.id}>
-                  <Play className="mr-2 h-4 w-4" /> Start Instant Session
+                  <Play className="mr-2 h-4 w-4" /> {tt("Start Instant Session", "Anza Kikao cha Papo Hapo")}
                 </Button>
                 <Button className="bg-chart-3 hover:bg-chart-2 text-primary-foreground rounded-md shadow-md font-medium" onClick={() => setIsScheduleOpen(true)}>
-                  <CalendarPlus2 className="mr-2 h-4 w-4" /> Schedule Session
+                  <CalendarPlus2 className="mr-2 h-4 w-4" /> {tt("Schedule Session", "Panga Kikao")}
                 </Button>
               </div>
             )}
@@ -205,47 +209,47 @@ export default function GroupMeetingsPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <div className="rounded-2xl border border-border bg-card/60 p-5 shadow-sm backdrop-blur-md flex flex-col justify-between">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Access Role</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{tt("Access Role", "Jukumu la Ufikiaji")}</span>
                 <ShieldAlert className="w-4 h-4 text-chart-3" />
               </div>
               <div>
                 <p className="text-xl font-bold text-foreground">
                   {currentUserRole ? currentUserRole.replace('_', ' ') : 'MEMBER'}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">Your permission level</p>
+                <p className="text-xs text-muted-foreground mt-1">{tt("Your permission level", "Kiwango chako cha ruhusa")}</p>
               </div>
             </div>
 
             <div className="rounded-2xl border border-border bg-card/60 p-5 shadow-sm backdrop-blur-md flex flex-col justify-between">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Upcoming</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{tt("Upcoming", "Zinazokuja")}</span>
                 <Clock className="w-4 h-4 text-chart-4" />
               </div>
               <div>
                 <p className="text-3xl font-extrabold text-chart-4">{upcomingMeetings.length}</p>
-                <p className="text-xs text-muted-foreground mt-1">Scheduled sessions</p>
+                <p className="text-xs text-muted-foreground mt-1">{tt("Scheduled sessions", "Vikao vilivyopangwa")}</p>
               </div>
             </div>
 
             <div className="rounded-2xl border border-border bg-card/60 p-5 shadow-sm backdrop-blur-md flex flex-col justify-between">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Concluded</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{tt("Concluded", "Vilivyokamilika")}</span>
                 <CheckCircle2 className="w-4 h-4 text-green-500" />
               </div>
               <div>
                 <p className="text-3xl font-extrabold text-foreground">{concludedMeetings.length}</p>
-                <p className="text-xs text-muted-foreground mt-1">Successfully ended</p>
+                <p className="text-xs text-muted-foreground mt-1">{tt("Successfully ended", "Vilivyoisha kwa mafanikio")}</p>
               </div>
             </div>
 
             <div className="rounded-2xl border border-border bg-card/60 p-5 shadow-sm backdrop-blur-md flex flex-col justify-between">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Total Meeting</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{tt("Total Meeting", "Jumla ya Vikao")}</span>
                 <History className="w-4 h-4 text-muted-foreground" />
               </div>
               <div>
                 <p className="text-3xl font-extrabold text-foreground">{groupMeetings.length}</p>
-                <p className="text-xs text-muted-foreground mt-1">All historical meetings</p>
+                <p className="text-xs text-muted-foreground mt-1">{tt("All historical meetings", "Vikao vyote vya awali")}</p>
               </div>
             </div>
           </div>
@@ -255,7 +259,7 @@ export default function GroupMeetingsPage() {
             {/* NEXT HIGHLIGHT CARD */}
             <div className="lg:col-span-1">
               <Card className="rounded-md border border-border bg-card shadow-sm p-6 h-full relative overflow-hidden">
-                <h3 className="text-sm font-extrabold uppercase tracking-widest text-primary mb-6 relative z-10">Next Up</h3>
+                <h3 className="text-sm font-extrabold uppercase tracking-widest text-primary mb-6 relative z-10">{tt("Next Up", "Kikao Kijacho")}</h3>
                 
                 {nextMeeting ? (
                   <div className="relative z-10 flex flex-col h-[85%] justify-between">
@@ -266,7 +270,7 @@ export default function GroupMeetingsPage() {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                           </span>
-                          LIVE NOW
+                          {tt("LIVE NOW", "MOJA KWA MOJA")}
                         </div>
                       )}
                       <h4 className="text-2xl font-bold text-foreground leading-tight">{nextMeeting.title}</h4>
@@ -289,19 +293,19 @@ export default function GroupMeetingsPage() {
                     <div className="mt-8 flex flex-col gap-2">
                       <Button asChild className="w-full bg-chart-3 hover:bg-chart-2 rounded-xl text-primary-foreground font-bold shadow-md">
                         <Link href={getMeetingSessionHref(nextMeeting.id, nextMeeting.group)}>
-                          {nextMeeting.status === "ongoing" ? "Join Session" : "Open Workspace"}
+                          {nextMeeting.status === "ongoing" ? tt("Join Session", "Jiunge na Kikao") : tt("Open Workspace", "Fungua Eneo la Kazi")}
                         </Link>
                       </Button>
                       <Button asChild variant="outline" className="w-full rounded-xl border-chart-3/30 hover:bg-chart-3/10 bg-card/50 text-chart-4 font-semibold shadow-sm">
-                        <Link href={getMeetingDetailHref(nextMeeting.id, nextMeeting.group)}>View Ledger Details</Link>
+                        <Link href={getMeetingDetailHref(nextMeeting.id, nextMeeting.group)}>{tt("View Ledger Details", "Tazama Maelezo ya Rejista")}</Link>
                       </Button>
                     </div>
                   </div>
                 ) : (
                   <div className="relative z-10 flex flex-col items-center justify-center text-center h-[70%] opacity-60">
                     <Calendar className="h-10 w-10 mb-3 text-chart-4/50" />
-                    <p className="font-semibold text-foreground">No upcoming meetings.</p>
-                    <p className="text-xs mt-1 text-muted-foreground">The schedule is currently empty.</p>
+                    <p className="font-semibold text-foreground">{tt("No upcoming meetings.", "Hakuna vikao vijavyo.")}</p>
+                    <p className="text-xs mt-1 text-muted-foreground">{tt("The schedule is currently empty.", "Ratiba haina kikao kwa sasa.")}</p>
                   </div>
                 )}
               </Card>
@@ -312,20 +316,20 @@ export default function GroupMeetingsPage() {
               <Card className="rounded-md border border-border/80 bg-card/40 shadow-sm backdrop-blur-md p-6 h-full">
                 <div className="flex justify-between items-end mb-6 border-b border-border/50 pb-4">
                   <div>
-                    <h3 className="text-lg font-extrabold text-foreground tracking-tight">Meeting Timeline</h3>
-                    <p className="text-xs text-muted-foreground mt-1">All synchronized banking sessions</p>
+                    <h3 className="text-lg font-extrabold text-foreground tracking-tight">{tt("Meeting Timeline", "Mfuatano wa Vikao")}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">{tt("All synchronized banking sessions", "Vikao vyote vya shughuli za kifedha")}</p>
                   </div>
                 </div>
 
                 {loading && groupMeetings.length === 0 ? (
-                  <div className="py-12 text-center text-muted-foreground font-medium">Loading ledger data...</div>
+                  <div className="py-12 text-center text-muted-foreground font-medium">{tt("Loading ledger data...", "Inapakia taarifa za rejista...")}</div>
                 ) : groupMeetings.length === 0 ? (
                   <div className="py-16 text-center text-muted-foreground flex flex-col items-center">
                     <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
                       <Calendar className="h-8 w-8 opacity-40" />
                     </div>
-                    <p className="font-semibold text-foreground">No meetings exist in this group yet.</p>
-                    {isLeader && <p className="text-sm mt-1">Click schedule to launch your first session.</p>}
+                    <p className="font-semibold text-foreground">{tt("No meetings exist in this group yet.", "Bado hakuna vikao katika kikundi hiki.")}</p>
+                    {isLeader && <p className="text-sm mt-1">{tt("Click schedule to launch your first session.", "Bofya panga kikao ili kuanzisha kikao chako cha kwanza.")}</p>}
                   </div>
                 ) : (
                   <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
@@ -344,7 +348,15 @@ export default function GroupMeetingsPage() {
                             <h4 className="text-base font-bold text-foreground group-hover:text-chart-3 transition-colors">{meeting.title}</h4>
                             <div className="flex items-center gap-3 mt-1.5 text-xs font-medium text-muted-foreground">
                               <span className="flex items-center gap-1"><Clock size={12}/> {new Date(meeting.scheduled_start).toLocaleString()}</span>
-                              <span className="uppercase tracking-wider px-2 py-0.5 rounded-sm bg-muted/60 border border-border/50">{meeting.status}</span>
+                              <span className="uppercase tracking-wider px-2 py-0.5 rounded-sm bg-muted/60 border border-border/50">
+                                {meeting.status === "ongoing"
+                                  ? tt("ongoing", "kinaendelea")
+                                  : meeting.status === "scheduled"
+                                    ? tt("scheduled", "kimepangwa")
+                                    : meeting.status === "cancelled"
+                                      ? tt("cancelled", "kimeghairiwa")
+                                      : tt("concluded", "kimekamilika")}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -352,12 +364,12 @@ export default function GroupMeetingsPage() {
                           {(meeting.status === "scheduled" || meeting.status === "ongoing") && (
                             <Button asChild size="sm" className="flex-1 sm:flex-none rounded-lg bg-chart-3 text-primary-foreground hover:bg-chart-2 font-semibold shadow-sm">
                               <Link href={getMeetingSessionHref(meeting.id, meeting.group)}>
-                                {meeting.status === "ongoing" ? "Join" : "Open"}
+                                {meeting.status === "ongoing" ? tt("Join", "Jiunge") : tt("Open", "Fungua")}
                               </Link>
                             </Button>
                           )}
                           <Button asChild size="sm" variant="outline" className="flex-1 sm:flex-none rounded-lg border-border hover:border-chart-3/30 hover:bg-chart-3/10 shadow-sm transition-all">
-                            <Link href={getMeetingDetailHref(meeting.id, meeting.group)}>Details</Link>
+                            <Link href={getMeetingDetailHref(meeting.id, meeting.group)}>{tt("Details", "Maelezo")}</Link>
                           </Button>
                         </div>
                       </div>
@@ -376,42 +388,42 @@ export default function GroupMeetingsPage() {
       <Dialog open={isInstantOpen && isLeader} onOpenChange={(open) => { if (!open) setIsInstantOpen(false) }}>
         <DialogContent className="sm:max-w-xl p-6 sm:p-8">
           <DialogHeader>
-            <DialogTitle className="text-xl font-extrabold">Launch Instant Session</DialogTitle>
+            <DialogTitle className="text-xl font-extrabold">{tt("Launch Instant Session", "Anzisha Kikao cha Papo Hapo")}</DialogTitle>
             <DialogDescription className="mt-1 text-sm text-muted-foreground">
-              Start a live VICOBA meeting now. Members will receive instant email notifications.
+              {tt("Start a live VICOBA meeting now. Members will receive instant email notifications.", "Anzisha kikao cha VICOBA sasa. Wanachama watapokea arifa za barua pepe mara moja.")}
             </DialogDescription>
           </DialogHeader>
 
           <form className="mt-4 space-y-4" onSubmit={handleInstantMeeting}>
             <div>
-              <label htmlFor="instant-title" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Title</label>
+              <label htmlFor="instant-title" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">{tt("Title", "Kichwa")}</label>
               <Input
                 id="instant-title"
                 type="text"
                 value={instantTitle}
                 onChange={(event) => setInstantTitle(event.target.value)}
-                placeholder={`Instant Session - ${selectedGroup?.name || "Group"}`}
+                placeholder={`${tt("Instant Session", "Kikao cha Papo Hapo")} - ${selectedGroup?.name || tt("Group", "Kikundi")}`}
                 className="rounded-md"
               />
             </div>
 
             <div>
-              <label htmlFor="instant-description" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Agenda / Context</label>
+              <label htmlFor="instant-description" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">{tt("Agenda / Context", "Ajenda / Muktadha")}</label>
               <Textarea
                 id="instant-description"
                 value={instantDescription}
                 onChange={(event) => setInstantDescription(event.target.value)}
                 className="min-h-24 rounded-md"
-                placeholder="Quick context for members joining now"
+                placeholder={tt("Quick context for members joining now", "Maelezo mafupi kwa wanachama wanaojiunga sasa")}
               />
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-2">
               <Button type="button" variant="ghost" onClick={() => setIsInstantOpen(false)} disabled={loading} className="rounded-md font-bold">
-                Cancel
+                {tt("Cancel", "Ghairi")}
               </Button>
               <Button type="submit" className="rounded-md font-bold shadow-md" disabled={loading}>
-                {loading ? "Launching..." : "Start Now"}
+                {loading ? tt("Launching...", "Kinaanzishwa...") : tt("Start Now", "Anzisha Sasa")}
               </Button>
             </div>
           </form>
@@ -424,49 +436,49 @@ export default function GroupMeetingsPage() {
       <Dialog open={isScheduleOpen && isLeader} onOpenChange={(open) => { if (!open) setIsScheduleOpen(false) }}>
         <DialogContent className="sm:max-w-xl p-6 sm:p-8">
           <DialogHeader>
-            <DialogTitle className="text-xl font-extrabold">Schedule Session</DialogTitle>
+            <DialogTitle className="text-xl font-extrabold">{tt("Schedule Session", "Panga Kikao")}</DialogTitle>
             <DialogDescription className="mt-1 text-sm text-muted-foreground">
-              Define the date and time for the next formal gathering.
+              {tt("Define the date and time for the next formal gathering.", "Weka tarehe na muda wa kikao rasmi kijacho.")}
             </DialogDescription>
           </DialogHeader>
 
           <form className="mt-4 space-y-4" onSubmit={handleScheduleMeeting}>
             <div>
-              <label htmlFor="meeting-title" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Title</label>
+              <label htmlFor="meeting-title" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">{tt("Title", "Kichwa")}</label>
               <Input
                 id="meeting-title"
                 type="text"
                 value={meetingTitle}
                 onChange={(event) => setMeetingTitle(event.target.value)}
-                placeholder="Weekly Ledger Reconciliation"
+                placeholder={tt("Weekly Ledger Reconciliation", "Upatanisho wa Rejista wa Kila Wiki")}
                 className="rounded-md"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="meeting-description" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Description</label>
+              <label htmlFor="meeting-description" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">{tt("Description", "Maelezo")}</label>
               <Textarea
                 id="meeting-description"
                 value={meetingDescription}
                 onChange={(event) => setMeetingDescription(event.target.value)}
                 className="min-h-24 rounded-md"
-                placeholder="Agenda summary"
+                placeholder={tt("Agenda summary", "Muhtasari wa ajenda")}
               />
             </div>
 
             <div>
-              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Date</label>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">{tt("Date", "Tarehe")}</label>
               <DatePicker
                 value={meetingDate}
                 onChange={setMeetingDate}
-                placeholder="Select meeting date"
+                placeholder={tt("Select meeting date", "Chagua tarehe ya kikao")}
               />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">Start Time</label>
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">{tt("Start Time", "Muda wa Kuanza")}</label>
                 <TimePicker
                   value={meetingStartTime}
                   onChange={setMeetingStartTime}
@@ -474,7 +486,7 @@ export default function GroupMeetingsPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">End Time (Optional)</label>
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-foreground">{tt("End Time (Optional)", "Muda wa Kumaliza (Si Lazima)")}</label>
                 <TimePicker
                   value={meetingEndTime}
                   onChange={setMeetingEndTime}
@@ -484,10 +496,10 @@ export default function GroupMeetingsPage() {
 
             <div className="flex items-center justify-end gap-3 pt-2">
               <Button type="button" variant="ghost" onClick={() => setIsScheduleOpen(false)} disabled={loading} className="rounded-md font-bold">
-                Cancel
+                {tt("Cancel", "Ghairi")}
               </Button>
               <Button type="submit" className="rounded-md font-bold shadow-md" disabled={loading}>
-                {loading ? "Saving..." : "Schedule Session"}
+                {loading ? tt("Saving...", "Inahifadhi...") : tt("Schedule Session", "Panga Kikao")}
               </Button>
             </div>
           </form>

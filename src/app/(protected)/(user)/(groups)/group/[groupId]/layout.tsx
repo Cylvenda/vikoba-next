@@ -11,6 +11,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { Separator } from "@/components/ui/separator"
 import { CompleteProfileModal } from "@/components/auth/complete-profile-modal"
 import { Spinner } from "@/components/ui/spinner"
+import LanguageToggle from "@/components/language/language-toggle"
 
 export default function GroupLayout({ children }: { children: React.ReactNode }) {
   const params = useParams<{ groupId: string }>()
@@ -96,6 +97,7 @@ export default function GroupLayout({ children }: { children: React.ReactNode })
               <CurrentPageBreadcrumb />
             </div>
             <div className="flex items-center gap-2">
+              <LanguageToggle compact />
               <ThemeToggle />
             </div>
           </header>

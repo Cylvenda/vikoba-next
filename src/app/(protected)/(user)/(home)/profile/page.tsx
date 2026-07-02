@@ -8,9 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { useAuthUserStore } from "@/store/auth/userAuth.store"
 import { userServices } from "@/api/services/user.service"
+import { useLanguage } from "@/components/language/language-provider"
 
 export default function ProfilePage() {
   const { user, fetchUser } = useAuthUserStore()
+  const { language } = useLanguage()
+  const isSwahili = language === "sw"
+  const tt = (en: string, sw: string) => (isSwahili ? sw : en)
   const [formData, setFormData] = useState({
     first_name: user?.firstName || "",
     last_name: user?.lastName || "",
@@ -38,9 +42,9 @@ export default function ProfilePage() {
         phone: formData.phone.trim(),
       })
       await fetchUser()
-      toast.success("Profile updated successfully.")
+      toast.success(tt("Profile updated successfully.", "Wasifu umesasishwa kwa mafanikio."))
     } catch {
-      toast.error("Failed to update your profile.")
+      toast.error(tt("Failed to update your profile.", "Imeshindikana kusasisha wasifu wako."))
     } finally {
       setSaving(false)
     }
@@ -51,9 +55,9 @@ export default function ProfilePage() {
       <div className="mx-auto w-full max-w-screen-3xl space-y-6">
       <Card className="border-none bg-accent shadow-sm">
          <CardHeader>
-          <CardTitle className="text-3xl">Profile</CardTitle>
+          <CardTitle className="text-3xl">{tt("Profile", "Wasifu")}</CardTitle>
           <CardDescription>
-            Update the identity details other members will see across groups, meetings, and invitations.
+            {tt("Update the identity details other members will see across groups, meetings, and invitations.", "Sasisha taarifa za utambulisho ambazo wanachama wengine wataona katika vikundi, vikao, na mialiko.")}
           </CardDescription>
         </CardHeader>
       </Card>
@@ -65,23 +69,23 @@ export default function ProfilePage() {
               <UserRound className="size-10" />
             </div>
             <h2 className="mt-4 text-2xl font-semibold">
-              {[user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Workspace member"}
+              {[user?.firstName, user?.lastName].filter(Boolean).join(" ") || tt("Workspace member", "Mwanachama wa nafasi ya kazi")}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">{user?.email}</p>
 
             <div className="mt-6 grid w-full gap-3 text-left">
               <div className="rounded-2xl bg-muted p-4">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Username</p>
-                <p className="mt-1 text-sm font-medium">{user?.username || "Not set"}</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">{tt("Username", "Jina la mtumiaji")}</p>
+                <p className="mt-1 text-sm font-medium">{user?.username || tt("Not set", "Haijawekwa")}</p>
               </div>
               <div className="rounded-2xl bg-muted p-4">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Phone</p>
-                <p className="mt-1 text-sm font-medium">{user?.phone || "Not set"}</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">{tt("Phone", "Simu")}</p>
+                <p className="mt-1 text-sm font-medium">{user?.phone || tt("Not set", "Haijawekwa")}</p>
               </div>
               <div className="rounded-2xl bg-muted p-4">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Access level</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">{tt("Access level", "Kiwango cha ufikiaji")}</p>
                 <p className="mt-1 text-sm font-medium">
-                  {user?.isAdmin ? "Administrator" : user?.isStaff ? "Staff member" : "Standard member"}
+                  {user?.isAdmin ? tt("Administrator", "Msimamizi") : user?.isStaff ? tt("Staff member", "Mfanyakazi") : tt("Standard member", "Mwanachama wa kawaida")}
                 </p>
               </div>
             </div>
@@ -90,9 +94,9 @@ export default function ProfilePage() {
 
         <Card className="border-none bg-card shadow-sm">
           <CardHeader>
-            <CardTitle>Edit profile</CardTitle>
+            <CardTitle>{tt("Edit profile", "Hariri wasifu")}</CardTitle>
             <CardDescription>
-              Keep your name, username, and phone number up to date.
+              {tt("Keep your name, username, and phone number up to date.", "Weka jina lako, jina la mtumiaji, na namba ya simu ikiwa imesasishwa.")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -100,26 +104,26 @@ export default function ProfilePage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <label htmlFor="first-name" className="mb-2 block text-sm font-medium">
-                    First name
+                    {tt("First name", "Jina la kwanza")}
                   </label>
                   <Input
                     id="first-name"
                     value={formData.first_name}
                     onChange={(event) => handleChange("first_name", event.target.value)}
-                    placeholder="Enter first name"
+                    placeholder={tt("Enter first name", "Weka jina la kwanza")}
                     className="h-10 rounded-2xl"
                   />
                 </div>
 
                 <div>
                   <label htmlFor="last-name" className="mb-2 block text-sm font-medium">
-                    Last name
+                    {tt("Last name", "Jina la mwisho")}
                   </label>
                   <Input
                     id="last-name"
                     value={formData.last_name}
                     onChange={(event) => handleChange("last_name", event.target.value)}
-                    placeholder="Enter last name"
+                    placeholder={tt("Enter last name", "Weka jina la mwisho")}
                     className="h-10 rounded-2xl"
                   />
                 </div>
@@ -128,26 +132,26 @@ export default function ProfilePage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <label htmlFor="username" className="mb-2 block text-sm font-medium">
-                    Username
+                    {tt("Username", "Jina la mtumiaji")}
                   </label>
                   <Input
                     id="username"
                     value={formData.username}
                     onChange={(event) => handleChange("username", event.target.value)}
-                    placeholder="Enter username"
+                    placeholder={tt("Enter username", "Weka jina la mtumiaji")}
                     className="h-10 rounded-2xl"
                   />
                 </div>
 
                 <div>
                   <label htmlFor="phone" className="mb-2 block text-sm font-medium">
-                    Phone number
+                    {tt("Phone number", "Namba ya simu")}
                   </label>
                   <Input
                     id="phone"
                     value={formData.phone}
                     onChange={(event) => handleChange("phone", event.target.value)}
-                    placeholder="Enter phone number"
+                    placeholder={tt("Enter phone number", "Weka namba ya simu")}
                     className="h-10 rounded-2xl"
                   />
                 </div>
@@ -155,7 +159,7 @@ export default function ProfilePage() {
 
               <div>
                 <label htmlFor="email" className="mb-2 block text-sm font-medium">
-                  Email address
+                  {tt("Email address", "Anwani ya barua pepe")}
                 </label>
                 <Input
                   id="email"
@@ -168,7 +172,7 @@ export default function ProfilePage() {
               <div className="flex justify-end">
                 <Button type="submit" className="bg-chart-3" disabled={saving}>
                   <Save className="size-4" />
-                  {saving ? "Saving..." : "Save changes"}
+                  {saving ? tt("Saving...", "Inahifadhi...") : tt("Save changes", "Hifadhi mabadiliko")}
                 </Button>
               </div>
             </form>

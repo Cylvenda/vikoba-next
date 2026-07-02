@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { MeetingSidebarTab } from "@/components/meeting-room/types"
+import { useLanguage } from "@/components/language/language-provider"
 
 type ControlBarProps = {
   raisedHand: boolean
@@ -92,6 +93,8 @@ export function ControlBar({
   onOpenDocumentsPanel,
   onOpenPeoplePanel,
 }: ControlBarProps) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const { isMicrophoneEnabled, isCameraEnabled, isScreenShareEnabled, localParticipant } = useLocalParticipant()
   const [mediaActionPending, setMediaActionPending] = useState<null | "microphone" | "camera" | "screen-share">(null)
   const mediaActionInFlightRef = useRef(false)
@@ -144,7 +147,7 @@ export function ControlBar({
             disabled={mediaActionPending !== null}
           >
             {isMicrophoneEnabled ? <Mic className="size-4" /> : <MicOff className="size-4" />}
-            {isMicrophoneEnabled ? "Mic on" : "Mic off"}
+            {isMicrophoneEnabled ? tt("Mic on", "Maikrofoni imewashwa") : tt("Mic off", "Maikrofoni imezimwa")}
           </ControlButton>
 
           <ControlButton
@@ -154,7 +157,7 @@ export function ControlBar({
             disabled={mediaActionPending !== null}
           >
             {isCameraEnabled ? <Video className="size-4" /> : <VideoOff className="size-4" />}
-            {isCameraEnabled ? "Camera on" : "Camera off"}
+            {isCameraEnabled ? tt("Camera on", "Kamera imewashwa") : tt("Camera off", "Kamera imezimwa")}
           </ControlButton>
 
           <ControlButton
@@ -164,23 +167,23 @@ export function ControlBar({
             disabled={mediaActionPending !== null}
           >
             <MonitorUp className="size-4" />
-            {isScreenShareEnabled ? "Stop share" : "Share screen"}
+            {isScreenShareEnabled ? tt("Stop share", "Acha kushiriki") : tt("Share screen", "Shiriki skrini")}
           </ControlButton>
 
           <ControlButton type="button" active={raisedHand} onClick={onToggleRaisedHand}>
             <Hand className="size-4" />
-            {raisedHand ? "Hand raised" : "Raise hand"}
+            {raisedHand ? tt("Hand raised", "Mkono umeinuliwa") : tt("Raise hand", "Inua mkono")}
           </ControlButton>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <ControlButton type="button">
                 <SmilePlus className="size-4" />
-                Reactions
+                {tt("Reactions", "Mwitikio")}
               </ControlButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56 rounded-xl">
-              <DropdownMenuLabel>Quick reactions</DropdownMenuLabel>
+              <DropdownMenuLabel>{tt("Quick reactions", "Mwitikio wa haraka")}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <div className="flex flex-row flex-wrap gap-2 p-2">
                 {REACTION_EMOJIS.map((emoji) => (
@@ -203,27 +206,27 @@ export function ControlBar({
             <QuickPanelButton
               active={activeDocumentsPanel === "agenda"}
               icon={<FileText className="size-4" />}
-              label="Agenda"
+              label={tt("Agenda", "Ajenda")}
               onClick={() => onOpenDocumentsPanel("agenda")}
             />
             {canAccessMinutes ? (
               <QuickPanelButton
                 active={activeDocumentsPanel === "minutes"}
                 icon={<FileText className="size-4" />}
-                label="Minutes note"
+                label={tt("Minutes note", "Kumbukumbu")}
                 onClick={() => onOpenDocumentsPanel("minutes")}
               />
             ) : null}
             <QuickPanelButton
               active={activePeoplePanel === "attendance"}
               icon={<Users className="size-4" />}
-              label="Attendance"
+              label={tt("Attendance", "Mahudhurio")}
               onClick={() => onOpenPeoplePanel("attendance")}
             />
             <QuickPanelButton
               active={activePeoplePanel === "chat"}
               icon={<MessageSquareText className="size-4" />}
-              label="Chats"
+              label={tt("Chats", "Ujumbe")}
               onClick={() => onOpenPeoplePanel("chat")}
             />
           </div>
@@ -232,34 +235,34 @@ export function ControlBar({
             <QuickPanelButton
               active={activeDocumentsPanel === "agenda"}
               icon={<FileText className="size-4" />}
-              label="Agenda"
+              label={tt("Agenda", "Ajenda")}
               onClick={() => onOpenDocumentsPanel("agenda")}
             />
             {canAccessMinutes ? (
               <QuickPanelButton
                 active={activeDocumentsPanel === "minutes"}
                 icon={<FileText className="size-4" />}
-                label="Minutes"
+                label={tt("Minutes", "Kumbukumbu")}
                 onClick={() => onOpenDocumentsPanel("minutes")}
               />
             ) : null}
             <QuickPanelButton
               active={activePeoplePanel === "attendance"}
               icon={<Users className="size-4" />}
-              label="Attendance"
+              label={tt("Attendance", "Mahudhurio")}
               onClick={() => onOpenPeoplePanel("attendance")}
             />
             <QuickPanelButton
               active={activePeoplePanel === "chat"}
               icon={<MessageSquareText className="size-4" />}
-              label="Chats"
+              label={tt("Chats", "Ujumbe")}
               onClick={() => onOpenPeoplePanel("chat")}
             />
           </div>
 
           <ControlButton type="button" danger onClick={onLeave}>
             <PhoneOff className="size-4" />
-            Leave
+            {tt("Leave", "Ondoka")}
           </ControlButton>
         </div>
       </div>

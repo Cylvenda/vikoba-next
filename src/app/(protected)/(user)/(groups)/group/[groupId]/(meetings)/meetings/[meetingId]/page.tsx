@@ -14,12 +14,15 @@ import type { AttendanceRecord, ParticipantSession } from "@/store/meeting/meeti
 import { getMeetingSessionHref } from "@/lib/meeting-routes"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import * as XLSX from "xlsx"
+import { useLanguage } from "@/components/language/language-provider"
 
 export default function MeetingPage() {
   const params = useParams<{ meetingId: string; groupId: string }>()
   const meetingId = Array.isArray(params?.meetingId) ? params.meetingId[0] : params?.meetingId
   const groupId = Array.isArray(params?.groupId) ? params.groupId[0] : params?.groupId
   const router = useRouter()
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   
   const { user } = useAuthUserStore()
   const { selectedGroupMembers, fetchSelectedGroupMembers } = useGroupStore()
@@ -81,7 +84,7 @@ export default function MeetingPage() {
       hour: '2-digit',
       minute: '2-digit'
     })
-    : "Not scheduled"
+    : tt("Not scheduled", "Hakijapangwa")
 
   const handleAgendaAdd = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -98,9 +101,9 @@ export default function MeetingPage() {
       setAgendaTitle("")
       setAgendaDescription("")
       setShowAgendaForm(false)
-      toast.success("Agenda item added")
+      toast.success(tt("Agenda item added", "Hoja ya ajenda imeongezwa"))
     } catch {
-      toast.error("Failed to add agenda item")
+      toast.error(tt("Failed to add agenda item", "Imeshindikana kuongeza hoja ya ajenda"))
     }
   }
 
@@ -108,9 +111,9 @@ export default function MeetingPage() {
     if (!meetingId) return
     try {
       await removeAgendaItem(itemId)
-      toast.success("Agenda item removed")
+      toast.success(tt("Agenda item removed", "Hoja ya ajenda imeondolewa"))
     } catch {
-      toast.error("Failed to remove agenda item")
+      toast.error(tt("Failed to remove agenda item", "Imeshindikana kuondoa hoja ya ajenda"))
     }
   }
 
@@ -165,44 +168,44 @@ export default function MeetingPage() {
   // ==========================================
   const handleExportAttendanceExcel = () => {
     if (attendanceHistory.length === 0) {
-      toast.error("No attendance data to export.")
+      toast.error(tt("No attendance data to export.", "Hakuna taarifa za mahudhurio za kuhamisha."))
       return
     }
     const ws = XLSX.utils.json_to_sheet(attendanceHistory.map(item => ({
-      "Email Address": item.email,
-      "Membership Type": item.isVerifiedMember ? "Member" : "Guest",
-      "Attendance Status": item.status,
-      "Time Joined": item.joinedAt ? new Date(item.joinedAt).toLocaleString() : "Not recorded",
-      "Total Duration (Min)": item.totalDurationMinutes
+      [tt("Email Address", "Anwani ya Barua Pepe")]: item.email,
+      [tt("Membership Type", "Aina ya Uanachama")]: item.isVerifiedMember ? tt("Member", "Mwanachama") : tt("Guest", "Mgeni"),
+      [tt("Attendance Status", "Hali ya Mahudhurio")]: item.status,
+      [tt("Time Joined", "Muda wa Kujiunga")]: item.joinedAt ? new Date(item.joinedAt).toLocaleString() : tt("Not recorded", "Haijarekodiwa"),
+      [tt("Total Duration (Min)", "Jumla ya Muda (Dak)")]: item.totalDurationMinutes
     })))
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, "Attendance")
     XLSX.writeFile(wb, `Attendance_${selectedMeeting?.title || 'Meeting'}.xlsx`)
-    toast.success("Attendance exported to Excel")
+    toast.success(tt("Attendance exported to Excel", "Mahudhurio yamehamishwa kwenda Excel"))
   }
 
   const handleExportAttendanceWord = () => {
     if (attendanceHistory.length === 0) {
-      toast.error("No attendance data to export.")
+      toast.error(tt("No attendance data to export.", "Hakuna taarifa za mahudhurio za kuhamisha."))
       return
     }
     const htmlContent = `
         <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-        <head><meta charset='utf-8'><title>Attendance</title></head>
+        <head><meta charset='utf-8'><title>${tt("Attendance", "Mahudhurio")}</title></head>
         <body style="font-family: Arial, sans-serif;">
-            <h2 style="color: #333;">Attendance Ledger: ${selectedMeeting?.title}</h2>
-            <p><strong>Date:</strong> ${scheduledStart}</p>
+            <h2 style="color: #333;">${tt("Attendance Ledger", "Rejista ya Mahudhurio")}: ${selectedMeeting?.title}</h2>
+            <p><strong>${tt("Date", "Tarehe")}:</strong> ${scheduledStart}</p>
             <table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%; border-color: #ddd;">
                 <tr style="background-color: #f8f9fa;">
-                  <th>Email</th><th>Type</th><th>Status</th><th>Joined</th><th>Duration (Min)</th>
+                  <th>${tt("Email", "Barua pepe")}</th><th>${tt("Type", "Aina")}</th><th>${tt("Status", "Hali")}</th><th>${tt("Joined", "Alijiunga")}</th><th>${tt("Duration (Min)", "Muda (Dak)")}</th>
                 </tr>
                 ${attendanceHistory.map(item => `
                     <tr>
                         <td>${item.email}</td>
-                        <td>${item.isVerifiedMember ? "Member" : "Guest"}</td>
+                        <td>${item.isVerifiedMember ? tt("Member", "Mwanachama") : tt("Guest", "Mgeni")}</td>
                         <td><strong style="text-transform: uppercase;">${item.status}</strong></td>
-                        <td>${item.joinedAt ? new Date(item.joinedAt).toLocaleString() : "Not recorded"}</td>
-                        <td>${item.totalDurationMinutes} min</td>
+                        <td>${item.joinedAt ? new Date(item.joinedAt).toLocaleString() : tt("Not recorded", "Haijarekodiwa")}</td>
+                        <td>${item.totalDurationMinutes} ${tt("min", "dak")}</td>
                     </tr>
                 `).join('')}
             </table>
@@ -218,12 +221,12 @@ export default function MeetingPage() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-    toast.success("Attendance exported to Word")
+    toast.success(tt("Attendance exported to Word", "Mahudhurio yamehamishwa kwenda Word"))
   }
 
   const handleExportAgendaPdf = () => {
     if (!selectedMeeting?.agenda_items || selectedMeeting.agenda_items.length === 0) {
-      toast.error("No agenda points to export.")
+      toast.error(tt("No agenda points to export.", "Hakuna hoja za ajenda za kuhamisha."))
       return
     }
     const htmlContent = `
@@ -242,14 +245,14 @@ export default function MeetingPage() {
           </style>
         </head>
         <body>
-            <h2>Formal Agenda: ${selectedMeeting?.title}</h2>
-            <div class="date">Date: ${scheduledStart}</div>
+            <h2>${tt("Formal Agenda", "Ajenda Rasmi")}: ${selectedMeeting?.title}</h2>
+            <div class="date">${tt("Date", "Tarehe")}: ${scheduledStart}</div>
             <ol>
                 ${selectedMeeting.agenda_items.map(item => `
                     <li>
                         <strong>${item.title}</strong> 
-                        <span class="meta">(${item.allocated_minutes} min)</span>
-                        <p>${item.description || "No description provided."}</p>
+                        <span class="meta">(${item.allocated_minutes} ${tt("min", "dak")})</span>
+                        <p>${item.description || tt("No description provided.", "Hakuna maelezo yaliyotolewa.")}</p>
                     </li>
                 `).join('')}
             </ol>
@@ -264,28 +267,28 @@ export default function MeetingPage() {
       printWindow.document.write(htmlContent)
       printWindow.document.close()
     } else {
-      toast.error("Please allow popups to export as PDF.")
+      toast.error(tt("Please allow popups to export as PDF.", "Tafadhali ruhusu madirisha ibukizi ili kuhamisha PDF."))
     }
   }
 
   const handleExportAgendaWord = () => {
     if (!selectedMeeting?.agenda_items || selectedMeeting.agenda_items.length === 0) {
-      toast.error("No agenda points to export.")
+      toast.error(tt("No agenda points to export.", "Hakuna hoja za ajenda za kuhamisha."))
       return
     }
     const htmlContent = `
         <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-        <head><meta charset='utf-8'><title>Agenda</title></head>
+        <head><meta charset='utf-8'><title>${tt("Agenda", "Ajenda")}</title></head>
         <body style="font-family: Arial, sans-serif;">
-            <h2 style="color: #333;">Formal Agenda: ${selectedMeeting?.title}</h2>
-            <p><strong>Date:</strong> ${scheduledStart}</p>
+            <h2 style="color: #333;">${tt("Formal Agenda", "Ajenda Rasmi")}: ${selectedMeeting?.title}</h2>
+            <p><strong>${tt("Date", "Tarehe")}:</strong> ${scheduledStart}</p>
             <hr/>
             <ol style="margin-top: 20px;">
                 ${selectedMeeting.agenda_items.map(item => `
                     <li style="margin-bottom: 15px;">
                         <strong style="font-size: 16px;">${item.title}</strong> 
-                        <span style="color: #666; font-size: 14px;">(${item.allocated_minutes} min)</span><br/>
-                        <p style="margin-top: 5px; color: #444;">${item.description || "No description provided."}</p>
+                        <span style="color: #666; font-size: 14px;">(${item.allocated_minutes} ${tt("min", "dak")})</span><br/>
+                        <p style="margin-top: 5px; color: #444;">${item.description || tt("No description provided.", "Hakuna maelezo yaliyotolewa.")}</p>
                     </li>
                 `).join('')}
             </ol>
@@ -301,7 +304,7 @@ export default function MeetingPage() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-    toast.success("Agenda exported to Word")
+    toast.success(tt("Agenda exported to Word", "Ajenda imehamishwa kwenda Word"))
   }
 
   const getStatusBadge = (status: string) => {
@@ -313,15 +316,15 @@ export default function MeetingPage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
             </span>
-            LIVE NOW
+            {tt("LIVE NOW", "MOJA KWA MOJA")}
           </span>
         )
       case "ended": 
-        return <span className="inline-flex rounded-full border border-border bg-muted px-3 py-1 text-xs font-bold tracking-wide text-muted-foreground shadow-sm">CONCLUDED</span>
+        return <span className="inline-flex rounded-full border border-border bg-muted px-3 py-1 text-xs font-bold tracking-wide text-muted-foreground shadow-sm">{tt("CONCLUDED", "KIMEKAMILIKA")}</span>
       case "scheduled":
-        return <span className="inline-flex rounded-full border border-chart-4/30 bg-chart-4/10 px-3 py-1 text-xs font-bold tracking-wide text-chart-4 shadow-sm">SCHEDULED</span>
+        return <span className="inline-flex rounded-full border border-chart-4/30 bg-chart-4/10 px-3 py-1 text-xs font-bold tracking-wide text-chart-4 shadow-sm">{tt("SCHEDULED", "KIMEPANGWA")}</span>
       case "cancelled": 
-        return <span className="inline-flex rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs font-bold tracking-wide text-orange-500 shadow-sm">CANCELLED</span>
+        return <span className="inline-flex rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs font-bold tracking-wide text-orange-500 shadow-sm">{tt("CANCELLED", "KIMEGHAIRIWA")}</span>
       default: 
         return <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-bold tracking-wide text-primary shadow-sm uppercase">{status}</span>
     }
@@ -334,20 +337,20 @@ export default function MeetingPage() {
       case "ongoing":
         return (
           <Button asChild className="bg-red-500 hover:bg-red-600 text-white rounded-full font-bold shadow-md shadow-red-500/20">
-            <Link href={sessionHref}>Join Session</Link>
+            <Link href={sessionHref}>{tt("Join Session", "Jiunge na Kikao")}</Link>
           </Button>
         )
       case "scheduled":
         if (isLeader) {
           return (
             <Button onClick={handleStartMeeting} className="bg-chart-3 hover:bg-chart-2 text-primary-foreground rounded-full font-bold shadow-md">
-              Start Session Now
+              {tt("Start Session Now", "Anzisha Kikao Sasa")}
             </Button>
           )
         }
-        return <Button disabled variant="outline" className="rounded-full font-bold border-border/80 text-muted-foreground">Waiting for Host</Button>
+        return <Button disabled variant="outline" className="rounded-full font-bold border-border/80 text-muted-foreground">{tt("Waiting for Host", "Inasubiri Mwenyeji")}</Button>
       case "ended":
-        return <Button disabled variant="outline" className="rounded-full font-bold border-border/80 text-muted-foreground">Session Ended</Button>
+        return <Button disabled variant="outline" className="rounded-full font-bold border-border/80 text-muted-foreground">{tt("Session Ended", "Kikao Kimeisha")}</Button>
       default:
         return null
     }
@@ -358,7 +361,7 @@ export default function MeetingPage() {
       <div className="min-h-[80vh] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-muted-foreground">
           <CalendarCheck className="w-10 h-10 animate-pulse text-chart-3/50" />
-          <p className="font-medium tracking-tight">Loading session ledger...</p>
+          <p className="font-medium tracking-tight">{tt("Loading session ledger...", "Inapakia rejista ya kikao...")}</p>
         </div>
       </div>
     )
@@ -381,7 +384,7 @@ export default function MeetingPage() {
             <div>
               <div className="flex items-center gap-3 mb-1">
                 <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
-                  {selectedMeeting?.title || "Session"}
+                  {selectedMeeting?.title || tt("Session", "Kikao")}
                 </h1>
                 {getStatusBadge(selectedMeeting?.status || "")}
               </div>
@@ -406,7 +409,7 @@ export default function MeetingPage() {
             <div className="rounded-[2rem] border border-border/80 bg-card/40 backdrop-blur-sm p-6 md:p-8 shadow-sm">
               <div className="flex items-center gap-2 mb-6">
                 <LayoutDashboard className="w-5 h-5 text-chart-3" />
-                <h2 className="text-xl font-bold tracking-tight text-foreground">Session Overview</h2>
+                <h2 className="text-xl font-bold tracking-tight text-foreground">{tt("Session Overview", "Muhtasari wa Kikao")}</h2>
               </div>
               
               {selectedMeeting?.description && (
@@ -417,17 +420,17 @@ export default function MeetingPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="rounded-2xl bg-card/50 border border-border/60 p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Host Identity</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{tt("Host Identity", "Mwenyeji")}</p>
                   <p className="font-semibold text-foreground flex items-center gap-2">
                     <Users className="w-4 h-4 text-chart-4" />
                     {selectedMeeting?.host_email}
                   </p>
                 </div>
                 <div className="rounded-2xl bg-card/50 border border-border/60 p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Execution Time</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{tt("Execution Time", "Muda wa Kuanza")}</p>
                   <p className="font-semibold text-foreground flex items-center gap-2">
                     <Clock className="w-4 h-4 text-chart-3" />
-                    {selectedMeeting?.actual_start ? new Date(selectedMeeting.actual_start).toLocaleString(undefined, { hour: '2-digit', minute: '2-digit' }) : "Pending Initiation"}
+                    {selectedMeeting?.actual_start ? new Date(selectedMeeting.actual_start).toLocaleString(undefined, { hour: '2-digit', minute: '2-digit' }) : tt("Pending Initiation", "Kinasubiri kuanzishwa")}
                   </p>
                 </div>
               </div>
@@ -437,25 +440,25 @@ export default function MeetingPage() {
             <div className="rounded-[2rem] border border-border/80 bg-card/40 backdrop-blur-sm p-6 md:p-8 shadow-sm">
               <div className="flex items-center justify-between mb-6 border-b border-border/50 pb-4">
                 <div>
-                  <h2 className="text-xl font-bold tracking-tight text-foreground">Formal Agenda</h2>
-                  <p className="text-xs font-medium text-muted-foreground mt-1">Structured points of discussion</p>
+                  <h2 className="text-xl font-bold tracking-tight text-foreground">{tt("Formal Agenda", "Ajenda Rasmi")}</h2>
+                  <p className="text-xs font-medium text-muted-foreground mt-1">{tt("Structured points of discussion", "Hoja zilizopangwa za majadiliano")}</p>
                 </div>
                 
                 <div className="flex gap-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button size="sm" variant="outline" className="rounded-full shadow-sm font-bold border-border/80 hover:bg-chart-3/10 hover:text-chart-3 transition-colors">
-                        <Download className="w-4 h-4 mr-1.5" /> Export
+                        <Download className="w-4 h-4 mr-1.5" /> {tt("Export", "Hamisha")}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="rounded-xl">
                       <DropdownMenuItem onClick={handleExportAgendaWord} className="font-medium cursor-pointer">
                         <FileText className="w-4 h-4 mr-2 text-primary" />
-                        Export as Word (.doc)
+                        {tt("Export as Word (.doc)", "Hamisha kama Word (.doc)")}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleExportAgendaPdf} className="font-medium cursor-pointer">
                         <FileText className="w-4 h-4 mr-2 text-red-500" />
-                        Export as PDF (.pdf)
+                        {tt("Export as PDF (.pdf)", "Hamisha kama PDF (.pdf)")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -466,7 +469,7 @@ export default function MeetingPage() {
                       size="sm"
                       className="rounded-full bg-chart-3 hover:bg-chart-2 text-primary-foreground font-bold shadow-sm"
                     >
-                      <Plus className="w-4 h-4 mr-1" /> Add Point
+                      <Plus className="w-4 h-4 mr-1" /> {tt("Add Point", "Ongeza Hoja")}
                     </Button>
                   )}
                 </div>
@@ -476,27 +479,27 @@ export default function MeetingPage() {
               {showAgendaForm && canCreateAgenda && (
                 <form onSubmit={handleAgendaAdd} className="mb-6 p-5 bg-card border border-border rounded-2xl shadow-sm space-y-4">
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-foreground mb-1.5 block">Title</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-foreground mb-1.5 block">{tt("Title", "Kichwa")}</label>
                     <input
                       value={agendaTitle}
                       onChange={(e) => setAgendaTitle(e.target.value)}
-                      placeholder="E.g., Review weekly deposits"
+                      placeholder={tt("E.g., Review weekly deposits", "Mf., Kagua akiba za wiki")}
                       className="w-full rounded-xl border border-input bg-background/50 px-4 py-2.5 text-sm outline-none focus:border-chart-3 focus:ring-1"
                       required
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-foreground mb-1.5 block">Description</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-foreground mb-1.5 block">{tt("Description", "Maelezo")}</label>
                     <textarea
                       value={agendaDescription}
                       onChange={(e) => setAgendaDescription(e.target.value)}
-                      placeholder="Optional context for this agenda point"
+                      placeholder={tt("Optional context for this agenda point", "Maelezo ya ziada ya hoja hii")}
                       className="w-full min-h-[80px] rounded-xl border border-input bg-background/50 px-4 py-2.5 text-sm outline-none focus:border-chart-3 focus:ring-1"
                     />
                   </div>
                   <div className="flex justify-end gap-2 pt-2">
-                    <Button type="button" variant="ghost" className="rounded-xl font-bold" onClick={() => setShowAgendaForm(false)}>Cancel</Button>
-                    <Button type="submit" className="rounded-xl bg-chart-4 hover:bg-chart-4/90 font-bold text-white shadow-sm">Save Point</Button>
+                    <Button type="button" variant="ghost" className="rounded-xl font-bold" onClick={() => setShowAgendaForm(false)}>{tt("Cancel", "Ghairi")}</Button>
+                    <Button type="submit" className="rounded-xl bg-chart-4 hover:bg-chart-4/90 font-bold text-white shadow-sm">{tt("Save Point", "Hifadhi Hoja")}</Button>
                   </div>
                 </form>
               )}
@@ -505,7 +508,7 @@ export default function MeetingPage() {
               <div className="space-y-3">
                 {selectedMeeting?.agenda_items?.length === 0 ? (
                   <div className="text-center py-10 bg-muted/30 rounded-2xl border border-dashed border-border/60">
-                    <p className="text-sm font-medium text-muted-foreground">The agenda is currently empty.</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tt("The agenda is currently empty.", "Ajenda haina hoja kwa sasa.")}</p>
                   </div>
                 ) : (
                   selectedMeeting?.agenda_items?.map((item, index) => (
@@ -517,7 +520,7 @@ export default function MeetingPage() {
                         <h3 className="text-sm font-bold text-foreground group-hover:text-chart-3 transition-colors">{item.title}</h3>
                         {item.description && <p className="mt-1 text-xs leading-relaxed text-muted-foreground/90">{item.description}</p>}
                         <span className="mt-2 inline-block px-2 py-0.5 rounded bg-muted text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
-                          {item.allocated_minutes} MIN ALLOCATED
+                          {item.allocated_minutes} {tt("MIN ALLOCATED", "DAK ZILIZOTENGWA")}
                         </span>
                       </div>
                       {canCreateAgenda && (
@@ -554,8 +557,8 @@ export default function MeetingPage() {
             <div className="rounded-[2rem] border border-border/80 bg-card/60 backdrop-blur-md p-6 shadow-sm sticky top-6">
               <div className="flex items-center justify-between mb-6 border-b border-border/50 pb-4">
                 <div>
-                  <h2 className="text-xl font-bold tracking-tight text-foreground">Attendance</h2>
-                  <p className="text-xs font-medium text-muted-foreground mt-1">Verified session roster</p>
+                  <h2 className="text-xl font-bold tracking-tight text-foreground">{tt("Attendance", "Mahudhurio")}</h2>
+                  <p className="text-xs font-medium text-muted-foreground mt-1">{tt("Verified session roster", "Orodha iliyothibitishwa ya kikao")}</p>
                 </div>
                 
                 <div className="flex items-center gap-2">
@@ -584,7 +587,7 @@ export default function MeetingPage() {
                 {attendanceHistory.length === 0 ? (
                   <div className="text-center py-10">
                     <Users className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
-                    <p className="text-sm font-medium text-muted-foreground">No participants recorded.</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tt("No participants recorded.", "Hakuna washiriki waliorekodiwa.")}</p>
                   </div>
                 ) : (
                   attendanceHistory.map((item) => (
@@ -593,7 +596,7 @@ export default function MeetingPage() {
                         <p className="text-sm font-bold text-foreground truncate">{item.email}</p>
                         <div className="mt-1.5 flex flex-wrap gap-1.5">
                           <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest ${item.isVerifiedMember ? "bg-chart-4/15 text-chart-4" : "bg-muted text-muted-foreground"}`}>
-                            {item.isVerifiedMember ? "Member" : "Guest"}
+                            {item.isVerifiedMember ? tt("Member", "Mwanachama") : tt("Guest", "Mgeni")}
                           </span>
                           <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest ${
                             item.status === "present" ? "bg-green-500/15 text-green-600" :
@@ -601,18 +604,24 @@ export default function MeetingPage() {
                             item.status === "left_early" ? "bg-chart-3/15 text-chart-3" :
                             "bg-muted text-muted-foreground"
                           }`}>
-                            {item.status}
+                            {item.status === "present"
+                              ? tt("present", "yupo")
+                              : item.status === "late"
+                                ? tt("late", "amechelewa")
+                                : item.status === "left_early"
+                                  ? tt("left early", "ameondoka mapema")
+                                  : item.status}
                           </span>
                         </div>
                       </div>
 
                       <div className="mt-3 grid grid-cols-2 gap-2 text-xs border-t border-border/40 pt-3">
                         <div>
-                          <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold mb-0.5">Joined</p>
+                          <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold mb-0.5">{tt("Joined", "Alijiunga")}</p>
                           <p className="font-medium text-foreground">{item.joinedAt ? new Date(item.joinedAt).toLocaleTimeString(undefined, {hour: '2-digit', minute:'2-digit'}) : '--:--'}</p>
                         </div>
                         <div>
-                          <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold mb-0.5">Duration</p>
+                          <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold mb-0.5">{tt("Duration", "Muda")}</p>
                           <p className="font-medium text-foreground">{item.totalDurationMinutes} min</p>
                         </div>
                       </div>

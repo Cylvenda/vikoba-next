@@ -34,6 +34,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { useLanguage } from "@/components/language/language-provider";
 
 export default function GroupPage() {
   const { selectedGroup, selectedGroupMembers } = useGroupStore();
@@ -44,6 +45,8 @@ export default function GroupPage() {
     fetchSnapshot,
   } = useFinanceStore();
   const { user } = useAuthUserStore();
+  const { language } = useLanguage();
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en;
   const [myLoans, setMyLoans] = useState<Loan[]>([]);
   const [myFines, setMyFines] = useState<Fine[]>([]);
   const isMounted = useSyncExternalStore(
@@ -106,17 +109,17 @@ export default function GroupPage() {
   const donutData = snapshot
     ? [
         {
-          name: "Available Cash",
+          name: tt("Available Cash", "Fedha Inayopatikana"),
           value: Number(snapshot.availableCash),
           color: "var(--chart-1)",
         },
         {
-          name: "Active Loans",
+          name: tt("Active Loans", "Mikopo Inayoendelea"),
           value: Number(snapshot.activeLoanBook),
           color: "var(--chart-3)",
         },
         {
-          name: "Unpaid Fines",
+          name: tt("Unpaid Fines", "Faini Zisizolipwa"),
           value: Number(snapshot.unpaidFines),
           color: "var(--destructive)",
         },
@@ -140,7 +143,7 @@ export default function GroupPage() {
         name: label,
         amount: Number(item.amount),
         title: item.title || item.type,
-        actor: item.actor || "System",
+        actor: item.actor || (language === "sw" ? "Mfumo" : "System"),
       };
       if (existing) {
         existing.amount += entry.amount;
@@ -149,13 +152,13 @@ export default function GroupPage() {
       }
     });
     return Array.from(map.values()).reverse();
-  }, [snapshot]);
+  }, [language, snapshot]);
   if (!selectedGroup) {
     return (
       <div className="w-full p-4 md:p-6 lg:p-8">
         <div className="text-center text-muted-foreground animate-pulse font-medium">
           {" "}
-          Loading group operations...
+          {tt("Loading group operations...", "Inapakia shughuli za kikundi...")}
         </div>
       </div>
     );
@@ -196,14 +199,14 @@ export default function GroupPage() {
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
                   <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                    Available for Lending
+                    {tt("Available for Lending", "Inayopatikana kwa Mikopo")}
                   </p>
                   <h3 className="text-2xl font-extrabold tracking-tight text-chart-3">
                     {snapshot
                       ? formatTzs(
                           groupWallet?.balance ?? snapshot.availableCash,
                         )
-                      : "Loading..."}
+                      : tt("Loading...", "Inapakia...")}
                   </h3>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-chart-1/10 text-primary shadow-inner">
@@ -211,7 +214,7 @@ export default function GroupPage() {
                 </div>
               </div>
               <p className="mt-3 text-xs text-muted-foreground">
-                Group wallet balance after disbursements
+                {tt("Group wallet balance after disbursements", "Salio la mkoba wa kikundi baada ya kutoa mikopo")}
               </p>
             </CardContent>
           </Card>
@@ -221,10 +224,10 @@ export default function GroupPage() {
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
                   <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                    Total Savings
+                    {tt("Total Savings", "Jumla ya Akiba")}
                   </p>
                   <h3 className="text-2xl font-extrabold tracking-tight text-chart-3">
-                    {snapshot ? formatTzs(totalSaved) : "Loading..."}
+                    {snapshot ? formatTzs(totalSaved) : tt("Loading...", "Inapakia...")}
                   </h3>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-chart-1/10 text-primary shadow-inner">
@@ -232,7 +235,7 @@ export default function GroupPage() {
                 </div>
               </div>
               <p className="mt-3 text-xs text-muted-foreground">
-                verified member contributions
+                {tt("verified member contributions", "michango ya wanachama iliyothibitishwa")}
               </p>
             </CardContent>
           </Card>
@@ -242,14 +245,14 @@ export default function GroupPage() {
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
                   <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                    My Active Loans
+                    {tt("My Active Loans", "Mikopo Yangu Inayoendelea")}
                   </p>
                   <h3 className="text-2xl font-extrabold tracking-tight text-chart-3">
                     {myLoans.length > 0
                       ? formatTzs(myTotalLoans)
                       : isFinanceLoading
-                        ? "Loading..."
-                        : "None"}
+                        ? tt("Loading...", "Inapakia...")
+                        : tt("None", "Hakuna")}
                   </h3>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-chart-3/10 text-chart-3 shadow-inner">
@@ -257,7 +260,7 @@ export default function GroupPage() {
                 </div>
               </div>
               <p className="mt-3 text-xs text-muted-foreground">
-                Your outstanding loan balance
+                {tt("Your outstanding loan balance", "Salio lako la mikopo ambalo halijalipwa")}
               </p>
             </CardContent>
           </Card>
@@ -267,14 +270,14 @@ export default function GroupPage() {
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
                   <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                    My Unpaid Fines
+                    {tt("My Unpaid Fines", "Faini Zangu Zisizolipwa")}
                   </p>
                   <h3 className="text-2xl font-extrabold tracking-tight text-rose-600 dark:text-rose-400">
                     {myFines.length > 0
                       ? formatTzs(myTotalFines)
                       : isFinanceLoading
-                        ? "Loading..."
-                        : "None"}
+                        ? tt("Loading...", "Inapakia...")
+                        : tt("None", "Hakuna")}
                   </h3>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/10 text-rose-500 shadow-inner">
@@ -282,7 +285,7 @@ export default function GroupPage() {
                 </div>
               </div>
               <p className="mt-3 text-xs text-muted-foreground">
-                Your outstanding penalties
+                {tt("Your outstanding penalties", "Adhabu zako ambazo hazijalipwa")}
               </p>
             </CardContent>
           </Card>
@@ -296,15 +299,15 @@ export default function GroupPage() {
               <div className="flex justify-between items-center mb-6">
                 <div>
                   <h3 className="text-lg font-bold tracking-tight text-foreground">
-                    Ledger Transaction Flow
+                    {tt("Ledger Transaction Flow", "Mtiririko wa Miamala ya Rejista")}
                   </h3>
                   <p className="text-xs text-muted-foreground">
-                    Financial velocity over recent transactions
+                    {tt("Financial velocity over recent transactions", "Mwenendo wa fedha katika miamala ya hivi karibuni")}
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 rounded-full bg-chart-1/10 px-2.5 py-1 text-xs font-bold text-chart-1">
                   <Activity className="h-3.5 w-3.5" />
-                  Realtime Engine
+                  {tt("Realtime Engine", "Mfumo wa Moja kwa Moja")}
                 </div>
               </div>
 
@@ -386,8 +389,8 @@ export default function GroupPage() {
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
                     {isFinanceLoading
-                      ? "Recalculating ledger trends..."
-                      : "No recent activity logged to generate charts."}
+                      ? tt("Recalculating ledger trends...", "Inakokotoa upya mwenendo wa rejista...")
+                      : tt("No recent activity logged to generate charts.", "Hakuna shughuli za karibuni za kutengeneza chati.")}
                   </div>
                 )}
               </div>
@@ -399,10 +402,10 @@ export default function GroupPage() {
             <CardContent className="p-6 flex flex-col justify-between h-full">
               <div className="mb-4">
                 <h3 className="text-lg font-bold tracking-tight text-foreground">
-                  Capital Breakdown
+                  {tt("Capital Breakdown", "Mgawanyo wa Mtaji")}
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Proportional allocation of group assets
+                  {tt("Proportional allocation of group assets", "Mgawanyo wa mali za kikundi kwa uwiano")}
                 </p>
               </div>
 
@@ -437,7 +440,7 @@ export default function GroupPage() {
                     </ResponsiveContainer>
                     <div className="absolute flex flex-col items-center justify-center">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                        Total Assets
+                        {tt("Total Assets", "Jumla ya Mali")}
                       </p>
                       <p className="text-lg font-extrabold text-foreground mt-1">
                         {formatTzs(totalCapital)}
@@ -447,8 +450,8 @@ export default function GroupPage() {
                 ) : (
                   <div className="text-xs text-muted-foreground">
                     {isFinanceLoading
-                      ? "Synthesizing asset ledger..."
-                      : "No positive assets reported."}
+                      ? tt("Synthesizing asset ledger...", "Inakusanya rejista ya mali...")
+                      : tt("No positive assets reported.", "Hakuna mali chanya iliyoripotiwa.")}
                   </div>
                 )}
               </div>
@@ -486,7 +489,7 @@ export default function GroupPage() {
           <Card className="border border-border/80 bg-background p-4">
             <CardContent className="p-0">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                Expected Interest Return
+                {tt("Expected Interest Return", "Mapato ya Riba Yanayotarajiwa")}
               </p>
               <p className="mt-2 text-2xl font-extrabold text-foreground">
                 {snapshot ? formatTzs(snapshot.expectedInterestReturn) : "..."}
@@ -496,7 +499,7 @@ export default function GroupPage() {
           <Card className="border border-border/80 bg-background p-4">
             <CardContent className="p-0">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                Monthly Collections
+                {tt("Monthly Collections", "Makusanyo ya Mwezi")}
               </p>
               <p className="mt-2 text-2xl font-extrabold text-foreground">
                 {snapshot ? formatTzs(snapshot.monthlyCollections) : "..."}
@@ -512,10 +515,10 @@ export default function GroupPage() {
             <div className="mb-6 flex flex-wrap justify-between items-center gap-3">
               <div>
                 <h2 className="text-xl font-bold tracking-tight text-foreground">
-                  Meeting Schedule
+                  {tt("Meeting Schedule", "Ratiba ya Vikao")}
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  Schedule of current, upcoming and completed VICOBA meetings
+                  {tt("Schedule of current, upcoming and completed VICOBA meetings", "Ratiba ya vikao vya VICOBA vinavyoendelea, vijavyo, na vilivyokamilika")}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -527,7 +530,7 @@ export default function GroupPage() {
                   className="rounded-full"
                 >
                   <Link href={`/group/${selectedGroup.id}/meetings`}>
-                    Read more
+                    {tt("Read more", "Soma zaidi")}
                   </Link>
                 </Button>
               </div>
@@ -542,7 +545,7 @@ export default function GroupPage() {
               <div className="flex items-center gap-2 mb-5">
                 <ShieldCheck className="h-5 w-5 text-primary" />
                 <h3 className="text-lg font-bold text-foreground">
-                  Governance Setup
+                  {tt("Governance Setup", "Mpangilio wa Uongozi")}
                 </h3>
               </div>
 
@@ -550,10 +553,10 @@ export default function GroupPage() {
                 <div className="rounded-xl border border-border bg-background p-4 flex items-center justify-between">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.15em] text-muted-foreground">
-                      Leadership Seats
+                      {tt("Leadership Seats", "Nafasi za Uongozi")}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Chairperson, Secretary, Treasurer
+                      {tt("Chairperson, Secretary, Treasurer", "Mwenyekiti, Katibu, Mweka Hazina")}
                     </p>
                   </div>
                   <div className="text-right">
@@ -561,7 +564,7 @@ export default function GroupPage() {
                       {leadershipCount}/3
                     </p>
                     <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary mt-1">
-                      Active
+                      {tt("Active", "Zimejazwa")}
                     </span>
                   </div>
                 </div>
@@ -569,10 +572,10 @@ export default function GroupPage() {
                 <div className="rounded-xl border border-border bg-background p-4 flex items-center justify-between">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.15em] text-muted-foreground">
-                      Group Members
+                      {tt("Group Members", "Wanachama wa Kikundi")}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Total active group members
+                      {tt("Total active group members", "Jumla ya wanachama hai wa kikundi")}
                     </p>
                   </div>
                   <div className="text-right">
@@ -581,11 +584,11 @@ export default function GroupPage() {
                     </p>
                     {pendingVerificationCount > 0 ? (
                       <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold text-amber-600 mt-1">
-                        {pendingVerificationCount} Pending
+                        {pendingVerificationCount} {tt("Pending", "Wanasubiri")}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-0.5 rounded-full bg-chart-1/10 px-2 py-0.5 text-[9px] font-bold text-chart-1 mt-1">
-                        All Verified
+                        {tt("All Verified", "Wote Wamethibitishwa")}
                       </span>
                     )}
                   </div>
@@ -593,12 +596,12 @@ export default function GroupPage() {
 
                 <div className="rounded-xl border border-border bg-background p-4">
                   <p className="text-xs font-bold uppercase tracking-[0.15em] text-muted-foreground">
-                    Next Formal Meeting
+                    {tt("Next Formal Meeting", "Kikao Rasmi Kijacho")}
                   </p>
                   <p className="mt-2 text-sm font-semibold text-foreground">
                     {nextScheduledMeeting
                       ? nextScheduledMeeting.title
-                      : "No meeting scheduled yet"}
+                      : tt("No meeting scheduled yet", "Bado hakuna kikao kilichopangwa")}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {nextScheduledMeeting
@@ -611,7 +614,7 @@ export default function GroupPage() {
                           hour: "2-digit",
                           minute: "2-digit",
                         })
-                      : "Create a meeting schedule to synchronize operations."}
+                      : tt("Create a meeting schedule to synchronize operations.", "Tengeneza ratiba ya kikao ili kuratibu shughuli.")}
                   </p>
                 </div>
               </div>

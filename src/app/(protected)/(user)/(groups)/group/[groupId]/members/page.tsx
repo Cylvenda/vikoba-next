@@ -2,16 +2,19 @@
 
 import { useEffect } from "react"
 import { useParams } from "next/navigation"
-import { Users, ShieldCheck } from "lucide-react"
+import { Users } from "lucide-react"
 import MembersList from "@/components/group-layout/MembersList"
 import { useGroupStore } from "@/store/group/groupUser.store"
 import { Badge } from "@/components/ui/badge"
+import { useLanguage } from "@/components/language/language-provider"
 
 export default function GroupMembersPage() {
   const params = useParams<{ groupId: string }>()
   const groupId = Array.isArray(params?.groupId) ? params.groupId[0] : params?.groupId
 
   const { selectedGroup, fetchSelectedGroupMembers } = useGroupStore()
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
 
   useEffect(() => {
     if (groupId) {
@@ -24,7 +27,7 @@ export default function GroupMembersPage() {
       <div className="min-h-[80vh] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-muted-foreground">
           <Users className="w-10 h-10 animate-pulse text-chart-3/50" />
-          <p className="font-medium tracking-tight">Loading community members...</p>
+          <p className="font-medium tracking-tight">{tt("Loading community members...", "Inapakia wanachama wa kikundi...")}</p>
         </div>
       </div>
     )
@@ -47,10 +50,10 @@ export default function GroupMembersPage() {
                 </Badge>
               </div>
               <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-                Community Roster
+                {tt("Community Roster", "Orodha ya Wanachama")}
               </h1>
               <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                Manage roles, activations, and member verifications
+                {tt("Manage roles, activations, and member verifications", "Simamia majukumu, uanzishaji, na uthibitishaji wa wanachama")}
               </p>
             </div>
           </div>

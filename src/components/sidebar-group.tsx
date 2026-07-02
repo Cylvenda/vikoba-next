@@ -18,10 +18,10 @@ import {
   BarChart3,
   BellRing,
   Calendar,
+  BookOpen,
   Cog,
   House,
   Home,
-  BookOpen,
   Settings,
   PiggyBank,
   User,
@@ -31,60 +31,15 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { getGroupMeetingsHref } from "@/lib/meeting-routes";
-
-const navMain = (groupId: string) => [
-  {
-    title: "Dashboard",
-    url: `/group/${groupId}`,
-    icon: <Home />,
-  },
-  {
-    title: "Guide",
-    url: "/guide",
-    icon: <BookOpen />,
-  },
-  {
-    title: "Wallet",
-    url: `/group/${groupId}/wallet`,
-    icon: <WalletCards />,
-  },
-  {
-    title: "Savings",
-    url: `/group/${groupId}/savings`,
-    icon: <PiggyBank />,
-  },
-  {
-    title: "Loans",
-    url: `/group/${groupId}/loans`,
-    icon: <WalletCards />,
-  },
-  {
-    title: "Fines",
-    url: `/group/${groupId}/fines`,
-    icon: <FileText />,
-  },
-  {
-    title: "Meetings",
-    url: getGroupMeetingsHref(groupId),
-    icon: <Calendar />,
-  },
-  {
-    title: "Members",
-    url: `/group/${groupId}/members`,
-    icon: <Users />,
-  },
-  {
-    title: "Settings",
-    url: `/group/${groupId}/settings`,
-    icon: <Settings />,
-  },
-];
+import { useLanguage } from "@/components/language/language-provider";
+import { getTranslation } from "@/lib/i18n";
 
 export function GroupSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = useAuthUserStore((state) => state.user);
   const selectedGroup = useGroupStore((state) => state.selectedGroup);
   const groups = useGroupStore((state) => state.groups);
   const fetchGroups = useGroupStore((state) => state.fetchGroups);
+  const { language } = useLanguage();
 
   React.useEffect(() => {
     void fetchGroups();
@@ -94,7 +49,53 @@ export function GroupSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
     `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "User";
   const roleLabel = user?.isAdmin ? "Admin" : user?.isStaff ? "Staff" : "Member";
 
-  const groupNavItems = selectedGroup ? navMain(selectedGroup.id) : [];
+  const groupNavItems = selectedGroup ? [
+    {
+      title: getTranslation(language, "actions.dashboard"),
+      url: `/group/${selectedGroup.id}`,
+      icon: <Home />,
+    },
+    {
+      title: getTranslation(language, "actions.guide"),
+      url: "/guide",
+      icon: <BookOpen />,
+    },
+    {
+      title: getTranslation(language, "actions.wallet"),
+      url: `/group/${selectedGroup.id}/wallet`,
+      icon: <WalletCards />,
+    },
+    {
+      title: getTranslation(language, "actions.savings"),
+      url: `/group/${selectedGroup.id}/savings`,
+      icon: <PiggyBank />,
+    },
+    {
+      title: getTranslation(language, "actions.loans"),
+      url: `/group/${selectedGroup.id}/loans`,
+      icon: <WalletCards />,
+    },
+    {
+      title: getTranslation(language, "actions.fines"),
+      url: `/group/${selectedGroup.id}/fines`,
+      icon: <FileText />,
+    },
+    {
+      title: getTranslation(language, "actions.meetings"),
+      url: getGroupMeetingsHref(selectedGroup.id),
+      icon: <Calendar />,
+    },
+    {
+      title: getTranslation(language, "actions.members"),
+      url: `/group/${selectedGroup.id}/members`,
+      icon: <Users />,
+    },
+    {
+      title: getTranslation(language, "actions.settings"),
+      url: `/group/${selectedGroup.id}/settings`,
+      icon: <Settings />,
+    },
+  ] : [];
 
   const platformNavItems = [
     {

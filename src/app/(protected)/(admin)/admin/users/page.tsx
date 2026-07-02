@@ -8,11 +8,14 @@ import { AdminPageShell } from "@/components/admin/admin-page-shell"
 import { AdminUsersManager } from "@/components/admin/admin-users-manager"
 import { Card, CardContent } from "@/components/ui/card"
 import { useAuthUserStore } from "@/store/auth/userAuth.store"
+import { useLanguage } from "@/components/language/language-provider"
 
 export default function AdminUsersPage() {
   const { user } = useAuthUserStore()
   const [users, setUsers] = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
 
   useEffect(() => {
     const load = async () => {
@@ -25,28 +28,28 @@ export default function AdminUsersPage() {
         const response = await AdminService.getAllUsers()
         setUsers(response.data)
       } catch {
-        toast.error("Failed to load users.")
+        toast.error(language === "sw" ? "Imeshindikana kupakia watumiaji." : "Failed to load users.")
       } finally {
         setLoading(false)
       }
     }
 
     void load()
-  }, [user?.isAdmin])
+  }, [language, user?.isAdmin])
 
   if (!user?.isAdmin && !loading) {
-    return <AdminAccessState description="Only administrator accounts can manage users." />
+    return <AdminAccessState description={tt("Only administrator accounts can manage users.", "Akaunti za wasimamizi pekee zinaweza kusimamia watumiaji.")} />
   }
 
   return (
     <AdminPageShell
-      title="Manage users"
-      description="Search the full user directory, update profile details, and control who keeps elevated access."
+      title={tt("Manage users", "Simamia watumiaji")}
+      description={tt("Search the full user directory, update profile details, and control who keeps elevated access.", "Tafuta watumiaji, sasisha wasifu, na dhibiti ruhusa za usimamizi.")}
       currentPath="/admin/users"
     >
       {loading ? (
         <Card className="border-none bg-card shadow-sm">
-          <CardContent className="p-8 text-sm text-muted-foreground">Loading users...</CardContent>
+          <CardContent className="p-8 text-sm text-muted-foreground">{tt("Loading users...", "Inapakia watumiaji...")}</CardContent>
         </Card>
       ) : (
         <AdminUsersManager initialUsers={users} />

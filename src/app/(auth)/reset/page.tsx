@@ -11,11 +11,14 @@ import { Spinner } from "@/components/ui/spinner";
 import { authUserService } from "@/api/services/auth.service";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { useLanguage } from "@/components/language/language-provider";
 
 type ResetFormValues = z.infer<typeof ResetFormSchema>;
 
 const ForgetPassword = () => {
   const [loading, setLoading] = useState(false);
+  const { language } = useLanguage();
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en;
 
   const form = useForm<ResetFormValues>({
     resolver: zodResolver(ResetFormSchema),
@@ -28,7 +31,7 @@ const ForgetPassword = () => {
     try {
       setLoading(true);
       await authUserService.requestPasswordReset({ email: data.email });
-      toast.success("Password reset link sent. Please check your email.");
+      toast.success(tt("Password reset link sent. Please check your email.", "Kiungo cha kuweka upya nenosiri kimetumwa. Angalia barua pepe yako."));
       form.reset();
     } catch (error: unknown) {
       const errorMessage = (
@@ -38,7 +41,7 @@ const ForgetPassword = () => {
       const msg =
         errorMessage?.detail ||
         errorMessage?.email?.[0] ||
-        "Could not send reset link. Please try again.";
+        tt("Could not send reset link. Please try again.", "Imeshindikana kutuma kiungo. Tafadhali jaribu tena.");
       
       toast.error(msg);
     } finally {
@@ -49,8 +52,8 @@ const ForgetPassword = () => {
   return (
     <div className="w-full bg-inherit">
       <FormInput
-        title="Reset Password"
-        description="Enter your email and we'll send you a password recovery link"
+        title={tt("Reset Password", "Weka Upya Nenosiri")}
+        description={tt("Enter your email and we'll send you a password recovery link", "Ingiza barua pepe yako, tutakutumia kiungo cha kurejesha nenosiri")}
       >
         <form
           onSubmit={form.handleSubmit(handleSubmit)}
@@ -61,8 +64,8 @@ const ForgetPassword = () => {
             name="email"
             control={form.control}
             type="email"
-            placeholder="Enter your email address"
-            label="Email Address"
+            placeholder={tt("Enter your email address", "Ingiza anwani yako ya barua pepe")}
+            label={tt("Email Address", "Anwani ya Barua Pepe")}
           />
 
           {/* BACK NAVIGATION LINKS */}
@@ -71,14 +74,14 @@ const ForgetPassword = () => {
               href="/login"
               className="text-chart-3 hover:text-chart-2 hover:underline transition-colors duration-300"
             >
-              Back to Login
+              {tt("Back to Login", "Rudi Kuingia")}
             </Link>
 
             <Link
               href="/register"
               className="text-chart-3 hover:text-chart-2 hover:underline transition-colors duration-300"
             >
-              Create Account
+              {tt("Create Account", "Fungua Akaunti")}
             </Link>
           </div>
 
@@ -88,7 +91,7 @@ const ForgetPassword = () => {
             disabled={loading}
             className="w-full py-6 bg-chart-3 text-primary-foreground font-bold hover:bg-chart-2 rounded-xl transition-all duration-300 shadow-md hover:shadow-chart-3/20"
           >
-            {loading ? <Spinner /> : "Send Reset Link"}
+            {loading ? <Spinner /> : tt("Send Reset Link", "Tuma Kiungo")}
           </Button>
         </form>
       </FormInput>

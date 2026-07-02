@@ -12,6 +12,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { z } from "zod";
+import { useLanguage } from "@/components/language/language-provider";
 
 type ResetConfirmFormValues = z.infer<typeof ResetConfirmFormSchema>;
 
@@ -19,6 +20,8 @@ export default function ResetPasswordConfirmPage() {
   const params = useParams<{ uid: string; token: string }>();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const { language } = useLanguage();
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en;
 
   const uid = params?.uid ?? "";
   const token = params?.token ?? "";
@@ -33,7 +36,7 @@ export default function ResetPasswordConfirmPage() {
 
   const onSubmit = async (data: ResetConfirmFormValues) => {
     if (!uid || !token) {
-      toast.error("Invalid reset link.");
+      toast.error(tt("Invalid reset link.", "Kiungo cha kuweka upya si sahihi."));
       return;
     }
 
@@ -45,7 +48,7 @@ export default function ResetPasswordConfirmPage() {
         new_password: data.newPassword,
       });
 
-      toast.success("Password reset successful. Please log in.");
+      toast.success(tt("Password reset successful. Please log in.", "Nenosiri limewekwa upya. Tafadhali ingia."));
       router.push("/login");
     } catch (error: unknown) {
       const errorData = (
@@ -55,7 +58,7 @@ export default function ResetPasswordConfirmPage() {
       const msg =
         errorData?.detail ||
         errorData?.token?.[0] ||
-        "Could not reset password. The link may be invalid or expired.";
+        tt("Could not reset password. The link may be invalid or expired.", "Imeshindikana kuweka upya nenosiri. Kiungo kinaweza kuwa si sahihi au muda wake umeisha.");
 
       toast.error(msg);
     } finally {
@@ -66,8 +69,8 @@ export default function ResetPasswordConfirmPage() {
   return (
     <div className="w-full bg-inherit">
       <FormInput
-        title="Set New Password"
-        description="Choose a strong, secure password for your account"
+        title={tt("Set New Password", "Weka Nenosiri Jipya")}
+        description={tt("Choose a strong, secure password for your account", "Chagua nenosiri imara na salama kwa akaunti yako")}
       >
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -77,16 +80,16 @@ export default function ResetPasswordConfirmPage() {
           <PasswordInput
             control={form.control}
             name="newPassword"
-            label="New Password"
-            placeholder="Enter new password"
+            label={tt("New Password", "Nenosiri Jipya")}
+            placeholder={tt("Enter new password", "Ingiza nenosiri jipya")}
           />
 
           {/* CONFIRM PASSWORD */}
           <PasswordInput
             control={form.control}
             name="confirmPassword"
-            label="Confirm Password"
-            placeholder="Re-enter new password"
+            label={tt("Confirm Password", "Thibitisha Nenosiri")}
+            placeholder={tt("Re-enter new password", "Ingiza tena nenosiri jipya")}
           />
 
           {/* SUBMIT BUTTON */}
@@ -95,17 +98,17 @@ export default function ResetPasswordConfirmPage() {
             disabled={loading}
             className="w-full py-6 bg-chart-3 text-primary-foreground font-bold hover:bg-chart-2 rounded-xl transition-all duration-300 shadow-md hover:shadow-chart-3/20"
           >
-            {loading ? <Spinner /> : "Update Password"}
+            {loading ? <Spinner /> : tt("Update Password", "Sasisha Nenosiri")}
           </Button>
 
           {/* BACK TO LOGIN */}
           <p className="text-center text-sm text-muted-foreground font-medium">
-            Back to{" "}
+            {tt("Back to", "Rudi")}{" "}
             <Link
               href="/login"
               className="text-chart-3 hover:text-chart-2 font-bold hover:underline transition-colors duration-300"
             >
-              Login
+              {tt("Login", "Kuingia")}
             </Link>
           </p>
         </form>

@@ -11,6 +11,7 @@ import type { RealtimeConnection } from "@/store/meeting/meeting.types"
 import { Button } from "@/components/ui/button"
 import { MeetingRoom } from "@/components/meeting-room/MeetingRoom"
 import type { AgendaItem, AttendanceRecord, ParticipantSession } from "@/store/meeting/meeting.types"
+import { useLanguage } from "@/components/language/language-provider"
 
 type MeetingRealtimePanelProps = {
   meetingId?: string
@@ -61,6 +62,8 @@ export function MeetingRealtimePanel({
   onError,
   onResetConnection,
 }: MeetingRealtimePanelProps) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const [userChoices, setUserChoices] = useState<LocalUserChoices>({
     username: userEmail || "",
     audioEnabled: true,
@@ -123,7 +126,7 @@ export function MeetingRealtimePanel({
 
       if (!success) {
         setRoomPhase("failed")
-        setConnectionMessage("We could not get a valid session token. Review your setup and try again.")
+        setConnectionMessage(tt("We could not get a valid session token. Review your setup and try again.", "Hatukuweza kupata tokeni halali ya kikao. Kagua mipangilio na ujaribu tena."))
       }
     } finally {
       tokenRequestInFlightRef.current = false
@@ -133,7 +136,7 @@ export function MeetingRealtimePanel({
   const handleReconnect = () => {
     void requestToken(
       "reconnecting",
-      "Requesting a fresh token and reconnecting to the live session..."
+      tt("Requesting a fresh token and reconnecting to the live session...", "Inaomba tokeni mpya na kuunganisha tena kikao...")
     )
   }
 
@@ -146,7 +149,7 @@ export function MeetingRealtimePanel({
   if (meetingStatus !== "ongoing") {
     return (
       <div className="flex min-h-72 items-center justify-center rounded-[28px] border border-dashed border-border/60 bg-card/40 text-center text-sm text-muted-foreground shadow-sm backdrop-blur-sm">
-        Start the meeting to open the Live Session.
+        {tt("Start the meeting to open the Live Session.", "Anzisha kikao ili kufungua Kikao cha Moja kwa Moja.")}
       </div>
     )
   }
@@ -155,12 +158,12 @@ export function MeetingRealtimePanel({
     return (
       <div className={fullscreen ? "flex h-full min-h-full items-center justify-center bg-background p-6" : "rounded-[32px] border border-border/60 bg-card p-6 shadow-sm"}>
         <div className={fullscreen ? "w-full max-w-3xl rounded-[28px] border border-border/60 bg-card/80 px-6 py-10 text-center shadow-sm backdrop-blur-sm" : "rounded-[28px] border border-border/60 bg-card/80 px-6 py-10 text-center"}>
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-chart-3">Live Session</p>
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-chart-3">{tt("Live Session", "Kikao cha Moja kwa Moja")}</p>
           <h2 className="mt-3 text-2xl font-bold text-foreground">
-            {roomPhase === "reconnecting" ? "Reconnecting to session" : "Connecting to session"}
+            {roomPhase === "reconnecting" ? tt("Reconnecting to session", "Inaunganisha tena kikao") : tt("Connecting to session", "Inaunganisha kikao")}
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-            {connectionMessage || "Preparing your secure session connection and validating your selected media devices."}
+            {connectionMessage || tt("Preparing your secure session connection and validating your selected media devices.", "Inaandaa muunganisho salama na kukagua vifaa vya sauti na video.")}
           </p>
         </div>
       </div>
@@ -178,10 +181,10 @@ export function MeetingRealtimePanel({
           ) : null}
 
           <div className="mb-4 rounded-xl border border-border/60 bg-muted/30 px-5 py-4 shadow-sm">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-chart-3">Live Session</p>
-            <h2 className="mt-2 text-2xl font-bold text-foreground">Prepare your camera and microphone</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-chart-3">{tt("Live Session", "Kikao cha Moja kwa Moja")}</p>
+            <h2 className="mt-2 text-2xl font-bold text-foreground">{tt("Prepare your camera and microphone", "Andaa kamera na kipaza sauti")}</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Review your devices, confirm how you want to appear in the session, and then join with a secure token.
+              {tt("Review your devices, confirm how you want to appear in the session, and then join with a secure token.", "Kagua vifaa vyako, thibitisha jinsi utakavyoonekana, kisha jiunge kwa tokeni salama.")}
             </p>
           </div>
 
@@ -189,13 +192,13 @@ export function MeetingRealtimePanel({
             key={userEmail || "meeting-prejoin"}
             className="lk-prejoin-modern rounded-md"
             defaults={preJoinDefaults}
-            joinLabel={loading ? "Joining..." : "Join Live Session"}
-            userLabel="Email"
+            joinLabel={loading ? tt("Joining...", "Inajiunga...") : tt("Join Live Session", "Jiunge na Kikao")}
+            userLabel={tt("Email", "Barua pepe")}
             persistUserChoices
             onValidate={(values) => !loading && Boolean(values.username)}
             onError={(error) => {
               setRoomPhase("setup")
-              onError?.(error.message || "Unable to access your local media devices.")
+              onError?.(error.message || tt("Unable to access your local media devices.", "Imeshindikana kufikia vifaa vyako vya sauti na video."))
             }}
             onSubmit={async (values) => {
               setUserChoices({
@@ -205,7 +208,7 @@ export function MeetingRealtimePanel({
 
               await requestToken(
                 "connecting",
-                "Requesting a secure access token for the Live Session..."
+                tt("Requesting a secure access token for the Live Session...", "Inaomba tokeni salama ya Kikao cha Moja kwa Moja...")
               )
             }}
           />
@@ -233,21 +236,21 @@ export function MeetingRealtimePanel({
           void onConnected?.()
         }}
         onDisconnected={() => {
-          setConnectionMessage("The session connection was interrupted.")
+          setConnectionMessage(tt("The session connection was interrupted.", "Muunganisho wa kikao umekatika."))
           setRoomPhase("failed")
           onResetConnection?.()
           void onDisconnected?.()
         }}
         onError={(error) => {
-          setConnectionMessage(error.message || "Live Session failed to connect.")
+          setConnectionMessage(error.message || tt("Live Session failed to connect.", "Kikao cha Moja kwa Moja kimeshindwa kuunganishwa."))
           setRoomPhase("failed")
           onResetConnection?.()
-          onError?.(error.message || "Live Session failed to connect.")
+          onError?.(error.message || tt("Live Session failed to connect.", "Kikao cha Moja kwa Moja kimeshindwa kuunganishwa."))
         }}
       >
         <MeetingRoom
           meetingId={meetingId}
-          meetingTitle={meetingTitle || "Live Session"}
+          meetingTitle={meetingTitle || tt("Live Session", "Kikao cha Moja kwa Moja")}
           agendaItems={agendaItems}
           minutesContent={minutesContent}
           attendanceRecords={attendance}
@@ -266,12 +269,12 @@ export function MeetingRealtimePanel({
       {roomPhase === "connecting" || roomPhase === "reconnecting" ? (
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="rounded-2xl border border-white/10 bg-card/90 p-6 text-center shadow-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-chart-3">Live Session</p>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-chart-3">{tt("Live Session", "Kikao cha Moja kwa Moja")}</p>
             <h3 className="mt-3 text-2xl font-bold text-foreground">
-              {roomPhase === "reconnecting" ? "Reconnecting to session" : "Connecting to session"}
+              {roomPhase === "reconnecting" ? tt("Reconnecting to session", "Inaunganisha tena kikao") : tt("Connecting to session", "Inaunganisha kikao")}
             </h3>
             <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">
-              {connectionMessage || "Preparing your secure session connection and publishing your selected media devices."}
+              {connectionMessage || tt("Preparing your secure session connection and publishing your selected media devices.", "Inaandaa muunganisho salama na vifaa ulivyochagua.")}
             </p>
           </div>
         </div>
@@ -280,17 +283,17 @@ export function MeetingRealtimePanel({
       {roomPhase === "failed" ? (
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="max-w-lg rounded-2xl border border-destructive/30 bg-card/90 p-6 text-center shadow-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-destructive">Connection Issue</p>
-            <h3 className="mt-3 text-2xl font-bold text-foreground">The session needs to reconnect</h3>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-destructive">{tt("Connection Issue", "Tatizo la Muunganisho")}</p>
+            <h3 className="mt-3 text-2xl font-bold text-foreground">{tt("The session needs to reconnect", "Kikao kinahitaji kuunganishwa tena")}</h3>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              {connectionMessage || "The Live Session disconnected unexpectedly."}
+              {connectionMessage || tt("The Live Session disconnected unexpectedly.", "Kikao cha Moja kwa Moja kimetenganishwa bila kutarajiwa.")}
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <Button onClick={handleReconnect} disabled={loading} className="bg-chart-3 hover:bg-chart-3/90 font-bold rounded-xl">
-                Reconnect
+                {tt("Reconnect", "Unganisha Tena")}
               </Button>
               <Button variant="outline" onClick={handleBackToSetup} className="font-bold rounded-xl border-border/80">
-                Back To Device Check
+                {tt("Back To Device Check", "Rudi Kukagua Vifaa")}
               </Button>
             </div>
           </div>

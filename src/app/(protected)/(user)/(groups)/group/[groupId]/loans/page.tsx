@@ -45,6 +45,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useAuthUserStore } from "@/store/auth/userAuth.store"
 import { useGroupStore } from "@/store/group/groupUser.store"
 import { formatTzs } from "@/lib/vikoba-finance"
+import { useLanguage } from "@/components/language/language-provider"
 
 type LoanProductFormState = {
   name: string
@@ -78,12 +79,6 @@ const defaultRequestFormState: LoanRequestFormState = {
   purpose: "",
 }
 
-const durationLabels: Record<LoanProduct["duration_type"], string> = {
-  MONTHS: "Months",
-  WEEKS: "Weeks",
-  DAYS: "Days",
-}
-
 const loanStatusVariants: Record<
   Loan["status"],
   "default" | "secondary" | "destructive" | "outline"
@@ -91,6 +86,7 @@ const loanStatusVariants: Record<
   PENDING: "secondary",
   APPROVED: "outline",
   REJECTED: "destructive",
+  PAYOUT_REVERSED: "destructive",
   ACTIVE: "default",
   PAID_OFF: "outline",
   OVERDUE: "destructive",
@@ -152,6 +148,14 @@ export default function GroupLoansPage() {
   const { selectedGroup, selectedGroupMembers } = useGroupStore()
   const user = useAuthUserStore((state) => state.user)
   const router = useRouter()
+  const { language } = useLanguage()
+  const isSwahili = language === "sw"
+  const tt = (en: string, sw: string) => (isSwahili ? sw : en)
+  const durationLabelTexts: Record<LoanProduct["duration_type"], string> = {
+    MONTHS: tt("Months", "Miezi"),
+    WEEKS: tt("Weeks", "Wiki"),
+    DAYS: tt("Days", "Siku"),
+  }
 
   const [loanProducts, setLoanProducts] = useState<LoanProduct[]>([])
   const [loans, setLoans] = useState<Loan[]>([])
@@ -160,7 +164,6 @@ export default function GroupLoansPage() {
   const [productSubmitting, setProductSubmitting] = useState(false)
   const [requestSubmitting, setRequestSubmitting] = useState(false)
   const [actioningLoanUuid, setActioningLoanUuid] = useState<string | null>(null)
-  const [disbursingLoanUuid, setDisbursingLoanUuid] = useState<string | null>(null)
   const [deletingProductUuid, setDeletingProductUuid] = useState<string | null>(null)
   const [editingProductUuid, setEditingProductUuid] = useState<string | null>(null)
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false)
@@ -405,7 +408,7 @@ export default function GroupLoansPage() {
     event.preventDefault()
 
     if (!groupId) {
-      toast.error("Missing group context for this page.")
+      toast.error(tt("Missing group context for this page.", "Kuna taarifa za kikundi zinazokosekana kwa ukurasa huu."))
       return
     }
 
@@ -430,14 +433,14 @@ export default function GroupLoansPage() {
         setLoanProducts((current) =>
           current.map((item) => (item.uuid === editingProductUuid ? response.data : item))
         )
-        toast.success("Loan type updated successfully.")
+        toast.success(tt("Loan type updated successfully.", "Aina ya mkopo imesasishwa kwa mafanikio."))
       } else {
         const response = await financeServices.createLoanProduct({
           ...payload,
           group_uuid: groupId,
         })
         setLoanProducts((current) => [response.data, ...current])
-        toast.success("Loan type created successfully.")
+        toast.success(tt("Loan type created successfully.", "Aina ya mkopo imeundwa kwa mafanikio."))
       }
 
       resetProductForm()
@@ -453,12 +456,12 @@ export default function GroupLoansPage() {
     event.preventDefault()
 
     if (!groupId) {
-      toast.error("Missing group context for this page.")
+      toast.error(tt("Missing group context for this page.", "Kuna taarifa za kikundi zinazokosekana kwa ukurasa huu."))
       return
     }
 
     if (!selectedLoanProduct) {
-      toast.error("Please select a loan type before submitting a request.")
+      toast.error(tt("Please select a loan type before submitting a request.", "Tafadhali chagua aina ya mkopo kabla ya kutuma ombi."))
       return
     }
 
@@ -470,7 +473,7 @@ export default function GroupLoansPage() {
     }
 
     if (selectedLoanProductAmount > verifiedSavingsBalance) {
-      toast.error("Your selected loan amount cannot exceed your verified savings balance.")
+      toast.error(tt("Your selected loan amount cannot exceed your verified savings balance.", "Kiasi cha mkopo uliochagua hakiwezi kuzidi salio lako la akiba lililothibitishwa."))
       return
     }
 
@@ -485,7 +488,7 @@ export default function GroupLoansPage() {
       })
 
       setLoans((current) => [response.data, ...current])
-      toast.success("Loan request submitted successfully.")
+      toast.success(tt("Loan request submitted successfully.", "Ombi la mkopo limetumwa kwa mafanikio."))
       resetRequestForm()
       setIsRequestModalOpen(false)
     } catch (submitError: unknown) {
@@ -498,8 +501,8 @@ export default function GroupLoansPage() {
   const handleDeleteProduct = (product: LoanProduct) => {
     setConfirmModal({
       isOpen: true,
-      title: "Delete Loan Type",
-      description: `Delete the "${product.name}" loan type for ${selectedGroup?.name || "this group"}?`,
+      title: tt("Delete Loan Type", "Futa Aina ya Mkopo"),
+      description: tt(`Delete the "${product.name}" loan type for ${selectedGroup?.name || "this group"}?`, `Futa aina ya mkopo "${product.name}" kwa ${selectedGroup?.name || "kikundi hiki"}?`),
       onConfirm: async () => {
         setDeletingProductUuid(product.uuid)
         try {
@@ -511,7 +514,7 @@ export default function GroupLoansPage() {
           if (requestForm.loan_product_id === product.uuid) {
             resetRequestForm()
           }
-          toast.success("Loan type removed.")
+          toast.success(tt("Loan type removed.", "Aina ya mkopo imeondolewa."))
         } catch (deleteError: unknown) {
           toast.error(getErrorMessage(deleteError))
         } finally {
@@ -540,27 +543,13 @@ export default function GroupLoansPage() {
       updateLoan(response.data)
       toast.success(
         action === "approve"
-          ? "Loan request approved. Awaiting treasurer disbursement."
-          : "Loan request rejected."
+          ? tt("Loan request approved. Awaiting treasurer disbursement.", "Ombi la mkopo limeidhinishwa. Linasubiri mweka hazina kutoa fedha.")
+          : tt("Loan request rejected.", "Ombi la mkopo limekataliwa.")
       )
     } catch (actionError: unknown) {
       toast.error(getErrorMessage(actionError))
     } finally {
       setActioningLoanUuid(null)
-    }
-  }
-
-  const handleLoanDisbursement = async (loanUuid: string) => {
-    setDisbursingLoanUuid(loanUuid)
-
-    try {
-      const response = await financeServices.disburseLoan(loanUuid)
-      updateLoan(response.data)
-      toast.success("Loan payment approved and money marked as sent.")
-    } catch (actionError: unknown) {
-      toast.error(getErrorMessage(actionError))
-    } finally {
-      setDisbursingLoanUuid(null)
     }
   }
 
@@ -590,12 +579,12 @@ export default function GroupLoansPage() {
           ? parseFloat(activeLoanNextInstallment?.remaining_balance || "0")
           : parseFloat(activePaymentLoan.remaining_balance || activePaymentLoan.balance)
     if (!Number.isFinite(selectedAmount) || selectedAmount <= 0) {
-      toast.error("Please choose a valid repayment amount.")
+      toast.error(tt("Please choose a valid repayment amount.", "Tafadhali chagua kiasi sahihi cha marejesho."))
       return
     }
 
     if (selectedAmount > parseFloat(activePaymentLoan.remaining_balance || activePaymentLoan.balance)) {
-      toast.error("The repayment amount cannot exceed the remaining balance.")
+      toast.error(tt("The repayment amount cannot exceed the remaining balance.", "Kiasi cha marejesho hakiwezi kuzidi salio lililobaki."))
       return
     }
 
@@ -624,7 +613,7 @@ export default function GroupLoansPage() {
         <div className="mx-auto w-full max-w-screen-2xl">
           <Card className="border-none bg-card shadow-sm">
             <CardContent className="py-8 text-center text-muted-foreground">
-              Loading group...
+              {tt("Loading group...", "Inapakia kikundi...")}
             </CardContent>
           </Card>
         </div>
@@ -644,16 +633,16 @@ export default function GroupLoansPage() {
                   <WalletCards className="h-6 w-6" />
                 </div>
                 <Badge variant="secondary" className="rounded-full px-3 py-1 uppercase tracking-[0.18em]">
-                  {canManageLoanProducts ? "Finance management" : "Member borrowing"}
+                  {canManageLoanProducts ? tt("Finance management", "Usimamizi wa fedha") : tt("Member borrowing", "Ukopaji wa mwanachama")}
                 </Badge>
               </div>
               <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-                Loan types and requests
+                {tt("Loan types and requests", "Aina za mikopo na maombi")}
               </h1>
               <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
                 {canManageLoanProducts
-                  ? "Define loan types, review member requests, and keep repayment snapshots accurate for reporting."
-                  : "Browse the available loan types, submit a request, and track your active loan balance in one place."}
+                  ? tt("Define loan types, review member requests, and keep repayment snapshots accurate for reporting.", "Bainisha aina za mikopo, kagua maombi ya wanachama, na weka taswira za marejesho zikiwa sahihi kwa ripoti.")
+                  : tt("Browse the available loan types, submit a request, and track your active loan balance in one place.", "Vinjari aina za mikopo zilizopo, tuma ombi, na fuatilia salio lako la mkopo amilifu sehemu moja.")}
               </p>
             </div>
 
@@ -661,12 +650,12 @@ export default function GroupLoansPage() {
               {isVerifiedMember ? (
                 <Button onClick={() => setIsRequestModalOpen(true)} disabled={loanProducts.length === 0}>
                   <Plus className="h-4 w-4" />
-                  Request loan
+                  {tt("Request loan", "Omba mkopo")}
                 </Button>
               ) : null}
               {canManageLoanProducts ? (
                 <Button variant="outline" onClick={() => openProductModal()}>
-                  <Plus className="h-4 w-4" />Add loan type</Button>
+                  <Plus className="h-4 w-4" />{tt("Add loan type", "Ongeza aina ya mkopo")}</Button>
               ) : null}
             </div>
           </div>
@@ -676,44 +665,44 @@ export default function GroupLoansPage() {
           <Card className="border-border/70 bg-card/80">
             <CardContent className="p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Loan types
+                {tt("Loan types", "Aina za mikopo")}
               </p>
               <p className="mt-2 text-2xl font-bold text-foreground">{loanProducts.length}</p>
               <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
-                Distinct loan products your group offers (e.g. Emergency, Business).
+                {tt("Distinct loan products your group offers (e.g. Emergency, Business).", "Bidhaa tofauti za mikopo zinazotolewa na kikundi chako (mfano Dharura, Biashara).")}
               </p>
             </CardContent>
           </Card>
           <Card className="border-border/70 bg-card/80">
             <CardContent className="p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Total principal
+                {tt("Total principal", "Jumla ya mtaji")}
               </p>
               <p className="mt-2 text-2xl font-bold text-foreground">{formatTzs(stats.totalPrincipal)}</p>
               <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
-                Total raw capital disbursed to borrowers, excluding interest &amp; fees.
+                {tt("Total raw capital disbursed to borrowers, excluding interest &amp; fees.", "Jumla ya mtaji uliotolewa kwa wakopaji, ukiondoa riba na ada.")}
               </p>
             </CardContent>
           </Card>
           <Card className="border-border/70 bg-card/80">
             <CardContent className="p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Active loans
+                {tt("Active loans", "Mikopo hai")}
               </p>
               <p className="mt-2 text-2xl font-bold text-foreground">{stats.activeLoans}</p>
               <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
-                Loans currently approved, disbursed, and in the repayment phase.
+                {tt("Loans currently approved, disbursed, and in the repayment phase.", "Mikopo iliyoidhinishwa, iliyotolewa, na iliyo katika hatua ya marejesho.")}
               </p>
             </CardContent>
           </Card>
           <Card className="border-border/70 bg-card/80">
             <CardContent className="p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Outstanding balance
+                {tt("Outstanding balance", "Salio lililosalia")}
               </p>
               <p className="mt-2 text-2xl font-bold text-foreground">{formatTzs(stats.totalOutstanding)}</p>
               <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
-                Total amount still owed across all active loans, including interest &amp; late fees.
+                {tt("Total amount still owed across all active loans, including interest &amp; late fees.", "Jumla ya kiasi kinachodaiwa bado katika mikopo yote hai, ikijumuisha riba na ada za kuchelewa.")}
               </p>
             </CardContent>
           </Card>
@@ -722,20 +711,20 @@ export default function GroupLoansPage() {
         <Tabs defaultValue="types" className="space-y-4">
           <TabsList className={`grid w-full ${isTreasurer ? "grid-cols-4" : "grid-cols-3"} bg-card/70`}>
             <TabsTrigger value="types" className="gap-2">
-              <Layers3 className="h-4 w-4" />Loan types</TabsTrigger>
+              <Layers3 className="h-4 w-4" />{tt("Loan types", "Aina za mikopo")}</TabsTrigger>
             <TabsTrigger value="requests" className="gap-2">
               <ReceiptText className="h-4 w-4" />
-              Loans
+              {tt("Loans", "Mikopo")}
             </TabsTrigger>
             {isTreasurer ? (
               <TabsTrigger value="payments" className="gap-2">
                 <WalletCards className="h-4 w-4" />
-                Payment approval
+                {tt("Payment approval", "Uidhinishaji wa malipo")}
               </TabsTrigger>
             ) : null}
             <TabsTrigger value="repayments" className="gap-2">
               <ArrowRightLeft className="h-4 w-4" />
-              Repayments
+              {tt("Repayments", "Marejesho")}
             </TabsTrigger>
           </TabsList>
 
@@ -745,30 +734,30 @@ export default function GroupLoansPage() {
                 <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-chart-4">
-                      Loan Catalog
+                      {tt("Loan Catalog", "Orodha ya Mikopo")}
                     </p>
                     <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground">
-                      Available loan types
+                      {tt("Available loan types", "Aina za mikopo zinazopatikana")}
                     </h2>
                   </div>
                   {canManageLoanProducts ? (
                     <Button variant="outline" onClick={() => openProductModal()}>
-                      <Plus className="h-4 w-4" />New loan type</Button>
+                      <Plus className="h-4 w-4" />{tt("New loan type", "Aina mpya ya mkopo")}</Button>
                   ) : null}
                 </div>
 
                 {loading ? (
-                  <div className="py-10 text-center text-muted-foreground">Loading loan types...</div>
+                  <div className="py-10 text-center text-muted-foreground">{tt("Loading loan types...", "Inapakia aina za mikopo...")}</div>
                 ) : loanProducts.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-border/80 bg-background/60 py-12 text-center">
                     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-chart-4/10 text-chart-4">
                       <WalletCards className="h-6 w-6" />
                     </div>
-                    <h3 className="mt-4 text-xl font-bold text-foreground">No loan types yet</h3>
+                    <h3 className="mt-4 text-xl font-bold text-foreground">{tt("No loan types yet", "Bado hakuna aina za mikopo")}</h3>
                     <p className="mt-2 text-sm text-muted-foreground">
                       {canManageLoanProducts
-                        ? "Create a product with a fixed amount, interest rate, and duration so members can request against it."
-                        : "Your group leaders have not published any loan types yet."}
+                        ? tt("Create a product with a fixed amount, interest rate, and duration so members can request against it.", "Unda bidhaa yenye kiasi maalum, riba, na muda ili wanachama waweze kuomba mkopo kupitia hiyo.")
+                        : tt("Your group leaders have not published any loan types yet.", "Viongozi wa kikundi chako bado hawajachapisha aina zozote za mikopo.")}
                     </p>
                   </div>
                 ) : (
@@ -791,16 +780,16 @@ export default function GroupLoansPage() {
                                 {product.name}
                               </span>
                               <Badge variant="outline" className="text-[10px] h-5 px-1.5 py-0">
-                                {product.duration_count} {durationLabels[product.duration_type]}
+                                {product.duration_count} {durationLabelTexts[product.duration_type]}
                               </Badge>
                             </div>
-                            <p className="text-xs text-muted-foreground truncate">{product.interest_rate}% interest rate</p>
+                            <p className="text-xs text-muted-foreground truncate">{product.interest_rate}% {tt("interest rate", "riba")}</p>
                             <p className="mt-1 text-[11px] text-muted-foreground">
                               {product.use_group_default_late_fee
                                 ? selectedGroup?.default_late_fee_amount
-                                  ? `Uses group default penalty of TZS ${parseTzsAmount(selectedGroup.default_late_fee_amount).toLocaleString()}`
-                                  : "Uses group default penalty"
-                                : `Custom penalty: TZS ${parseTzsAmount(product.late_fee_amount).toLocaleString()} per overdue installment`}
+                                  ? tt(`Uses group default penalty of TZS ${parseTzsAmount(selectedGroup.default_late_fee_amount).toLocaleString()}`, `Inatumia adhabu chaguo-msingi ya kikundi ya TZS ${parseTzsAmount(selectedGroup.default_late_fee_amount).toLocaleString()}`)
+                                  : tt("Uses group default penalty", "Inatumia adhabu chaguo-msingi ya kikundi")
+                                : tt(`Custom penalty: TZS ${parseTzsAmount(product.late_fee_amount).toLocaleString()} per overdue installment`, `Adhabu ya kawaida: TZS ${parseTzsAmount(product.late_fee_amount).toLocaleString()} kwa kila awamu iliyochelewa`)}
                             </p>
                           </div>
 
@@ -809,20 +798,20 @@ export default function GroupLoansPage() {
                               {formatTzs(principal)}
                             </span>
                             <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                              Principal
+                              {tt("Principal", "Mtaji")}
                             </span>
                           </div>
 
                           <div className="flex items-center gap-2 shrink-0 ml-2">
                             <Button variant="ghost" size="sm" className="h-8 px-2 rounded-xl" onClick={() => openProductDetailsModal(product)}>
                               <BadgeInfo className="h-4 w-4 sm:mr-1" />
-                              <span className="text-xs hidden sm:inline">View details</span>
+                              <span className="text-xs hidden sm:inline">{tt("View details", "Tazama maelezo")}</span>
                             </Button>
                             {canManageLoanProducts ? (
                               <>
                                 <Button variant="ghost" size="sm" className="h-8 px-2 rounded-xl" onClick={() => openProductModal(product)}>
                                   <Pencil className="h-4 w-4 sm:mr-1" />
-                                  <span className="text-xs hidden sm:inline">Edit</span>
+                                  <span className="text-xs hidden sm:inline">{tt("Edit", "Hariri")}</span>
                                 </Button>
                                 <Button
                                   variant="ghost"
@@ -832,7 +821,7 @@ export default function GroupLoansPage() {
                                   disabled={deletingProductUuid === product.uuid}
                                 >
                                   <Trash2 className="h-4 w-4 sm:mr-1" />
-                                  <span className="text-xs hidden sm:inline">{deletingProductUuid === product.uuid ? "..." : "Delete"}</span>
+                                  <span className="text-xs hidden sm:inline">{deletingProductUuid === product.uuid ? "..." : tt("Delete", "Futa")}</span>
                                 </Button>
                               </>
                             ) : null}
@@ -852,10 +841,10 @@ export default function GroupLoansPage() {
                 <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-chart-3">
-                      Loan Register
+                      {tt("Loan Register", "Rejista ya Mikopo")}
                     </p>
                     <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground">
-                      Submitted loans
+                      {tt("Submitted loans", "Mikopo iliyotumwa")}
                     </h2>
                   </div>
                   
@@ -866,7 +855,7 @@ export default function GroupLoansPage() {
                       className={`h-8 rounded-lg text-xs font-semibold ${loanFilter === "ALL" ? "bg-background shadow-sm border border-border/50" : ""}`}
                       onClick={() => setLoanFilter("ALL")}
                     >
-                      All
+                      {tt("All", "Zote")}
                     </Button>
                     <Button
                       variant={loanFilter === "MY_LOANS" ? "secondary" : "ghost"}
@@ -874,7 +863,7 @@ export default function GroupLoansPage() {
                       className={`h-8 rounded-lg text-xs font-semibold ${loanFilter === "MY_LOANS" ? "bg-background shadow-sm border border-border/50 text-primary" : ""}`}
                       onClick={() => setLoanFilter("MY_LOANS")}
                     >
-                      My loans
+                      {tt("My loans", "Mikopo yangu")}
                     </Button>
                     <Button
                       variant={loanFilter === "ACCEPTED" ? "secondary" : "ghost"}
@@ -882,7 +871,7 @@ export default function GroupLoansPage() {
                       className={`h-8 rounded-lg text-xs font-semibold ${loanFilter === "ACCEPTED" ? "bg-background shadow-sm border border-border/50 text-chart-2" : ""}`}
                       onClick={() => setLoanFilter("ACCEPTED")}
                     >
-                      Accepted
+                      {tt("Accepted", "Imeidhinishwa")}
                     </Button>
                     <Button
                       variant={loanFilter === "PENDING" ? "secondary" : "ghost"}
@@ -890,7 +879,7 @@ export default function GroupLoansPage() {
                       className={`h-8 rounded-lg text-xs font-semibold ${loanFilter === "PENDING" ? "bg-background shadow-sm border border-border/50 text-chart-4" : ""}`}
                       onClick={() => setLoanFilter("PENDING")}
                     >
-                      Pending
+                      {tt("Pending", "Inasubiri")}
                     </Button>
                     <Button
                       variant={loanFilter === "CANCELED" ? "secondary" : "ghost"}
@@ -898,25 +887,29 @@ export default function GroupLoansPage() {
                       className={`h-8 rounded-lg text-xs font-semibold ${loanFilter === "CANCELED" ? "bg-background shadow-sm border border-border/50 text-destructive" : ""}`}
                       onClick={() => setLoanFilter("CANCELED")}
                     >
-                      Canceled
+                      {tt("Canceled", "Imeghairiwa")}
                     </Button>
                   </div>
                 </div>
 
                 {loading ? (
-                  <div className="py-10 text-center text-muted-foreground">Loading loans...</div>
+                  <div className="py-10 text-center text-muted-foreground">{tt("Loading loans...", "Inapakia mikopo...")}</div>
                 ) : filteredLoans.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-border/80 bg-background/60 py-12 text-center">
                     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-chart-3/10 text-chart-3">
                       <ReceiptText className="h-6 w-6" />
                     </div>
                     <h3 className="mt-4 text-xl font-bold text-foreground">
-                      {loans.length === 0 ? "No loans recorded yet" : "No loans match this filter"}
+                      {loans.length === 0
+                        ? tt("No loans recorded yet", "Bado hakuna mikopo iliyorekodiwa")
+                        : tt("No loans match this filter", "Hakuna mikopo inayolingana na kichujio hiki")}
                     </h3>
                     <p className="mt-2 text-sm text-muted-foreground">
                       {loans.length === 0 
-                        ? (isVerifiedMember ? "Loan requests will appear here after a member submits a request." : "Verified members can submit loan requests from this workspace.")
-                        : "Try selecting a different filter above to see other loan requests."}
+                        ? (isVerifiedMember
+                            ? tt("Loan requests will appear here after a member submits a request.", "Maombi ya mikopo yataonekana hapa baada ya mwanachama kutuma ombi.")
+                            : tt("Verified members can submit loan requests from this workspace.", "Wanachama waliothibitishwa wanaweza kutuma maombi ya mikopo hapa."))
+                        : tt("Try selecting a different filter above to see other loan requests.", "Jaribu kuchagua kichujio kingine hapo juu kuona maombi mengine ya mikopo.")}
                     </p>
                   </div>
                 ) : (
@@ -925,7 +918,7 @@ export default function GroupLoansPage() {
                       const loanBorrower = selectedGroupMembers.find((m) => m.user_id === loan.borrower || m.membership_id === loan.borrower)
                       const displayBorrowerName = loanBorrower 
                         ? `${loanBorrower.first_name} ${loanBorrower.last_name}`.trim() || loanBorrower.email 
-                        : loan.borrower_name || "Unnamed member"
+                        : loan.borrower_name || tt("Unnamed member", "Mwanachama asiye na jina")
 
                       const isCurrentUserLoan = loan.borrower_user_id === user?.uuid || loanBorrower?.user_id === user?.uuid
 
@@ -955,14 +948,14 @@ export default function GroupLoansPage() {
                             {formatTzs(parseTzsAmount(loan.total_repayment_amount))}
                           </span>
                           <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                            Total repayment
+                            {tt("Total repayment", "Jumla ya marejesho")}
                           </span>
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0 ml-2">
                           <Button variant="ghost" size="sm" className="h-8 px-2 rounded-xl" onClick={() => openLoanDetailsModal(loan)}>
                             <BadgeInfo className="h-4 w-4 sm:mr-1" />
-                            <span className="text-xs hidden sm:inline">View details</span>
+                            <span className="text-xs hidden sm:inline">{tt("View details", "Tazama maelezo")}</span>
                           </Button>
                           {canManageLoanProducts && loan.status === "PENDING" ? (
                             <>
@@ -972,7 +965,7 @@ export default function GroupLoansPage() {
                                 onClick={() => void handleLoanAction(loan.uuid, "approve")}
                                 disabled={actioningLoanUuid === loan.uuid}
                               >
-                                {actioningLoanUuid === loan.uuid ? "..." : "Approve"}
+                                {actioningLoanUuid === loan.uuid ? "..." : tt("Approve", "Idhinisha")}
                               </Button>
                               <Button
                                 size="sm"
@@ -981,7 +974,7 @@ export default function GroupLoansPage() {
                                 onClick={() => void handleLoanAction(loan.uuid, "reject")}
                                 disabled={actioningLoanUuid === loan.uuid}
                               >
-                                Reject
+                                {tt("Reject", "Kataa")}
                               </Button>
                             </>
                           ) : null}
@@ -1001,11 +994,11 @@ export default function GroupLoansPage() {
                 <CardContent className="p-6">
                   <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
                     <div>
-                      <h2 className="text-xl font-bold tracking-tight text-foreground">Payment Approval</h2>
-                      <p className="text-sm text-muted-foreground mt-1">Approve approved loans so the money can be sent to the borrower.</p>
+                      <h2 className="text-xl font-bold tracking-tight text-foreground">{tt("Payment Approval", "Idhini ya Malipo")}</h2>
+                      <p className="text-sm text-muted-foreground mt-1">{tt("Approve approved loans so the money can be sent to the borrower.", "Idhinisha malipo ya mikopo ili fedha zitumwe kwa mkopaji.")}</p>
                     </div>
                     <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs uppercase tracking-widest">
-                      {loans.filter((loan) => loan.status === "APPROVED").length} waiting
+                      {loans.filter((loan) => loan.status === "APPROVED").length} {tt("waiting", "inasubiri")}
                     </Badge>
                   </div>
 
@@ -1017,8 +1010,8 @@ export default function GroupLoansPage() {
                           <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
                             <WalletCards className="w-8 h-8 text-muted-foreground" />
                           </div>
-                          <p className="text-base font-semibold text-foreground">No approved loans waiting for payment approval</p>
-                          <p className="text-sm text-muted-foreground mt-1">Once a chairperson approves a loan request, it will appear here for treasurer disbursement.</p>
+                          <p className="text-base font-semibold text-foreground">{tt("No approved loans waiting for payment approval", "Hakuna mikopo iliyoidhinishwa inayosubiri idhini ya malipo")}</p>
+                          <p className="text-sm text-muted-foreground mt-1">{tt("Once a chairperson approves a loan request, it will appear here for treasurer disbursement.", "Mwenyekiti akiidhinisha ombi la mkopo, litaonekana hapa kwa mweka hazina kutoa fedha.")}</p>
                         </div>
                       )
                     }
@@ -1029,7 +1022,7 @@ export default function GroupLoansPage() {
                           const loanBorrower = selectedGroupMembers.find((m) => m.user_id === loan.borrower || m.membership_id === loan.borrower)
                           const displayBorrowerName = loanBorrower
                             ? `${loanBorrower.first_name} ${loanBorrower.last_name}`.trim() || loanBorrower.email
-                            : loan.borrower_name || "Unnamed member"
+                            : loan.borrower_name || tt("Unnamed member", "Mwanachama asiye na jina")
 
                           return (
                             <div
@@ -1043,26 +1036,29 @@ export default function GroupLoansPage() {
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <span className="font-semibold text-sm text-foreground">{displayBorrowerName}</span>
                                   <Badge variant="outline" className="text-[10px] h-5 px-1.5 py-0 text-chart-4 border-chart-4/30 uppercase">
-                                    Awaiting send
+                                    {tt("Awaiting send", "Inasubiri kutumwa")}
                                   </Badge>
                                 </div>
                                 <p className="text-xs text-muted-foreground truncate">{loan.loan_product_name}</p>
                                 <p className="text-xs text-muted-foreground">
-                                  Approved at {loan.approved_at ? formatDate(loan.approved_at) : "N/A"} • Amount {formatTzs(parseTzsAmount(loan.principal_amount))}
+                                  {tt("Approved at", "Imeidhinishwa")} {loan.approved_at ? formatDate(loan.approved_at) : "N/A"} • {tt("Amount", "Kiasi")} {formatTzs(parseTzsAmount(loan.principal_amount))}
                                 </p>
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
                                 <Button variant="ghost" size="sm" className="h-8 px-2 rounded-xl" onClick={() => openLoanDetailsModal(loan)}>
                                   <BadgeInfo className="h-4 w-4 sm:mr-1" />
-                                  <span className="text-xs hidden sm:inline">View details</span>
+                                  <span className="text-xs hidden sm:inline">{tt("View details", "Tazama maelezo")}</span>
                                 </Button>
                                 <Button
                                   size="sm"
                                   className="h-8 px-3 rounded-xl text-xs bg-chart-3/15 text-chart-3 hover:bg-chart-3/25 border border-chart-3/20 font-bold"
-                                  onClick={() => void handleLoanDisbursement(loan.uuid)}
-                                  disabled={disbursingLoanUuid === loan.uuid}
+                                  onClick={() =>
+                                    router.push(
+                                      `/group/${groupId}/loans/${loan.uuid}/payout`
+                                    )
+                                  }
                                 >
-                                  {disbursingLoanUuid === loan.uuid ? "..." : "Approve payment"}
+                                  {tt("Review & release", "Kagua na utoe")}
                                 </Button>
                               </div>
                             </div>
@@ -1081,11 +1077,11 @@ export default function GroupLoansPage() {
               <CardContent className="p-6">
                 <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
                   <div>
-                    <h2 className="text-xl font-bold tracking-tight text-foreground">My Active Loans</h2>
-                    <p className="text-sm text-muted-foreground mt-1">Select a loan below to make a repayment.</p>
+                    <h2 className="text-xl font-bold tracking-tight text-foreground">{tt("My Active Loans", "Mikopo Yangu Inayoendelea")}</h2>
+                    <p className="text-sm text-muted-foreground mt-1">{tt("Select a loan below to make a repayment.", "Chagua mkopo hapa chini kufanya marejesho.")}</p>
                   </div>
                   <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs uppercase tracking-widest">
-                    {loans.filter((l) => ["ACTIVE", "OVERDUE"].includes(l.status) && l.borrower_user_id === user?.uuid).length} active
+                    {loans.filter((l) => ["ACTIVE", "OVERDUE"].includes(l.status) && l.borrower_user_id === user?.uuid).length} {tt("active", "inaendelea")}
                   </Badge>
                 </div>
 
@@ -1099,8 +1095,8 @@ export default function GroupLoansPage() {
                         <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
                           <WalletCards className="w-8 h-8 text-muted-foreground" />
                         </div>
-                        <p className="text-base font-semibold text-foreground">No active loans</p>
-                        <p className="text-sm text-muted-foreground mt-1">You have no active loans to repay right now.</p>
+                        <p className="text-base font-semibold text-foreground">{tt("No active loans", "Hakuna mikopo inayoendelea")}</p>
+                        <p className="text-sm text-muted-foreground mt-1">{tt("You have no active loans to repay right now.", "Huna mikopo inayoendelea ya kulipa kwa sasa.")}</p>
                       </div>
                     )
                   }
@@ -1124,23 +1120,23 @@ export default function GroupLoansPage() {
                                 <span className="font-semibold text-sm text-foreground">{loan.loan_product_name}</span>
                                 {progress >= 100 ? (
                                   <Badge variant="outline" className="text-[10px] h-5 px-1.5 py-0 text-chart-3 border-chart-3/40">
-                                    Fully Paid
+                                    {tt("Fully Paid", "Imelipwa Yote")}
                                   </Badge>
                                 ) : loan.status === "OVERDUE" ? (
                                   <Badge variant="outline" className="text-[10px] h-5 px-1.5 py-0 text-destructive border-destructive/40">
-                                    Overdue
+                                    {tt("Overdue", "Imechelewa")}
                                   </Badge>
                                 ) : (
                                   <Badge variant="outline" className="text-[10px] h-5 px-1.5 py-0 text-green-600 border-green-500/40">
-                                    Active
+                                    {tt("Active", "Inaendelea")}
                                   </Badge>
                                 )}
                               </div>
                               <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                                <span>Principal: <strong className="text-foreground">{formatTzs(parseFloat(loan.principal_amount))}</strong></span>
-                                <span>Paid: <strong className="text-chart-3">{formatTzs(parseFloat(loan.total_paid))}</strong></span>
-                                <span>Balance: <strong className="text-destructive">{formatTzs(parseFloat(loan.balance))}</strong></span>
-                                <span>Due: <strong className="text-foreground">{loan.due_date}</strong></span>
+                                <span>{tt("Principal:", "Mtaji:")} <strong className="text-foreground">{formatTzs(parseFloat(loan.principal_amount))}</strong></span>
+                                <span>{tt("Paid:", "Imelipwa:")} <strong className="text-chart-3">{formatTzs(parseFloat(loan.total_paid))}</strong></span>
+                                <span>{tt("Balance:", "Salio:")} <strong className="text-destructive">{formatTzs(parseFloat(loan.balance))}</strong></span>
+                                <span>{tt("Due:", "Mwisho:")} <strong className="text-foreground">{loan.due_date}</strong></span>
                               </div>
                               <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
                                 <div
@@ -1148,7 +1144,7 @@ export default function GroupLoansPage() {
                                   style={{ width: `${progress}%` }}
                                 />
                               </div>
-                              <p className="text-[10px] text-muted-foreground">{progress}% repaid</p>
+                              <p className="text-[10px] text-muted-foreground">{progress}% {tt("repaid", "imelipwa")}</p>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
                               <Button
@@ -1158,7 +1154,7 @@ export default function GroupLoansPage() {
                                 onClick={() => openLoanDetailsModal(loan)}
                               >
                                 <BadgeInfo className="w-4 h-4" />
-                                Details
+                                {tt("Details", "Maelezo")}
                               </Button>
                               {progress < 100 && (
                               <Button
@@ -1167,7 +1163,7 @@ export default function GroupLoansPage() {
                                 onClick={() => openLoanPaymentChoice(loan)}
                               >
                                 <ArrowRightLeft className="w-4 h-4" />
-                                Pay
+                                {tt("Pay", "Lipa")}
                               </Button>
                               )}
                             </div>
@@ -1190,9 +1186,9 @@ export default function GroupLoansPage() {
       >
         <DialogContent className="sm:max-w-2xl p-6 sm:p-8">
           <DialogHeader>
-            <DialogTitle className="text-xl font-extrabold">Choose repayment amount</DialogTitle>
+            <DialogTitle className="text-xl font-extrabold">{tt("Choose repayment amount", "Chagua kiasi cha marejesho")}</DialogTitle>
             <DialogDescription>
-              Pick whether to clear the full balance, pay the next installment, or enter a custom amount before we open the payment page.
+              {tt("Pick whether to clear the full balance, pay the next installment, or enter a custom amount before we open the payment page.", "Chagua kulipa salio lote, awamu inayofuata, au kuingiza kiasi maalum kabla ya kufungua ukurasa wa malipo.")}
             </DialogDescription>
           </DialogHeader>
 
@@ -1209,12 +1205,12 @@ export default function GroupLoansPage() {
                   }`}
                 >
                   <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                    Full balance
+                    {tt("Full balance", "Salio lote")}
                   </p>
                   <p className="mt-2 text-lg font-extrabold text-foreground">
                     {formatTzs(parseFloat(activePaymentLoan.remaining_balance || activePaymentLoan.balance))}
                   </p>
-                  <p className="mt-1 text-xs text-muted-foreground">Settle everything that remains on the loan.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{tt("Settle everything that remains on the loan.", "Lipa kiasi chote kilichobaki kwenye mkopo.")}</p>
                 </button>
 
                 <button
@@ -1227,15 +1223,15 @@ export default function GroupLoansPage() {
                   }`}
                 >
                   <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                    Next installment
+                    {tt("Next installment", "Awamu inayofuata")}
                   </p>
                   <p className="mt-2 text-lg font-extrabold text-foreground">
                     {activeLoanNextInstallment
                       ? formatTzs(parseFloat(activeLoanNextInstallment.remaining_balance))
-                      : "Loading..."}
+                      : tt("Loading...", "Inapakia...")}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Pay the oldest unpaid installment first.
+                    {tt("Pay the oldest unpaid installment first.", "Lipa kwanza awamu ya zamani zaidi ambayo haijalipwa.")}
                   </p>
                 </button>
 
@@ -1249,56 +1245,60 @@ export default function GroupLoansPage() {
                   }`}
                 >
                   <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                    Custom amount
+                    {tt("Custom amount", "Kiasi maalum")}
                   </p>
-                  <p className="mt-2 text-lg font-extrabold text-foreground">You choose</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Enter any amount up to the remaining balance.</p>
+                  <p className="mt-2 text-lg font-extrabold text-foreground">{tt("You choose", "Unachagua")}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{tt("Enter any amount up to the remaining balance.", "Ingiza kiasi chochote kisichozidi salio lililobaki.")}</p>
                 </button>
               </div>
 
               <div className="grid gap-4 lg:grid-cols-2">
                 <div className="rounded-2xl border border-border/70 bg-muted/20 p-4">
                   <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                    Selected amount
+                    {tt("Selected amount", "Kiasi kilichochaguliwa")}
                   </p>
                   <p className="mt-2 text-2xl font-extrabold text-foreground">
                     {formatTzs(parseFloat(paymentChoicePreviewAmount))}
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {paymentChoiceMode === "FULL"
-                      ? "You will clear the remaining balance."
+                      ? tt("You will clear the remaining balance.", "Utalipa salio lote lililobaki.")
                       : paymentChoiceMode === "INSTALLMENT"
-                        ? "You will pay the next unpaid installment."
-                        : "Use any amount that works for you."}
+                        ? tt("You will pay the next unpaid installment.", "Utalipa awamu inayofuata ambayo haijalipwa.")
+                        : tt("Use any amount that works for you.", "Tumia kiasi chochote kinachokufaa.")}
                   </p>
                 </div>
 
                 <div className="rounded-2xl border border-border/70 bg-muted/20 p-4">
                   <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                    Loan summary
+                    {tt("Loan summary", "Muhtasari wa mkopo")}
                   </p>
                   <div className="mt-3 space-y-2 text-sm">
                     <div className="flex items-center justify-between gap-3">
-                      <span className="text-muted-foreground">Loan type</span>
+                      <span className="text-muted-foreground">{tt("Loan type", "Aina ya mkopo")}</span>
                       <span className="font-semibold text-foreground">{activePaymentLoan.loan_product_name}</span>
                     </div>
                     <div className="flex items-center justify-between gap-3">
-                      <span className="text-muted-foreground">Remaining balance</span>
+                      <span className="text-muted-foreground">{tt("Remaining balance", "Salio lililobaki")}</span>
                       <span className="font-semibold text-foreground">
                         {formatTzs(parseFloat(activePaymentLoan.remaining_balance || activePaymentLoan.balance))}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-3">
-                      <span className="text-muted-foreground">Repayment mode</span>
+                      <span className="text-muted-foreground">{tt("Repayment mode", "Njia ya marejesho")}</span>
                       <span className="font-semibold text-foreground capitalize">
-                        {paymentChoiceMode.toLowerCase()}
+                        {paymentChoiceMode === "FULL"
+                          ? tt("Full", "Kamili")
+                          : paymentChoiceMode === "INSTALLMENT"
+                            ? tt("Installment", "Awamu")
+                            : tt("Custom", "Maalum")}
                       </span>
                     </div>
                     {paymentChoiceMode === "INSTALLMENT" && activeLoanNextInstallment ? (
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-muted-foreground">Installment</span>
+                        <span className="text-muted-foreground">{tt("Installment", "Awamu")}</span>
                         <span className="font-semibold text-foreground">
-                          #{activeLoanNextInstallment.installment_number} due {formatDate(activeLoanNextInstallment.due_date)}
+                          #{activeLoanNextInstallment.installment_number} {tt("due", "mwisho")} {formatDate(activeLoanNextInstallment.due_date)}
                         </span>
                       </div>
                     ) : null}
@@ -1308,14 +1308,14 @@ export default function GroupLoansPage() {
 
               {paymentChoiceMode === "CUSTOM" ? (
                 <Field>
-                  <FieldLabel>Custom amount (TZS)</FieldLabel>
+                  <FieldLabel>{tt("Custom amount (TZS)", "Kiasi maalum (TZS)")}</FieldLabel>
                   <FieldContent>
                     <Input
                       type="number"
                       step="0.01"
                       min="1"
                       max={activePaymentLoan.remaining_balance || activePaymentLoan.balance}
-                      placeholder={`Max: ${formatTzs(parseFloat(activePaymentLoan.remaining_balance || activePaymentLoan.balance))}`}
+                      placeholder={`${tt("Max", "Kiwango cha juu")}: ${formatTzs(parseFloat(activePaymentLoan.remaining_balance || activePaymentLoan.balance))}`}
                       value={paymentChoiceAmount}
                       onChange={(event) => setPaymentChoiceAmount(event.target.value)}
                     />
@@ -1325,10 +1325,10 @@ export default function GroupLoansPage() {
 
               <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-4">
                 <Button type="button" variant="outline" onClick={closePaymentChoiceModal}>
-                  Cancel
+                  {tt("Cancel", "Ghairi")}
                 </Button>
                 <Button type="button" onClick={continueToPaymentPage} disabled={loanLedgerLoading && paymentChoiceMode === "INSTALLMENT"}>
-                  Continue to payment
+                  {tt("Continue to payment", "Endelea na malipo")}
                 </Button>
               </div>
             </div>
@@ -1341,23 +1341,23 @@ export default function GroupLoansPage() {
       <Dialog open={isRequestModalOpen} onOpenChange={(open) => { if (!open) closeRequestModal() }}>
         <DialogContent className="sm:max-w-2xl p-6 sm:p-8">
           <DialogHeader>
-            <DialogTitle className="text-xl font-extrabold">Request loan</DialogTitle>
+            <DialogTitle className="text-xl font-extrabold">{tt("Request loan", "Omba mkopo")}</DialogTitle>
             <DialogDescription className="mt-1 text-sm text-muted-foreground">
-              Choose a loan type and submit the request for review.
+              {tt("Choose a loan type and submit the request for review.", "Chagua aina ya mkopo na utume ombi kwa ajili ya ukaguzi.")}
             </DialogDescription>
           </DialogHeader>
 
           <form className="mt-4 space-y-4" onSubmit={handleLoanRequestSubmit}>
             <FieldGroup>
               <Field>
-                <FieldLabel>Loan type</FieldLabel>
+                <FieldLabel>{tt("Loan type", "Aina ya mkopo")}</FieldLabel>
                 <FieldContent>
                   <Select
                     value={requestForm.loan_product_id}
                     onValueChange={(value) => handleRequestInputChange("loan_product_id", value)}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a loan type" />
+                      <SelectValue placeholder={tt("Select a loan type", "Chagua aina ya mkopo")} />
                     </SelectTrigger>
                     <SelectContent>
                       {loanProducts.map((product) => (
@@ -1368,7 +1368,7 @@ export default function GroupLoansPage() {
                     </SelectContent>
                   </Select>
                   <FieldDescription>
-                    The selected loan type determines the principal amount, interest rate, and repayment window.
+                    {tt("The selected loan type determines the principal amount, interest rate, and repayment window.", "Aina ya mkopo uliyochagua huamua kiasi cha mkopo, riba, na muda wa marejesho.")}
                   </FieldDescription>
                 </FieldContent>
               </Field>
@@ -1381,68 +1381,70 @@ export default function GroupLoansPage() {
                         {formatTzs(parseTzsAmount(selectedLoanProduct.amount))}
                       </p>
                       <p className="mt-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                        {selectedLoanProduct.duration_count} {durationLabels[selectedLoanProduct.duration_type]}
+                        {selectedLoanProduct.duration_count} {durationLabelTexts[selectedLoanProduct.duration_type]}
                       </p>
                     </div>
                     <Badge variant="secondary" className="uppercase">
-                      {selectedLoanProduct.interest_rate}% interest
+                      {selectedLoanProduct.interest_rate}% {tt("interest", "riba")}
                     </Badge>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                     <Badge variant="outline" className="uppercase">
-                      {selectedLoanProduct.use_group_default_late_fee ? "Group default penalty" : "Custom penalty"}
+                      {selectedLoanProduct.use_group_default_late_fee
+                        ? tt("Group default penalty", "Adhabu ya kawaida ya kikundi")
+                        : tt("Custom penalty", "Adhabu maalum")}
                     </Badge>
                     <span className="text-muted-foreground">
                       {selectedLoanProduct.use_group_default_late_fee
                         ? selectedGroup?.default_late_fee_amount
-                          ? `TZS ${parseTzsAmount(selectedGroup.default_late_fee_amount).toLocaleString()} per overdue installment`
-                          : "No group default penalty configured"
-                        : `TZS ${parseTzsAmount(selectedLoanProduct.late_fee_amount).toLocaleString()} per overdue installment`}
+                          ? `TZS ${parseTzsAmount(selectedGroup.default_late_fee_amount).toLocaleString()} ${tt("per overdue installment", "kwa kila awamu iliyochelewa")}`
+                          : tt("No group default penalty configured", "Hakuna adhabu ya kawaida ya kikundi iliyowekwa")
+                        : `TZS ${parseTzsAmount(selectedLoanProduct.late_fee_amount).toLocaleString()} ${tt("per overdue installment", "kwa kila awamu iliyochelewa")}`}
                     </span>
                   </div>
                   <p className="mt-3 text-sm text-muted-foreground">
-                    {selectedLoanProduct.description || "No extra description added for this loan type."}
+                    {selectedLoanProduct.description || tt("No extra description added for this loan type.", "Hakuna maelezo ya ziada kwa aina hii ya mkopo.")}
                   </p>
                 </div>
               ) : null}
 
               <div className={`rounded-2xl border p-4 ${canRequestLoanBySavings ? "border-chart-1/20 bg-chart-1/5" : "border-amber-500/20 bg-amber-500/5"}`}>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                  Savings eligibility
+                  {tt("Savings eligibility", "Ustahiki wa akiba")}
                 </p>
                 <div className="mt-2 grid gap-2 text-sm">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-muted-foreground">Verified savings</span>
+                    <span className="text-muted-foreground">{tt("Verified savings", "Akiba iliyothibitishwa")}</span>
                     <span className="font-semibold text-foreground">{formatTzs(verifiedSavingsBalance)}</span>
                   </div>
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-muted-foreground">Minimum required</span>
+                    <span className="text-muted-foreground">{tt("Minimum required", "Kiwango cha chini kinachohitajika")}</span>
                     <span className="font-semibold text-foreground">{formatTzs(minimumSavingsRequirement)}</span>
                   </div>
                   {selectedLoanProduct ? (
                     <div className="flex items-center justify-between gap-3">
-                      <span className="text-muted-foreground">Selected loan amount</span>
+                      <span className="text-muted-foreground">{tt("Selected loan amount", "Kiasi cha mkopo kilichochaguliwa")}</span>
                       <span className="font-semibold text-foreground">{formatTzs(selectedLoanProductAmount)}</span>
                     </div>
                   ) : null}
                 </div>
                 <p className={`mt-3 text-xs ${canRequestLoanBySavings ? "text-chart-1" : "text-amber-700 dark:text-amber-400"}`}>
                   {!selectedLoanProduct
-                    ? "Select a loan type to see whether your savings qualify."
+                    ? tt("Select a loan type to see whether your savings qualify.", "Chagua aina ya mkopo kuona kama akiba yako inakidhi masharti.")
                     : verifiedSavingsBalance < minimumSavingsRequirement
-                      ? "Your verified savings are below the minimum required to borrow from this group."
+                      ? tt("Your verified savings are below the minimum required to borrow from this group.", "Akiba yako iliyothibitishwa iko chini ya kiwango kinachohitajika kukopa kutoka kikundi hiki.")
                       : selectedLoanProductAmount > verifiedSavingsBalance
-                        ? "Your selected loan amount is higher than your verified savings balance."
-                        : "You can request this loan using your verified savings balance."}
+                        ? tt("Your selected loan amount is higher than your verified savings balance.", "Kiasi cha mkopo ulichochagua ni kikubwa kuliko salio lako la akiba lililothibitishwa.")
+                        : tt("You can request this loan using your verified savings balance.", "Unaweza kuomba mkopo huu kwa kutumia salio lako la akiba lililothibitishwa.")}
                 </p>
               </div>
 
               <Field>
-                <FieldLabel htmlFor="loan-purpose">Purpose</FieldLabel>
+                <FieldLabel htmlFor="loan-purpose">{tt("Purpose", "Madhumuni")}</FieldLabel>
                 <FieldContent>
                   <Textarea
                     id="loan-purpose"
-                    placeholder="Describe what the loan will support and how repayment will stay on track."
+                    placeholder={tt("Describe what the loan will support and how repayment will stay on track.", "Eleza mkopo utatumika kwa nini na jinsi utakavyodumisha marejesho kwa wakati.")}
                     value={requestForm.purpose}
                     onChange={(event) => handleRequestInputChange("purpose", event.target.value)}
                   />
@@ -1452,11 +1454,11 @@ export default function GroupLoansPage() {
 
             <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-4">
               <Button type="button" variant="outline" onClick={closeRequestModal}>
-                Cancel
+                {tt("Cancel", "Ghairi")}
               </Button>
               <Button type="submit" disabled={requestSubmitting || loanProducts.length === 0 || !selectedLoanProduct || !canRequestLoanBySavings}>
                 <ArrowRightLeft className="h-4 w-4 mr-2" />
-                {requestSubmitting ? "Submitting..." : "Submit request"}
+                {requestSubmitting ? tt("Submitting...", "Inatuma...") : tt("Submit request", "Tuma ombi")}
               </Button>
             </div>
           </form>
@@ -1467,21 +1469,21 @@ export default function GroupLoansPage() {
         <DialogContent className="sm:max-w-2xl p-6 sm:p-8">
           <DialogHeader>
             <DialogTitle className="text-xl font-extrabold">
-              {editingProductUuid ? "Update loan type" : "Add loan type"}
+              {editingProductUuid ? tt("Update loan type", "Sasisha aina ya mkopo") : tt("Add loan type", "Ongeza aina ya mkopo")}
             </DialogTitle>
             <DialogDescription className="mt-1 text-sm text-muted-foreground">
-              Define the principal amount, interest rate, and repayment window members can request.
+              {tt("Define the principal amount, interest rate, and repayment window members can request.", "Weka kiasi cha mkopo, riba, na muda wa marejesho ambao wanachama wanaweza kuomba.")}
             </DialogDescription>
           </DialogHeader>
 
           <form className="mt-4 space-y-4" onSubmit={handleProductSubmit}>
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="loan-name">Loan type name</FieldLabel>
+                <FieldLabel htmlFor="loan-name">{tt("Loan type name", "Jina la aina ya mkopo")}</FieldLabel>
                 <FieldContent>
                   <Input
                     id="loan-name"
-                    placeholder="Emergency support"
+                    placeholder={tt("Emergency support", "Msaada wa dharura")}
                     value={productForm.name}
                     onChange={(event) => handleProductInputChange("name", event.target.value)}
                     required
@@ -1490,7 +1492,7 @@ export default function GroupLoansPage() {
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="loan-amount">Amount (TZS)</FieldLabel>
+                <FieldLabel htmlFor="loan-amount">{tt("Amount (TZS)", "Kiasi (TZS)")}</FieldLabel>
                 <FieldContent>
                   <Input
                     id="loan-amount"
@@ -1505,7 +1507,7 @@ export default function GroupLoansPage() {
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="loan-interest-rate">Interest rate (%)</FieldLabel>
+                <FieldLabel htmlFor="loan-interest-rate">{tt("Interest rate (%)", "Kiwango cha riba (%)")}</FieldLabel>
                 <FieldContent>
                   <Input
                     id="loan-interest-rate"
@@ -1520,7 +1522,7 @@ export default function GroupLoansPage() {
               </Field>
 
               <Field>
-                <FieldLabel>Late payment penalty</FieldLabel>
+                <FieldLabel>{tt("Late payment penalty", "Adhabu ya kuchelewa kulipa")}</FieldLabel>
                 <FieldContent>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <button
@@ -1533,15 +1535,15 @@ export default function GroupLoansPage() {
                       }`}
                     >
                       <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                        Use group default
+                        {tt("Use group default", "Tumia kiwango cha kikundi")}
                       </p>
                       <p className="mt-2 text-base font-extrabold text-foreground">
                         {selectedGroup?.default_late_fee_amount
                           ? formatTzs(parseTzsAmount(selectedGroup.default_late_fee_amount))
-                          : "No default set"}
+                          : tt("No default set", "Hakuna kiwango kilichowekwa")}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Apply the shared late fee from group settings to this loan type.
+                        {tt("Apply the shared late fee from group settings to this loan type.", "Tumia ada ya kuchelewa ya pamoja kutoka mipangilio ya kikundi kwa aina hii ya mkopo.")}
                       </p>
                     </button>
 
@@ -1555,13 +1557,13 @@ export default function GroupLoansPage() {
                       }`}
                     >
                       <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                        Custom penalty
+                        {tt("Custom penalty", "Adhabu maalum")}
                       </p>
                       <p className="mt-2 text-base font-extrabold text-foreground">
-                        Enter your own
+                        {tt("Enter your own", "Weka yako")}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Set a specific late fee amount for this loan type.
+                        {tt("Set a specific late fee amount for this loan type.", "Weka kiasi maalum cha ada ya kuchelewa kwa aina hii ya mkopo.")}
                       </p>
                     </button>
                   </div>
@@ -1578,12 +1580,12 @@ export default function GroupLoansPage() {
                         onChange={(event) => handleProductInputChange("late_fee_amount", event.target.value)}
                       />
                       <p className="mt-2 text-xs text-muted-foreground">
-                        This amount is charged per overdue installment.
+                        {tt("This amount is charged per overdue installment.", "Kiasi hiki hutozwa kwa kila awamu iliyochelewa.")}
                       </p>
                     </div>
                   ) : (
                     <p className="mt-3 text-xs text-muted-foreground">
-                      The loan type will inherit the group default late fee setting.
+                      {tt("The loan type will inherit the group default late fee setting.", "Aina hii ya mkopo itatumia mpangilio wa kawaida wa ada ya kuchelewa wa kikundi.")}
                     </p>
                   )}
                 </FieldContent>
@@ -1591,7 +1593,7 @@ export default function GroupLoansPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field>
-                  <FieldLabel>Duration unit</FieldLabel>
+                  <FieldLabel>{tt("Duration unit", "Kipimo cha muda")}</FieldLabel>
                   <FieldContent>
                     <Select
                       value={productForm.duration_type}
@@ -1600,19 +1602,19 @@ export default function GroupLoansPage() {
                       }
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a duration unit" />
+                        <SelectValue placeholder={tt("Select a duration unit", "Chagua kipimo cha muda")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="MONTHS">Months</SelectItem>
-                        <SelectItem value="WEEKS">Weeks</SelectItem>
-                        <SelectItem value="DAYS">Days</SelectItem>
+                        <SelectItem value="MONTHS">{tt("Months", "Miezi")}</SelectItem>
+                        <SelectItem value="WEEKS">{tt("Weeks", "Wiki")}</SelectItem>
+                        <SelectItem value="DAYS">{tt("Days", "Siku")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </FieldContent>
                 </Field>
 
                 <Field>
-                  <FieldLabel htmlFor="loan-duration-count">Duration count</FieldLabel>
+                  <FieldLabel htmlFor="loan-duration-count">{tt("Duration count", "Idadi ya muda")}</FieldLabel>
                   <FieldContent>
                     <Input
                       id="loan-duration-count"
@@ -1630,11 +1632,11 @@ export default function GroupLoansPage() {
               </div>
 
               <Field>
-                <FieldLabel htmlFor="loan-description">Description</FieldLabel>
+                <FieldLabel htmlFor="loan-description">{tt("Description", "Maelezo")}</FieldLabel>
                 <FieldContent>
                   <Textarea
                     id="loan-description"
-                    placeholder="Explain when members should use this option and any repayment expectations."
+                    placeholder={tt("Explain when members should use this option and any repayment expectations.", "Eleza wakati wanachama wanapaswa kutumia chaguo hili na matarajio ya marejesho.")}
                     value={productForm.description}
                     onChange={(event) => handleProductInputChange("description", event.target.value)}
                   />
@@ -1644,17 +1646,17 @@ export default function GroupLoansPage() {
 
             <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-4">
               <Button type="button" variant="outline" onClick={closeProductModal}>
-                Cancel
+                {tt("Cancel", "Ghairi")}
               </Button>
               <Button type="submit" disabled={productSubmitting}>
                 <Plus className="h-4 w-4 mr-2" />
                 {productSubmitting
                   ? editingProductUuid
-                    ? "Saving..."
-                    : "Creating..."
+                    ? tt("Saving...", "Inahifadhi...")
+                    : tt("Creating...", "Inaunda...")
                   : editingProductUuid
-                    ? "Save changes"
-                    : "Create loan type"}
+                    ? tt("Save changes", "Hifadhi mabadiliko")
+                    : tt("Create loan type", "Unda aina ya mkopo")}
               </Button>
             </div>
           </form>
@@ -1664,55 +1666,55 @@ export default function GroupLoansPage() {
       <Dialog open={isProductDetailsModalOpen} onOpenChange={(open) => { if (!open) closeProductDetailsModal() }}>
         <DialogContent className="sm:max-w-md p-6 sm:p-8">
           <DialogHeader>
-            <DialogTitle className="text-xl font-extrabold">Loan type details</DialogTitle>
+            <DialogTitle className="text-xl font-extrabold">{tt("Loan type details", "Maelezo ya aina ya mkopo")}</DialogTitle>
           </DialogHeader>
 
           {selectedViewProduct ? (
             <div className="mt-4 space-y-5">
               <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Loan type name</p>
+                <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{tt("Loan type name", "Jina la aina ya mkopo")}</p>
                 <p className="mt-1 font-semibold text-foreground">{selectedViewProduct.name}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-2xl border border-border/70 bg-card/60 p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Amount</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{tt("Amount", "Kiasi")}</p>
                   <p className="mt-1 font-semibold text-foreground">{formatTzs(parseTzsAmount(selectedViewProduct.amount))}</p>
                 </div>
                 <div className="rounded-2xl border border-border/70 bg-card/60 p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Interest rate</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{tt("Interest rate", "Kiwango cha riba")}</p>
                   <p className="mt-1 font-semibold text-foreground">{selectedViewProduct.interest_rate}%</p>
                 </div>
                 <div className="col-span-2 rounded-2xl border border-border/70 bg-card/60 p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Duration</p>
-                  <p className="mt-1 font-semibold text-foreground">{selectedViewProduct.duration_count} {durationLabels[selectedViewProduct.duration_type]}</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{tt("Duration", "Muda")}</p>
+                  <p className="mt-1 font-semibold text-foreground">{selectedViewProduct.duration_count} {durationLabelTexts[selectedViewProduct.duration_type]}</p>
                 </div>
                 <div className="col-span-2 rounded-2xl border border-border/70 bg-card/60 p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Late payment penalty</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{tt("Late payment penalty", "Adhabu ya kuchelewa kulipa")}</p>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <Badge variant="outline" className="uppercase">
-                      {selectedViewProduct.use_group_default_late_fee ? "Group default" : "Custom"}
+                      {selectedViewProduct.use_group_default_late_fee ? tt("Group default", "Kiwango cha kikundi") : tt("Custom", "Maalum")}
                     </Badge>
                     <span className="text-sm font-semibold text-foreground">
                       {selectedViewProduct.use_group_default_late_fee
                         ? selectedGroup?.default_late_fee_amount
                           ? formatTzs(parseTzsAmount(selectedGroup.default_late_fee_amount))
-                          : "No default configured"
+                          : tt("No default configured", "Hakuna kiwango kilichowekwa")
                         : formatTzs(parseTzsAmount(selectedViewProduct.late_fee_amount))}
                     </span>
                   </div>
-                  <p className="mt-2 text-xs text-muted-foreground">Charged per overdue installment.</p>
+                  <p className="mt-2 text-xs text-muted-foreground">{tt("Charged per overdue installment.", "Hutozwa kwa kila awamu iliyochelewa.")}</p>
                 </div>
               </div>
 
               <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
-                <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Description</p>
-                <p className="mt-1 text-sm text-foreground">{selectedViewProduct.description || "No description provided."}</p>
+                <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{tt("Description", "Maelezo")}</p>
+                <p className="mt-1 text-sm text-foreground">{selectedViewProduct.description || tt("No description provided.", "Hakuna maelezo yaliyotolewa.")}</p>
               </div>
 
               <div className="flex flex-wrap items-center justify-end border-t border-border pt-4">
                 <Button type="button" variant="outline" onClick={closeProductDetailsModal}>
-                  Close
+                  {tt("Close", "Funga")}
                 </Button>
               </div>
             </div>

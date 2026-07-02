@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { Coins } from "lucide-react";
+import LanguageToggle from "@/components/language/language-toggle";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
@@ -10,6 +10,10 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       {/* Ambient background glows */}
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,var(--color-chart-1),transparent_45%)] opacity-25 dark:opacity-15" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_bottom_left,var(--color-chart-3),transparent_50%)] opacity-20 dark:opacity-10" />
+
+      <div className="absolute right-4 top-4 z-20 md:right-8 md:top-8">
+        <LanguageToggle compact />
+      </div>
 
       {/* Glassmorphic Auth Card Wrapper */}
       <Card className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 overflow-hidden rounded-[2rem] border border-border/80 bg-card/60 shadow-2xl shadow-chart-3/5 backdrop-blur-md">

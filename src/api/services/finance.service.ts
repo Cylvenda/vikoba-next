@@ -56,7 +56,7 @@ type LoanApiResponse = {
   borrower_name: string
   interest_rate: string
   purpose: string | null
-  status: "PENDING" | "APPROVED" | "REJECTED" | "ACTIVE" | "PAID_OFF" | "OVERDUE" | "COMPLETED" | "DEFAULTED"
+  status: "PENDING" | "APPROVED" | "REJECTED" | "PAYOUT_REVERSED" | "ACTIVE" | "PAID_OFF" | "OVERDUE" | "COMPLETED" | "DEFAULTED"
   approved_by: string | null
   approved_at: string | null
   disbursed_at: string | null

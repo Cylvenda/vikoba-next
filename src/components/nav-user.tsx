@@ -2,6 +2,8 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useLanguage } from "@/components/language/language-provider"
+import { getTranslation } from "@/lib/i18n"
 import {
   Avatar,
   AvatarFallback,
@@ -38,6 +40,7 @@ export function NavUser({
   const { isMobile } = useSidebar()
   const router = useRouter()
   const logout = useAuthUserStore((state) => state.logout)
+  const { language } = useLanguage()
   const initials =
     user.name
       .split(" ")
@@ -100,7 +103,7 @@ export function NavUser({
               <DropdownMenuItem asChild>
                 <Link href="/profile">
                 <SparklesIcon/>
-                Profile
+                {getTranslation(language, "actions.profile")}
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -109,7 +112,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => void handleLogout()}>
               <LogOut />
-              Log out
+              {getTranslation(language, "actions.signOut")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

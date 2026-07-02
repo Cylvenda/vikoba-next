@@ -10,9 +10,13 @@ import { useAuthUserStore } from "@/store/auth/userAuth.store"
 import { authUserService } from "@/api/services/auth.service"
 import { userServices } from "@/api/services/user.service"
 import ThemeToggle from "@/components/theme/theme-toggle"
+import { useLanguage } from "@/components/language/language-provider"
 
 export default function SettingsPage() {
   const { user } = useAuthUserStore()
+  const { language } = useLanguage()
+  const isSwahili = language === "sw"
+  const tt = (en: string, sw: string) => (isSwahili ? sw : en)
   const [sendingReset, setSendingReset] = useState(false)
   const [sendingActivation, setSendingActivation] = useState(false)
 
@@ -22,9 +26,9 @@ export default function SettingsPage() {
     setSendingReset(true)
     try {
       await authUserService.requestPasswordReset({ email: user.email })
-      toast.success("Password reset email sent.")
+      toast.success(tt("Password reset email sent.", "Barua pepe ya kurejesha nenosiri imetumwa."))
     } catch {
-      toast.error("Failed to send password reset email.")
+      toast.error(tt("Failed to send password reset email.", "Imeshindikana kutuma barua pepe ya kurejesha nenosiri."))
     } finally {
       setSendingReset(false)
     }
@@ -36,9 +40,9 @@ export default function SettingsPage() {
     setSendingActivation(true)
     try {
       await userServices.emailActivation(user.email)
-      toast.success("Activation email sent.")
+      toast.success(tt("Activation email sent.", "Barua pepe ya uanzishaji imetumwa."))
     } catch {
-      toast.error("Failed to send activation email.")
+      toast.error(tt("Failed to send activation email.", "Imeshindikana kutuma barua pepe ya uanzishaji."))
     } finally {
       setSendingActivation(false)
     }
@@ -49,9 +53,9 @@ export default function SettingsPage() {
       <div className="mx-auto w-full max-w-screen-3xl space-y-6">
       <Card className="border-none bg-accent shadow-sm">
         <CardHeader>
-          <CardTitle className="text-3xl">Settings</CardTitle>
+          <CardTitle className="text-3xl">{tt("Settings", "Mipangilio")}</CardTitle>
           <CardDescription>
-            Manage account security, profile shortcuts, and workspace access from one place.
+            {tt("Manage account security, profile shortcuts, and workspace access from one place.", "Dhibiti usalama wa akaunti, njia za mkato za wasifu, na ufikiaji wa nafasi ya kazi kutoka sehemu moja.")}
           </CardDescription>
         </CardHeader>
       </Card>
@@ -59,35 +63,35 @@ export default function SettingsPage() {
       <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
         <Card className="border-none bg-card shadow-sm">
           <CardHeader>
-            <CardTitle>Account overview</CardTitle>
-            <CardDescription>Your current account identity inside Community Hub.</CardDescription>
+            <CardTitle>{tt("Account overview", "Muhtasari wa akaunti")}</CardTitle>
+            <CardDescription>{tt("Your current account identity inside Community Hub.", "Utambulisho wako wa sasa wa akaunti ndani ya Community Hub.")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-2xl bg-muted p-4">
-              <p className="text-sm text-muted-foreground">Signed in as</p>
-              <p className="mt-1 text-lg font-semibold">{user?.email ?? "Unknown user"}</p>
+              <p className="text-sm text-muted-foreground">{tt("Signed in as", "Umeingia kama")}</p>
+              <p className="mt-1 text-lg font-semibold">{user?.email ?? tt("Unknown user", "Mtumiaji hajulikani")}</p>
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
               <div className="rounded-2xl bg-muted p-4">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Role</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">{tt("Role", "Jukumu")}</p>
                 <p className="mt-1 text-sm font-medium">
-                  {user?.isAdmin ? "Administrator" : user?.isStaff ? "Staff member" : "Standard member"}
+                  {user?.isAdmin ? tt("Administrator", "Msimamizi") : user?.isStaff ? tt("Staff member", "Mfanyakazi") : tt("Standard member", "Mwanachama wa kawaida")}
                 </p>
               </div>
               <div className="rounded-2xl bg-muted p-4">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Status</p>
-                <p className="mt-1 text-sm font-medium">{user?.isActive ? "Active" : "Awaiting activation"}</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">{tt("Status", "Hali")}</p>
+                <p className="mt-1 text-sm font-medium">{user?.isActive ? tt("Active", "Hai") : tt("Awaiting activation", "Inasubiri uanzishaji")}</p>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-3">
               <Button asChild>
-                <Link href="/profile">Open profile</Link>
+                <Link href="/profile">{tt("Open profile", "Fungua wasifu")}</Link>
               </Button>
               {user?.isAdmin && (
                 <Button asChild variant="outline">
-                  <Link href="/admin">Open admin panel</Link>
+                  <Link href="/admin">{tt("Open admin panel", "Fungua paneli ya msimamizi")}</Link>
                 </Button>
               )}
             </div>
@@ -96,8 +100,8 @@ export default function SettingsPage() {
 
         <Card className="border-none bg-card shadow-sm">
           <CardHeader>
-            <CardTitle>Security</CardTitle>
-            <CardDescription>Use these actions when you need to secure or reactivate your account.</CardDescription>
+            <CardTitle>{tt("Security", "Usalama")}</CardTitle>
+            <CardDescription>{tt("Use these actions when you need to secure or reactivate your account.", "Tumia vitendo hivi unapohitaji kulinda au kuwasha upya akaunti yako.")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-2xl border border-border p-4">
@@ -106,12 +110,12 @@ export default function SettingsPage() {
                   <KeyRound className="size-4" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium">Password reset email</p>
+                  <p className="font-medium">{tt("Password reset email", "Barua pepe ya kurejesha nenosiri")}</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Send yourself a reset link if you want to change your password securely.
+                    {tt("Send yourself a reset link if you want to change your password securely.", "Jitumie kiungo cha kurejesha ikiwa unataka kubadilisha nenosiri lako kwa usalama.")}
                   </p>
                   <Button className="mt-3 bg-chart-3" onClick={handlePasswordReset} disabled={sendingReset}>
-                    {sendingReset ? "Sending..." : "Send reset link"}
+                    {sendingReset ? tt("Sending...", "Inatuma...") : tt("Send reset link", "Tuma kiungo cha kurejesha")}
                   </Button>
                 </div>
               </div>
@@ -123,12 +127,12 @@ export default function SettingsPage() {
                   <MailCheck className="size-4" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium">Activation email</p>
+                  <p className="font-medium">{tt("Activation email", "Barua pepe ya uanzishaji")}</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Resend an activation email if your account still needs verification.
+                    {tt("Resend an activation email if your account still needs verification.", "Tuma tena barua pepe ya uanzishaji ikiwa akaunti yako bado inahitaji uthibitisho.")}
                   </p>
                   <Button variant="outline" className="mt-3" onClick={handleActivationEmail} disabled={sendingActivation}>
-                    {sendingActivation ? "Sending..." : "Resend activation"}
+                    {sendingActivation ? tt("Sending...", "Inatuma...") : tt("Resend activation", "Tuma tena uanzishaji")}
                   </Button>
                 </div>
               </div>
@@ -137,7 +141,7 @@ export default function SettingsPage() {
             <div className="rounded-2xl bg-chart-2/12 p-4 text-sm text-foreground ring-1 ring-chart-2/30">
               <div className="flex items-start gap-3">
                 <ShieldCheck className="mt-0.5 size-4 shrink-0" />
-                Use password reset if you think your account was accessed from another device.
+                {tt("Use password reset if you think your account was accessed from another device.", "Tumia urejeshaji wa nenosiri ikiwa unafikiri akaunti yako ilifikiwa kutoka kifaa kingine.")}
               </div>
             </div>
           </CardContent>
@@ -145,14 +149,14 @@ export default function SettingsPage() {
 
         <Card className="border-none bg-card shadow-sm lg:col-span-2">
           <CardHeader>
-            <CardTitle>Appearance</CardTitle>
-            <CardDescription>Switch the workspace between light and dark themes.</CardDescription>
+            <CardTitle>{tt("Appearance", "Mwonekano")}</CardTitle>
+            <CardDescription>{tt("Switch the workspace between light and dark themes.", "Badilisha nafasi ya kazi kati ya mandhari nyepesi na ya giza.")}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="font-medium">Theme mode</p>
+              <p className="font-medium">{tt("Theme mode", "Hali ya mandhari")}</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Your selection is saved on this device and applied the next time you return.
+                {tt("Your selection is saved on this device and applied the next time you return.", "Chaguo lako huhifadhiwa kwenye kifaa hiki na kutumika unaporudi tena.")}
               </p>
             </div>
             <ThemeToggle />

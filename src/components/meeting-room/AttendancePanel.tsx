@@ -1,14 +1,17 @@
 "use client"
 
 import type { MeetingAttendanceItem } from "@/components/meeting-room/types"
+import { useLanguage } from "@/components/language/language-provider"
 
 type AttendancePanelProps = {
   items: MeetingAttendanceItem[]
 }
 
-function formatJoinTime(value: string | null, status: MeetingAttendanceItem["status"]) {
+function formatJoinTime(value: string | null, status: MeetingAttendanceItem["status"], language: "en" | "sw") {
   if (!value) {
-    return status === "online" ? "Live now" : "Waiting to join"
+    return status === "online"
+      ? (language === "sw" ? "Yupo sasa" : "Live now")
+      : (language === "sw" ? "Anasubiri kujiunga" : "Waiting to join")
   }
 
   return new Intl.DateTimeFormat("en-US", {
@@ -20,6 +23,8 @@ function formatJoinTime(value: string | null, status: MeetingAttendanceItem["sta
 }
 
 export function AttendancePanel({ items }: AttendancePanelProps) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   return (
     <div className="flex h-full min-h-0 flex-col rounded-md">
       <div className="app-scrollbar flex-1 space-y-3 overflow-y-auto px-1 py-2">
@@ -29,10 +34,10 @@ export function AttendancePanel({ items }: AttendancePanelProps) {
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-card-foreground">
                   {item.name}
-                  {item.isCurrentUser ? " (You)" : ""}
+                  {item.isCurrentUser ? ` (${tt("You", "Wewe")})` : ""}
                 </p>
                 <p className="truncate text-sm text-muted-foreground">{item.email}</p>
-                <p className="mt-2 text-xs text-muted-foreground">Joined: {formatJoinTime(item.joinedAt, item.status)}</p>
+                <p className="mt-2 text-xs text-muted-foreground">{tt("Joined:", "Alijiunga:")} {formatJoinTime(item.joinedAt, item.status, language)}</p>
               </div>
 
               <div className="flex flex-col items-end gap-2">
@@ -44,7 +49,7 @@ export function AttendancePanel({ items }: AttendancePanelProps) {
                       : "bg-muted text-muted-foreground",
                   ].join(" ")}
                 >
-                  {item.badge}
+                  {item.badge === "CHAIRPERSON" ? tt("CHAIRPERSON", "MWENYEKITI") : item.badge === "SECRETARY" ? tt("SECRETARY", "KATIBU") : item.badge === "TREASURER" ? tt("TREASURER", "MWEKA HAZINA") : tt("MEMBER", "MWANACHAMA")}
                 </span>
                 <span
                   className={[
@@ -52,7 +57,7 @@ export function AttendancePanel({ items }: AttendancePanelProps) {
                     item.status === "online" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200" : "bg-muted text-muted-foreground",
                   ].join(" ")}
                 >
-                  {item.status}
+                  {item.status === "online" ? tt("online", "yupo") : tt("offline", "hayupo")}
                 </span>
               </div>
             </div>

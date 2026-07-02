@@ -29,6 +29,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { useGroupStore } from "@/store/group/groupUser.store"
 import { formatTzs } from "@/lib/vikoba-finance"
+import { useLanguage } from "@/components/language/language-provider"
 
 function parseTzsAmount(value: string | number) {
   return Number(value || 0)
@@ -68,6 +69,8 @@ export default function LoanDetailsPage() {
   const loanId = Array.isArray(params?.loanId) ? params.loanId[0] : params?.loanId
 
   const { selectedGroup, selectedGroupMembers, fetchGroupById, fetchSelectedGroupMembers } = useGroupStore()
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
 
   const [loan, setLoan] = useState<Loan | null>(null)
   const [installments, setInstallments] = useState<LoanInstallment[]>([])
@@ -113,7 +116,7 @@ export default function LoanDetailsPage() {
         if (!cancelled) {
           toast.error(
             (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
-              (error instanceof Error ? error.message : "Unable to load loan details.")
+              (error instanceof Error ? error.message : (language === "sw" ? "Imeshindikana kupakia maelezo ya mkopo." : "Unable to load loan details."))
           )
         }
       } finally {
@@ -128,7 +131,7 @@ export default function LoanDetailsPage() {
     return () => {
       cancelled = true
     }
-  }, [groupId, loanId])
+  }, [groupId, language, loanId])
 
   const borrower = useMemo(() => {
     if (!loan) return null
@@ -195,12 +198,12 @@ export default function LoanDetailsPage() {
           : parseTzsAmount(customAmount)
 
     if (!Number.isFinite(amount) || amount <= 0) {
-      toast.error("Please enter a valid amount before continuing.")
+      toast.error(tt("Please enter a valid amount before continuing.", "Tafadhali ingiza kiasi sahihi kabla ya kuendelea."))
       return
     }
 
     if (amount > activeBalance) {
-      toast.error("The repayment amount cannot exceed the remaining balance.")
+      toast.error(tt("The repayment amount cannot exceed the remaining balance.", "Kiasi cha marejesho hakiwezi kuzidi salio lililobaki."))
       return
     }
 
@@ -229,7 +232,7 @@ export default function LoanDetailsPage() {
       <div className="min-h-screen overflow-x-hidden p-4 sm:p-5 md:p-8">
         <div className="mx-auto w-full max-w-8xl">
           <Card className="border-border/60 bg-card/90 shadow-sm">
-            <CardContent className="py-16 text-center text-muted-foreground">Loading loan details...</CardContent>
+            <CardContent className="py-16 text-center text-muted-foreground">{tt("Loading loan details...", "Inapakia maelezo ya mkopo...")}</CardContent>
           </Card>
         </div>
       </div>
@@ -243,17 +246,17 @@ export default function LoanDetailsPage() {
           <Button variant="ghost" asChild className="w-fit text-muted-foreground hover:text-foreground">
             <Link href={`/group/${groupId}/loans`}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to loans
+              {tt("Back to loans", "Rudi kwenye mikopo")}
             </Link>
           </Button>
           <Card className="border-border/60 bg-card/90 shadow-sm">
             <CardContent className="py-16 text-center">
               <Badge variant="outline" className="mb-4 uppercase">
-                Loan not found
+                {tt("Loan not found", "Mkopo haujapatikana")}
               </Badge>
-              <h1 className="text-2xl font-extrabold text-foreground">We could not find this loan</h1>
+              <h1 className="text-2xl font-extrabold text-foreground">{tt("We could not find this loan", "Hatukuweza kupata mkopo huu")}</h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                The loan may have been removed or you may not have access to this record.
+                {tt("The loan may have been removed or you may not have access to this record.", "Huenda mkopo umeondolewa au huna ruhusa ya kuona rekodi hii.")}
               </p>
             </CardContent>
           </Card>
@@ -275,14 +278,14 @@ export default function LoanDetailsPage() {
           >
             <Link href={`/group/${groupId}/loans`}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to loans
+              {tt("Back to loans", "Rudi kwenye mikopo")}
             </Link>
           </Button>
           <Badge
             variant="secondary"
             className="rounded-full px-3 py-1 uppercase tracking-[0.18em]"
           >
-            {selectedGroup?.name || "Group loan ledger"}
+            {selectedGroup?.name || tt("Group loan ledger", "Rejista ya mikopo ya kikundi")}
           </Badge>
         </div>
 
@@ -298,13 +301,25 @@ export default function LoanDetailsPage() {
                   variant="outline"
                   className="rounded-full uppercase tracking-[0.16em]"
                 >
-                  Loan details
+                  {tt("Loan details", "Maelezo ya mkopo")}
                 </Badge>
                 <Badge
                   variant="secondary"
                   className="rounded-full uppercase tracking-[0.16em]"
                 >
-                  {getStatusLabel(loan.status)}
+                  {language === "sw"
+                    ? ({
+                        PENDING: "inasubiri",
+                        APPROVED: "imeidhinishwa",
+                        REJECTED: "imekataliwa",
+                        PAYOUT_REVERSED: "malipo yamerejeshwa",
+                        ACTIVE: "inaendelea",
+                        PAID_OFF: "imelipwa yote",
+                        OVERDUE: "imechelewa",
+                        COMPLETED: "imekamilika",
+                        DEFAULTED: "imeshindwa kulipwa",
+                      } as Record<Loan["status"], string>)[loan.status]
+                    : getStatusLabel(loan.status)}
                 </Badge>
               </div>
 
@@ -313,8 +328,7 @@ export default function LoanDetailsPage() {
                   {loan.loan_product_name}
                 </h1>
                 <p className="mt-2 max-w-3xl text-sm text-muted-foreground md:text-base">
-                  A complete repayment view with installment schedule, active
-                  installment status, and payment history.
+                  {tt("A complete repayment view with installment schedule, active installment status, and payment history.", "Mwonekano kamili wa marejesho wenye ratiba ya awamu, hali ya awamu inayoendelea, na historia ya malipo.")}
                 </p>
               </div>
 
@@ -322,7 +336,7 @@ export default function LoanDetailsPage() {
                 <Card className="border-border/60 bg-background/80 shadow-sm">
                   <CardContent className="p-4">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      Principal
+                      {tt("Principal", "Mtaji")}
                     </p>
                     <p className="mt-2 text-xl font-extrabold text-foreground">
                       {formatTzs(parseTzsAmount(loan.principal_amount))}
@@ -332,7 +346,7 @@ export default function LoanDetailsPage() {
                 <Card className="border-border/60 bg-background/80 shadow-sm">
                   <CardContent className="p-4">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      Total repayment
+                      {tt("Total repayment", "Jumla ya marejesho")}
                     </p>
                     <p className="mt-2 text-xl font-extrabold text-foreground">
                       {formatTzs(parseTzsAmount(loan.total_repayment_amount))}
@@ -342,7 +356,7 @@ export default function LoanDetailsPage() {
                 <Card className="border-border/60 bg-background/80 shadow-sm">
                   <CardContent className="p-4">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      Paid so far
+                      {tt("Paid so far", "Iliyolipwa")}
                     </p>
                     <p className="mt-2 text-xl font-extrabold text-chart-3">
                       {formatTzs(parseTzsAmount(loan.total_paid))}
@@ -352,7 +366,7 @@ export default function LoanDetailsPage() {
                 <Card className="border-border/60 bg-background/80 shadow-sm">
                   <CardContent className="p-4">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      Remaining
+                      {tt("Remaining", "Iliyobaki")}
                     </p>
                     <p className="mt-2 text-xl font-extrabold text-destructive">
                       {formatTzs(activeBalance)}
@@ -364,7 +378,7 @@ export default function LoanDetailsPage() {
               <div className="rounded-2xl border border-border/60 bg-background/80 p-4">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <span className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                    Repayment progress
+                    {tt("Repayment progress", "Maendeleo ya marejesho")}
                   </span>
                   <span className="text-sm font-extrabold text-foreground">
                     {loanProgress}%
@@ -386,26 +400,22 @@ export default function LoanDetailsPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-destructive">
-                        Late payment penalties
+                        {tt("Late payment penalties", "Adhabu za kuchelewa kulipa")}
                       </p>
                       <h3 className="mt-1 text-base font-bold text-foreground">
-                        {latePenaltySummary.overdueInstallments} overdue installment
-                        {latePenaltySummary.overdueInstallments === 1 ? "" : "s"}
+                        {latePenaltySummary.overdueInstallments} {tt("overdue installment(s)", "awamu zilizochelewa")}
                       </h3>
                       <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                        {formatTzs(latePenaltySummary.perInstallmentPenalty)} per overdue installment,
-                        totaling {formatTzs(latePenaltySummary.penaltyAmount)} in late payment penalties.
+                        {formatTzs(latePenaltySummary.perInstallmentPenalty)} {tt("per overdue installment, totaling", "kwa kila awamu iliyochelewa, jumla")} {formatTzs(latePenaltySummary.penaltyAmount)} {tt("in late payment penalties.", "ya adhabu za kuchelewa.")}
                         {latePenaltySummary.maxDaysOverdue > 0 ? (
                           <>
                             {" "}
-                            The oldest overdue installment is about {latePenaltySummary.maxDaysOverdue} day
-                            {latePenaltySummary.maxDaysOverdue === 1 ? "" : "s"} late.
+                            {tt("The oldest overdue installment is about", "Awamu ya zamani zaidi imechelewa takriban")} {latePenaltySummary.maxDaysOverdue} {tt("day(s).", "siku.")}
                           </>
                         ) : null}
                       </p>
                       <p className="mt-2 text-xs text-muted-foreground">
-                        This page shows the amount that has fallen behind schedule.
-                        If your group uses an extra late-fee rule, we can wire that in next.
+                        {tt("This page shows the amount that has fallen behind schedule.", "Ukurasa huu unaonyesha kiasi kilichochelewa kulingana na ratiba.")}
                       </p>
                     </div>
                   </div>
@@ -421,10 +431,10 @@ export default function LoanDetailsPage() {
                   </div>
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      Repayment actions
+                      {tt("Repayment actions", "Vitendo vya marejesho")}
                     </p>
                     <h2 className="mt-1 text-lg font-bold text-foreground">
-                      Choose how to pay
+                      {tt("Choose how to pay", "Chagua jinsi ya kulipa")}
                     </h2>
                   </div>
                 </div>
@@ -438,7 +448,7 @@ export default function LoanDetailsPage() {
                   >
                     <span className="min-w-0">
                       <span className="block text-xs uppercase tracking-[0.16em] opacity-80">
-                        Full balance
+                        {tt("Full balance", "Salio lote")}
                       </span>
                       <span className="mt-1 block text-lg font-extrabold">
                         {formatTzs(activeBalance)}
@@ -456,7 +466,7 @@ export default function LoanDetailsPage() {
                   >
                     <span className="min-w-0">
                       <span className="block text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                        Next installment
+                        {tt("Next installment", "Awamu inayofuata")}
                       </span>
                       <span className="mt-1 block text-lg font-extrabold">
                         {activeInstallment
@@ -474,7 +484,7 @@ export default function LoanDetailsPage() {
 
                 <div className="space-y-3 rounded-2xl border border-border/60 bg-muted/20 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    Custom amount
+                    {tt("Custom amount", "Kiasi maalum")}
                   </p>
                   <Input
                     type="number"
@@ -483,7 +493,7 @@ export default function LoanDetailsPage() {
                     step="0.01"
                     value={customAmount}
                     onChange={(event) => setCustomAmount(event.target.value)}
-                    placeholder={`Up to ${formatTzs(activeBalance)}`}
+                    placeholder={`${tt("Up to", "Hadi")} ${formatTzs(activeBalance)}`}
                   />
                   <Button
                     type="button"
@@ -492,7 +502,7 @@ export default function LoanDetailsPage() {
                     onClick={() => navigateToPayment("custom")}
                     disabled={!isRepayable}
                   >
-                    Continue with custom amount
+                    {tt("Continue with custom amount", "Endelea na kiasi maalum")}
                   </Button>
                 </div>
 
@@ -500,13 +510,11 @@ export default function LoanDetailsPage() {
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="h-4 w-4 text-chart-3" />
                     <span className="text-sm font-semibold text-foreground">
-                      Installment aware
+                      {tt("Installment aware", "Inazingatia awamu")}
                     </span>
                   </div>
                   <p className="mt-2 text-xs text-muted-foreground">
-                    Payments are allocated oldest-unpaid installment first, so
-                    the ledger stays accurate even when users choose a custom
-                    amount.
+                    {tt("Payments are allocated to the oldest unpaid installment first, so the ledger stays accurate even when users choose a custom amount.", "Malipo huwekwa kwanza kwenye awamu ya zamani ambayo haijalipwa, hivyo rejista hubaki sahihi hata kiasi maalum kinapotumika.")}
                   </p>
                 </div>
               </CardContent>
@@ -521,7 +529,7 @@ export default function LoanDetailsPage() {
                 <div className="flex items-center gap-2">
                   <Landmark className="h-4 w-4 text-muted-foreground" />
                   <h2 className="text-lg font-bold text-foreground">
-                    Loan overview
+                    {tt("Loan overview", "Muhtasari wa mkopo")}
                   </h2>
                 </div>
                 <Badge variant="outline" className="uppercase">
@@ -532,7 +540,7 @@ export default function LoanDetailsPage() {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-border/60 bg-background/80 p-4">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Interest rate
+                    {tt("Interest rate", "Kiwango cha riba")}
                   </p>
                   <p className="mt-1 text-lg font-bold text-foreground">
                     {loan.interest_rate}%
@@ -540,7 +548,7 @@ export default function LoanDetailsPage() {
                 </div>
                 <div className="rounded-2xl border border-border/60 bg-background/80 p-4">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Due date
+                    {tt("Due date", "Tarehe ya mwisho")}
                   </p>
                   <p className="mt-1 text-lg font-bold text-foreground">
                     {formatDate(loan.due_date)}
@@ -548,7 +556,7 @@ export default function LoanDetailsPage() {
                 </div>
                 <div className="rounded-2xl border border-border/60 bg-background/80 p-4">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Approved at
+                    {tt("Approved at", "Imeidhinishwa tarehe")}
                   </p>
                   <p className="mt-1 text-lg font-bold text-foreground">
                     {loan.approved_at ? formatDate(loan.approved_at) : "N/A"}
@@ -556,7 +564,7 @@ export default function LoanDetailsPage() {
                 </div>
                 <div className="rounded-2xl border border-border/60 bg-background/80 p-4">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Disbursed at
+                    {tt("Disbursed at", "Imetolewa tarehe")}
                   </p>
                   <p className="mt-1 text-lg font-bold text-foreground">
                     {loan.disbursed_at ? formatDate(loan.disbursed_at) : "N/A"}
@@ -566,11 +574,11 @@ export default function LoanDetailsPage() {
 
               <div className="mt-4 rounded-2xl border border-border/60 bg-background/80 p-4">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Purpose
+                  {tt("Purpose", "Madhumuni")}
                 </p>
                 <p className="mt-2 wrap-break-word text-sm leading-6 text-foreground">
                   {loan.purpose ||
-                    "No purpose was provided for this loan request."}
+                    tt("No purpose was provided for this loan request.", "Hakuna madhumuni yaliyotolewa kwa ombi hili la mkopo.")}
                 </p>
               </div>
             </CardContent>
@@ -580,38 +588,38 @@ export default function LoanDetailsPage() {
             <CardContent className="p-6">
               <div className="mb-4 flex items-center gap-2">
                 <UserRound className="h-4 w-4 text-muted-foreground" />
-                <h2 className="text-lg font-bold text-foreground">Requester</h2>
+                <h2 className="text-lg font-bold text-foreground">{tt("Requester", "Mwombaji")}</h2>
               </div>
 
               <div className="space-y-4">
                 <div className="rounded-2xl border border-border/60 bg-background/80 p-4">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Name
+                    {tt("Name", "Jina")}
                   </p>
                   <p className="mt-1 wrap-break-word text-lg font-bold text-foreground">
                     {borrower
                       ? `${borrower.first_name} ${borrower.last_name}`.trim() ||
                         borrower.email
-                      : loan.borrower_name || "Unnamed member"}
+                      : loan.borrower_name || tt("Unnamed member", "Mwanachama asiye na jina")}
                   </p>
                 </div>
                 <div className="rounded-2xl border border-border/60 bg-background/80 p-4">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Email
+                    {tt("Email", "Barua pepe")}
                   </p>
                   <p className="mt-1 inline-flex min-w-0 items-center gap-2 break-words text-sm font-semibold text-foreground">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    {borrower?.email || "No email available"}
+                    {borrower?.email || tt("No email available", "Hakuna barua pepe")}
                   </p>
                 </div>
                 <div className="rounded-2xl border border-border/60 bg-background/80 p-4">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Membership status
+                    {tt("Membership status", "Hali ya uanachama")}
                   </p>
                   <p className="mt-1 text-sm font-semibold text-foreground">
                     {borrower
-                      ? `${borrower.role} ${borrower.is_verified ? "· Verified" : "· Pending verification"}`
-                      : "Not loaded from the group members list"}
+                      ? `${borrower.role} ${borrower.is_verified ? tt("- Verified", "- Amethibitishwa") : tt("- Pending verification", "- Anasubiri uthibitisho")}`
+                      : tt("Not loaded from the group members list", "Hajapatikana kwenye orodha ya wanachama")}
                   </p>
                 </div>
               </div>
@@ -626,11 +634,11 @@ export default function LoanDetailsPage() {
                 <div className="flex items-center gap-2">
                   <Clock3 className="h-4 w-4 text-muted-foreground" />
                   <h2 className="text-lg font-bold text-foreground">
-                    Installment schedule
+                    {tt("Installment schedule", "Ratiba ya awamu")}
                   </h2>
                 </div>
                 <Badge variant="secondary" className="uppercase">
-                  {installments.length} items
+                  {installments.length} {tt("items", "rekodi")}
                 </Badge>
               </div>
 
@@ -643,24 +651,30 @@ export default function LoanDetailsPage() {
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                          Installment {installment.installment_number}
+                          {tt("Installment", "Awamu")} {installment.installment_number}
                         </p>
                         <p className="mt-1 wrap-break-word text-sm text-foreground">
-                          Due {formatDate(installment.due_date)}
+                          {tt("Due", "Mwisho")} {formatDate(installment.due_date)}
                         </p>
                       </div>
                       <Badge
                         variant="outline"
                         className={`uppercase ${statusTone(installment.status)}`}
                       >
-                        {installment.status.toLowerCase()}
+                        {installment.status === "PAID"
+                          ? tt("paid", "imelipwa")
+                          : installment.status === "PARTIAL"
+                            ? tt("partial", "sehemu")
+                            : installment.status === "OVERDUE"
+                              ? tt("overdue", "imechelewa")
+                              : tt("pending", "inasubiri")}
                       </Badge>
                     </div>
 
                     <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
                       <div className="rounded-xl bg-muted/30 p-3">
                         <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                          Due
+                          {tt("Due", "Inayodaiwa")}
                         </p>
                         <p className="mt-1 font-semibold text-foreground">
                           {formatTzs(parseTzsAmount(installment.amount_due))}
@@ -668,7 +682,7 @@ export default function LoanDetailsPage() {
                       </div>
                       <div className="rounded-xl bg-muted/30 p-3">
                         <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                          Paid
+                          {tt("Paid", "Imelipwa")}
                         </p>
                         <p className="mt-1 font-semibold text-chart-3">
                           {formatTzs(parseTzsAmount(installment.amount_paid))}
@@ -676,7 +690,7 @@ export default function LoanDetailsPage() {
                       </div>
                       <div className="rounded-xl bg-muted/30 p-3">
                         <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                          Remaining
+                          {tt("Remaining", "Iliyobaki")}
                         </p>
                         <p className="mt-1 font-semibold text-destructive">
                           {formatTzs(
@@ -689,7 +703,7 @@ export default function LoanDetailsPage() {
                 ))}
                 {installments.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
-                    No installments have been generated yet.
+                    {tt("No installments have been generated yet.", "Bado hakuna awamu zilizotengenezwa.")}
                   </p>
                 ) : null}
               </div>
@@ -702,11 +716,11 @@ export default function LoanDetailsPage() {
                 <div className="flex items-center gap-2">
                   <ReceiptText className="h-4 w-4 text-muted-foreground" />
                   <h2 className="text-lg font-bold text-foreground">
-                    Payment history
+                    {tt("Payment history", "Historia ya malipo")}
                   </h2>
                 </div>
                 <Badge variant="secondary" className="uppercase">
-                  {payments.length} records
+                  {payments.length} {tt("records", "rekodi")}
                 </Badge>
               </div>
 
@@ -722,7 +736,7 @@ export default function LoanDetailsPage() {
                           {formatTzs(parseTzsAmount(payment.amount))}
                         </p>
                         <p className="mt-1 text-xs text-muted-foreground">
-                          Paid {formatDate(payment.payment_date)}
+                          {tt("Paid", "Imelipwa")} {formatDate(payment.payment_date)}
                         </p>
                       </div>
                       <Badge variant="outline" className="uppercase">
@@ -732,16 +746,16 @@ export default function LoanDetailsPage() {
 
                     <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
                       <span className="rounded-full bg-muted/30 px-2.5 py-1">
-                        Installment {payment.installment_number ?? "N/A"}
+                        {tt("Installment", "Awamu")} {payment.installment_number ?? "N/A"}
                       </span>
                       {payment.reference ? (
                         <span className="max-w-full break-words rounded-full bg-muted/30 px-2.5 py-1">
-                          Ref {payment.reference}
+                          {tt("Ref", "Rejea")} {payment.reference}
                         </span>
                       ) : null}
                       {payment.note ? (
                         <span className="max-w-full break-words rounded-full bg-muted/30 px-2.5 py-1">
-                          Note {payment.note}
+                          {tt("Note", "Maelezo")} {payment.note}
                         </span>
                       ) : null}
                     </div>
@@ -751,11 +765,10 @@ export default function LoanDetailsPage() {
                   <div className="rounded-2xl border border-dashed border-border/70 bg-background/70 py-12 text-center">
                     <BadgeInfo className="mx-auto h-6 w-6 text-muted-foreground" />
                     <p className="mt-3 text-sm font-semibold text-foreground">
-                      No payment history yet
+                      {tt("No payment history yet", "Bado hakuna historia ya malipo")}
                     </p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Payments will appear here as soon as the borrower starts
-                      repaying this loan.
+                      {tt("Payments will appear here as soon as the borrower starts repaying this loan.", "Malipo yataonekana hapa mara mkopaji atakapoanza kurejesha mkopo huu.")}
                     </p>
                   </div>
                 ) : null}
@@ -768,7 +781,7 @@ export default function LoanDetailsPage() {
               <div className="mb-4 flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 <h2 className="text-lg font-bold text-foreground">
-                  Summary notes
+                  {tt("Summary notes", "Maelezo ya muhtasari")}
                 </h2>
               </div>
 
@@ -777,12 +790,11 @@ export default function LoanDetailsPage() {
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-chart-3" />
                     <span className="text-sm font-semibold text-foreground">
-                      Repayment rule
+                      {tt("Repayment rule", "Kanuni ya marejesho")}
                     </span>
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Payments are allocated to the oldest unpaid installment
-                    first.
+                    {tt("Payments are allocated to the oldest unpaid installment first.", "Malipo huwekwa kwanza kwenye awamu ya zamani ambayo haijalipwa.")}
                   </p>
                 </div>
 
@@ -790,12 +802,11 @@ export default function LoanDetailsPage() {
                   <div className="flex items-center gap-2">
                     <CreditCard className="h-4 w-4 text-chart-2" />
                     <span className="text-sm font-semibold text-foreground">
-                      Available methods
+                      {tt("Available methods", "Njia zinazopatikana")}
                     </span>
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Cash, mobile money, bank transfer, and credit card payments
-                    are supported by the ledger.
+                    {tt("Cash, mobile money, bank transfer, and credit card payments are supported by the ledger.", "Rejista inasaidia fedha taslimu, fedha za simu, uhamisho wa benki, na kadi.")}
                   </p>
                 </div>
 
@@ -803,11 +814,11 @@ export default function LoanDetailsPage() {
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="h-4 w-4 text-primary" />
                     <span className="text-sm font-semibold text-foreground">
-                      Remaining balance
+                      {tt("Remaining balance", "Salio lililobaki")}
                     </span>
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    {formatTzs(activeBalance)} remains payable on this loan.
+                    {formatTzs(activeBalance)} {tt("remains payable on this loan.", "bado linapaswa kulipwa kwenye mkopo huu.")}
                   </p>
                 </div>
               </div>

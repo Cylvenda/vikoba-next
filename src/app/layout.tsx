@@ -5,6 +5,8 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ToastContainer } from "react-toastify";
 import { ThemeProvider, themeScript } from "@/components/theme/theme-provider";
+import { LanguageProvider } from "@/components/language/language-provider";
+import { languageScript } from "@/lib/i18n";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
@@ -35,21 +37,24 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={cn("h-full antialiased", poppins.variable, "font-sans", inter.variable)}>
       <head>
         <Script id="theme-script" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <Script id="language-script" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: languageScript }} />
       </head>
       <body className="min-h-screen bg-background font-sans">
         <ThemeProvider >
-          <ToastContainer
-            position="top-right"
-            autoClose={3000}
-            hideProgressBar
-            newestOnTop
-            pauseOnHover
-            theme="colored"
-            className="cursor-pointer"
-          />
-          <TooltipProvider>
-            {children}
-          </TooltipProvider>
+          <LanguageProvider>
+            <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar
+              newestOnTop
+              pauseOnHover
+              theme="colored"
+              className="cursor-pointer"
+            />
+            <TooltipProvider>
+              {children}
+            </TooltipProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

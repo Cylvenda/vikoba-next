@@ -1,6 +1,7 @@
 "use client"
 
 import type { MeetingAgendaItem } from "@/components/meeting-room/types"
+import { useLanguage } from "@/components/language/language-provider"
 
 type AgendaPanelProps = {
   items: MeetingAgendaItem[]
@@ -15,6 +16,8 @@ function getStatusClass(status: MeetingAgendaItem["status"]) {
 }
 
 export function AgendaPanel({ items, selectedItemId, onSelectItem }: AgendaPanelProps) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   return (
     <div className="flex h-full min-h-0 flex-col rounded-md">
       <div className="app-scrollbar flex-1 space-y-3 overflow-y-auto px-1 py-2">
@@ -42,7 +45,7 @@ export function AgendaPanel({ items, selectedItemId, onSelectItem }: AgendaPanel
                       isActive ? "text-primary-foreground/85" : "text-muted-foreground",
                     ].join(" ")}
                   >
-                    {item.description || "No description provided for this agenda item."}
+                    {item.description || tt("No description provided for this agenda item.", "Hakuna maelezo ya hoja hii ya ajenda.")}
                   </p>
                 </div>
 
@@ -52,12 +55,12 @@ export function AgendaPanel({ items, selectedItemId, onSelectItem }: AgendaPanel
                     isActive ? "bg-white/15 text-white" : getStatusClass(item.status),
                   ].join(" ")}
                 >
-                  {item.status}
+                  {item.status === "Done" ? tt("Done", "Imekamilika") : item.status === "Ongoing" ? tt("Ongoing", "Inaendelea") : tt("Pending", "Inasubiri")}
                 </span>
               </div>
 
               <p className={["mt-3 text-xs", isActive ? "text-primary-foreground/70" : "text-muted-foreground"].join(" ")}>
-                {item.allocatedMinutes} minutes
+                {item.allocatedMinutes} {tt("minutes", "dakika")}
               </p>
             </button>
           )

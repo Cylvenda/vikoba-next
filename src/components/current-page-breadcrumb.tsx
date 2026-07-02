@@ -1,6 +1,8 @@
 "use client"
 
 import { usePathname } from "next/navigation"
+import { useLanguage } from "@/components/language/language-provider"
+import { getTranslation } from "@/lib/i18n"
 import {
      Breadcrumb,
      BreadcrumbItem,
@@ -20,15 +22,21 @@ function formatSegment(segment: string) {
 
 export function CurrentPageBreadcrumb() {
      const pathname = usePathname()
+     const { language } = useLanguage()
      const segments = pathname.split("/").filter(Boolean)
      const currentSegment = segments.at(-1) ?? "dashboard"
      const isDashboardHome = pathname === "/home"
      const isGroupDashboard = segments[0] === "group" && segments.length === 2
+     const localizeSegment = (segment: string) => {
+          const key = `breadcrumb.${segment.toLowerCase()}`
+          const translated = getTranslation(language, key)
+          return translated === key ? formatSegment(segment) : translated
+     }
      const currentPage = isDashboardHome
-          ? "Home"
+          ? getTranslation(language, "breadcrumb.home")
           : isGroupDashboard
-            ? "Dashboard"
-            : formatSegment(currentSegment)
+            ? getTranslation(language, "breadcrumb.dashboard")
+            : localizeSegment(currentSegment)
      const isDashboard = isDashboardHome
      const dashboardLink = "/home"
 
@@ -40,7 +48,7 @@ export function CurrentPageBreadcrumb() {
                          <>
                               <BreadcrumbItem className="hidden md:block">
                                    <BreadcrumbLink href={dashboardLink}>
-                                        Home
+                                        {getTranslation(language, "breadcrumb.home")}
                                    </BreadcrumbLink>
                               </BreadcrumbItem>
                               <BreadcrumbSeparator className="hidden md:block" />

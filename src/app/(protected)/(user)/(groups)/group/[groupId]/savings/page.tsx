@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { useAuthUserStore } from "@/store/auth/userAuth.store"
+import { useLanguage } from "@/components/language/language-provider"
 import { useGroupStore } from "@/store/group/groupUser.store"
 import { formatTzs } from "@/lib/vikoba-finance"
 
@@ -103,6 +104,8 @@ function ContributionCard({
   contribution: Contribution
   action?: React.ReactNode
 }) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const statusStyles: Record<string, string> = {
     VERIFIED: "border-chart-1/30 bg-chart-1/5 text-chart-1",
     PENDING: "border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-400",
@@ -123,14 +126,18 @@ function ContributionCard({
           <div className="min-w-0 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-base font-bold tracking-tight text-foreground">
-                {contribution.member_name || "Unnamed member"}
+                {contribution.member_name || tt("Unnamed member", "Mwanachama asiye na jina")}
               </h3>
               <Badge
                 variant="outline"
                 className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest ${statusClass}`}
               >
                 {statusIcon}
-                {contribution.status}
+                {contribution.status === "VERIFIED"
+                  ? tt("Verified", "Imethibitishwa")
+                  : contribution.status === "PENDING"
+                    ? tt("Pending", "Inasubiri")
+                    : tt("Rejected", "Imekataliwa")}
               </Badge>
             </div>
 
@@ -145,8 +152,8 @@ function ContributionCard({
             ) : null}
 
             <div className="flex flex-wrap items-center gap-4 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              <span>Logged {formatDateLabel(contribution.created_at)}</span>
-              {contribution.reference ? <span>Ref {contribution.reference}</span> : null}
+              <span>{tt("Logged", "Imerekodiwa")} {formatDateLabel(contribution.created_at)}</span>
+              {contribution.reference ? <span>{tt("Ref", "Rejea")} {contribution.reference}</span> : null}
             </div>
           </div>
 
@@ -163,6 +170,8 @@ export default function GroupSavingsPage() {
   const groupId = Array.isArray(params?.groupId) ? params.groupId[0] : params?.groupId
   const { selectedGroup, selectedGroupMembers } = useGroupStore()
   const user = useAuthUserStore((state) => state.user)
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
 
   const [contributions, setContributions] = useState<Contribution[]>([])
   const [loading, setLoading] = useState(true)
@@ -307,7 +316,7 @@ export default function GroupSavingsPage() {
         <div className="mx-auto w-full max-w-screen-2xl">
           <Card className="border-none bg-card shadow-sm">
             <CardContent className="py-8 text-center text-muted-foreground">
-              Loading group...
+              {tt("Loading group...", "Inapakia kikundi...")}
             </CardContent>
           </Card>
         </div>
@@ -327,16 +336,16 @@ export default function GroupSavingsPage() {
                   <PiggyBank className="h-6 w-6" />
                 </div>
                 <Badge variant="secondary" className="rounded-full px-3 py-1 uppercase tracking-[0.18em]">
-                  {canRecordContribution ? "Finance manager" : "Member view"}
+                  {canRecordContribution ? tt("Finance manager", "Msimamizi wa fedha") : tt("Member view", "Mwonekano wa mwanachama")}
                 </Badge>
               </div>
               <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-                Savings and contribution ledger
+                {tt("Savings and contribution ledger", "Rejista ya akiba na michango")}
               </h1>
               <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
                 {canRecordContribution
-                  ? "Review all savings activity for this group and record verified member deposits."
-                  : "Review your recorded savings contributions and payment references."}
+                  ? tt("Review all savings activity for this group and record verified member deposits.", "Kagua shughuli zote za akiba za kikundi na rekodi malipo yaliyothibitishwa ya wanachama.")
+                  : tt("Review your recorded savings contributions and payment references.", "Kagua michango yako ya akiba na rejea za malipo.")}
               </p>
             </div>
 
@@ -345,17 +354,17 @@ export default function GroupSavingsPage() {
                 <>
                   <Button variant="outline" onClick={() => openModal("OWN")}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Add my saving
+                    {tt("Add my saving", "Ongeza akiba yangu")}
                   </Button>
                   <Button onClick={() => openModal("OTHERS")}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Add saving for others
+                    {tt("Add saving for others", "Ongeza akiba ya wengine")}
                   </Button>
                 </>
               ) : (
                 <Button onClick={() => openModal("OWN")}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Add saving
+                  {tt("Add saving", "Ongeza akiba")}
                 </Button>
               )}
             </div>
@@ -366,30 +375,30 @@ export default function GroupSavingsPage() {
           <Card className="border-border/70 bg-card/80">
             <CardContent className="p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                {canRecordContribution ? "Total verified savings" : "My verified savings"}
+                {canRecordContribution ? tt("Total verified savings", "Jumla ya akiba iliyothibitishwa") : tt("My verified savings", "Akiba yangu iliyothibitishwa")}
               </p>
               <p className="mt-2 text-2xl font-bold text-chart-1">{formatTzs(totalSavings)}</p>
-              <p className="mt-1 text-xs text-muted-foreground">From confirmed payments only</p>
+              <p className="mt-1 text-xs text-muted-foreground">{tt("From confirmed payments only", "Kutoka malipo yaliyothibitishwa pekee")}</p>
             </CardContent>
           </Card>
           <Card className="border-border/70 bg-card/80">
             <CardContent className="p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Pending amount
+                {tt("Pending amount", "Kiasi kinachosubiri")}
               </p>
               <p className="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-400">
                 {formatTzs(pendingContributions.reduce((sum, c) => sum + Number(c.amount), 0))}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">{pendingContributions.length} payment{pendingContributions.length !== 1 ? "s" : ""} awaiting confirmation</p>
+              <p className="mt-1 text-xs text-muted-foreground">{pendingContributions.length} {tt("payment(s) awaiting confirmation", "malipo yanayosubiri uthibitisho")}</p>
             </CardContent>
           </Card>
           <Card className="border-border/70 bg-card/80">
             <CardContent className="p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Rejected
+                {tt("Rejected", "Imekataliwa")}
               </p>
               <p className="mt-2 text-2xl font-bold text-destructive">{failedContributions.length}</p>
-              <p className="mt-1 text-xs text-muted-foreground">Transaction{failedContributions.length !== 1 ? "s" : ""} that need attention</p>
+              <p className="mt-1 text-xs text-muted-foreground">{tt("Transactions that need attention", "Miamala inayohitaji uangalizi")}</p>
             </CardContent>
           </Card>
         </div>
@@ -412,26 +421,26 @@ export default function GroupSavingsPage() {
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-chart-4">
-                  Contribution History
+                  {tt("Contribution History", "Historia ya Michango")}
                 </p>
                 <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground">
-                  {canRecordContribution ? "Recent savings entries" : "My savings entries"}
+                  {canRecordContribution ? tt("Recent savings entries", "Rekodi za hivi karibuni za akiba") : tt("My savings entries", "Rekodi zangu za akiba")}
                 </h2>
               </div>
               <div className="flex items-center gap-2 rounded-xl border border-border/80 bg-background/70 px-3 py-2 text-sm text-muted-foreground">
                 <Users className="h-4 w-4" />
-                <span>{eligibleMembers.length} verified members</span>
+                <span>{eligibleMembers.length} {tt("verified members", "wanachama waliothibitishwa")}</span>
               </div>
             </div>
 
             {loading ? (
-              <div className="py-10 text-center text-muted-foreground">Loading contributions...</div>
+              <div className="py-10 text-center text-muted-foreground">{tt("Loading contributions...", "Inapakia michango...")}</div>
             ) : (
               <Tabs defaultValue="verified" className="w-full">
                 <TabsList className="mb-6 grid w-full grid-cols-3 h-11 rounded-xl bg-muted/50 p-1">
                   <TabsTrigger value="verified" className="rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
                     <CheckCircle2 className="mr-1.5 h-3.5 w-3.5 text-chart-1" />
-                    Verified
+                    {tt("Verified", "Imethibitishwa")}
                     {verifiedContributions.length > 0 && (
                       <span className="ml-2 rounded-full bg-chart-1/15 px-1.5 py-0.5 text-xs font-bold text-chart-1">
                         {verifiedContributions.length}
@@ -440,7 +449,7 @@ export default function GroupSavingsPage() {
                   </TabsTrigger>
                   <TabsTrigger value="pending" className="rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
                     <Clock className="mr-1.5 h-3.5 w-3.5 text-amber-500" />
-                    Pending
+                    {tt("Pending", "Inasubiri")}
                     {pendingContributions.length > 0 && (
                       <span className="ml-2 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-xs font-bold text-amber-600 dark:text-amber-400">
                         {pendingContributions.length}
@@ -449,7 +458,7 @@ export default function GroupSavingsPage() {
                   </TabsTrigger>
                   <TabsTrigger value="failed" className="rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
                     <XCircle className="mr-1.5 h-3.5 w-3.5 text-destructive" />
-                    Rejected
+                    {tt("Rejected", "Imekataliwa")}
                     {failedContributions.length > 0 && (
                       <span className="ml-2 rounded-full bg-destructive/15 px-1.5 py-0.5 text-xs font-bold text-destructive">
                         {failedContributions.length}
@@ -461,7 +470,7 @@ export default function GroupSavingsPage() {
                 {/* ── Verified Tab ── */}
                 <TabsContent value="verified">
                   {verifiedContributions.length === 0 ? (
-                    <EmptyState icon={<Receipt className="h-6 w-6" />} message="No verified contributions yet." />
+                    <EmptyState icon={<Receipt className="h-6 w-6" />} message={tt("No verified contributions yet.", "Bado hakuna michango iliyothibitishwa.")} />
                   ) : (
                     <div className="space-y-3">
                       {verifiedContributions.map((contribution) => (
@@ -474,7 +483,7 @@ export default function GroupSavingsPage() {
                 {/* ── Pending Tab ── */}
                 <TabsContent value="pending">
                   {pendingContributions.length === 0 ? (
-                    <EmptyState icon={<Clock className="h-6 w-6" />} message="No pending contributions." />
+                    <EmptyState icon={<Clock className="h-6 w-6" />} message={tt("No pending contributions.", "Hakuna michango inayosubiri.")} />
                   ) : (
                     <div className="space-y-3">
                       {pendingContributions.map((contribution) => (
@@ -493,7 +502,7 @@ export default function GroupSavingsPage() {
                               }
                             >
                               <RefreshCcw className="mr-1.5 h-3.5 w-3.5" />
-                              Retry payment
+                              {tt("Retry payment", "Jaribu malipo tena")}
                             </Button>
                           }
                         />
@@ -505,7 +514,7 @@ export default function GroupSavingsPage() {
                 {/* ── Rejected Tab ── */}
                 <TabsContent value="failed">
                   {failedContributions.length === 0 ? (
-                    <EmptyState icon={<XCircle className="h-6 w-6" />} message="No rejected contributions." />
+                    <EmptyState icon={<XCircle className="h-6 w-6" />} message={tt("No rejected contributions.", "Hakuna michango iliyokataliwa.")} />
                   ) : (
                     <div className="space-y-3">
                       {failedContributions.map((contribution) => (
@@ -524,12 +533,12 @@ export default function GroupSavingsPage() {
         <DialogContent className="sm:max-w-xl p-6 sm:p-8">
           <DialogHeader>
             <DialogTitle className="text-xl font-extrabold">
-              {modalMode === "OWN" ? "Add my saving" : "Record saving for others"}
+              {modalMode === "OWN" ? tt("Add my saving", "Ongeza akiba yangu") : tt("Record saving for others", "Rekodi akiba ya wengine")}
             </DialogTitle>
             <DialogDescription className="mt-1 text-sm text-muted-foreground">
               {modalMode === "OWN" 
-                ? "Initiate a mobile money payment for your own savings deposit."
-                : "Add a verified cash contribution to the group ledger."}
+                ? tt("Initiate a mobile money payment for your own savings deposit.", "Anzisha malipo ya simu kwa akiba yako.")
+                : tt("Add a verified cash contribution to the group ledger.", "Ongeza mchango wa fedha uliothibitishwa kwenye rejista ya kikundi.")}
             </DialogDescription>
           </DialogHeader>
 
@@ -538,14 +547,14 @@ export default function GroupSavingsPage() {
               {modalMode === "OTHERS" ? (
                 <>
                   <Field>
-                    <FieldLabel>Member</FieldLabel>
+                    <FieldLabel>{tt("Member", "Mwanachama")}</FieldLabel>
                     <FieldContent>
                       <Select
                         value={form.membership_id}
                         onValueChange={(value) => handleInputChange("membership_id", value)}
                       >
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select a verified member" />
+                          <SelectValue placeholder={tt("Select a verified member", "Chagua mwanachama aliyethibitishwa")} />
                         </SelectTrigger>
                         <SelectContent>
                           {eligibleMembers.map((member) => (
@@ -555,7 +564,7 @@ export default function GroupSavingsPage() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <FieldDescription>Only active and verified members appear here.</FieldDescription>
+                      <FieldDescription>{tt("Only active and verified members appear here.", "Wanachama hai na waliothibitishwa pekee huonekana hapa.")}</FieldDescription>
                     </FieldContent>
                   </Field>
 
@@ -573,7 +582,7 @@ export default function GroupSavingsPage() {
               ) : null}
 
               <Field>
-                <FieldLabel htmlFor="contribution-amount">Amount (TZS)</FieldLabel>
+                <FieldLabel htmlFor="contribution-amount">{tt("Amount (TZS)", "Kiasi (TZS)")}</FieldLabel>
                 <FieldContent>
                   <Input
                     id="contribution-amount"
@@ -588,11 +597,11 @@ export default function GroupSavingsPage() {
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="contribution-reference">Payment reference</FieldLabel>
+                <FieldLabel htmlFor="contribution-reference">{tt("Payment reference", "Rejea ya malipo")}</FieldLabel>
                 <FieldContent>
                   <Input
                     id="contribution-reference"
-                    placeholder="M-Pesa / cashbook / receipt number"
+                    placeholder={tt("M-Pesa / cashbook / receipt number", "M-Pesa / daftari la fedha / namba ya risiti")}
                     value={form.reference}
                     onChange={(event) => handleInputChange("reference", event.target.value)}
                   />
@@ -600,11 +609,11 @@ export default function GroupSavingsPage() {
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="contribution-note">Note</FieldLabel>
+                <FieldLabel htmlFor="contribution-note">{tt("Note", "Maelezo")}</FieldLabel>
                 <FieldContent>
                   <Textarea
                     id="contribution-note"
-                    placeholder="Add context about this savings payment if needed."
+                    placeholder={tt("Add context about this savings payment if needed.", "Ongeza maelezo kuhusu malipo haya ya akiba ikiwa yanahitajika.")}
                     value={form.note}
                     onChange={(event) => handleInputChange("note", event.target.value)}
                   />
@@ -614,7 +623,7 @@ export default function GroupSavingsPage() {
 
             <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-4">
               <Button type="button" variant="outline" onClick={closeContributionModal}>
-                Cancel
+                {tt("Cancel", "Ghairi")}
               </Button>
               <Button type="submit" disabled={submitting || (modalMode === "OTHERS" && eligibleMembers.length === 0)}>
                 {submitting ? (
@@ -623,12 +632,12 @@ export default function GroupSavingsPage() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    {modalMode === "OWN" ? "Initiating payment..." : "Recording..."}
+                    {modalMode === "OWN" ? tt("Initiating payment...", "Inaanzisha malipo...") : tt("Recording...", "Inarekodi...")}
                   </>
                 ) : (
                   <>
                     <Plus className="h-4 w-4 mr-2" />
-                    {modalMode === "OWN" ? "Initiate payment" : "Record contribution"}
+                    {modalMode === "OWN" ? tt("Initiate payment", "Anzisha malipo") : tt("Record contribution", "Rekodi mchango")}
                   </>
                 )}
               </Button>

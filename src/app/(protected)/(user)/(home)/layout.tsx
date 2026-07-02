@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthUserStore } from "@/store/auth/userAuth.store";
 import { useGroupStore } from "@/store/group/groupUser.store";
@@ -16,6 +16,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { CompleteProfileModal } from "@/components/auth/complete-profile-modal";
 import { Spinner } from "@/components/ui/spinner";
+import LanguageToggle from "@/components/language/language-toggle";
 
 export default function ProtectedLayout({
   children,
@@ -111,6 +112,7 @@ export default function ProtectedLayout({
             <CurrentPageBreadcrumb />
           </div>
           <div className="flex items-center gap-2">
+            <LanguageToggle compact />
             <ThemeToggle />
           </div>
         </header>
