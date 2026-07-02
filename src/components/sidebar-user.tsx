@@ -14,13 +14,18 @@ import {
 } from "@/components/ui/sidebar";
 import { Separator } from "./ui/separator";
 import { useAuthUserStore } from "@/store/auth/userAuth.store";
-import { BellRing,  Cog, House, Monitor, User } from "lucide-react";
+import { BellRing, BookOpen, Cog, House, User } from "lucide-react";
 
 const navMain = [
   {
     title: "Home",
     url: "/home",
     icon: <House />,
+  },
+  {
+    title: "Guide",
+    url: "/guide",
+    icon: <BookOpen />,
   },
   {
     title: "My Groups",

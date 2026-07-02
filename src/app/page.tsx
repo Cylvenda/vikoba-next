@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
+  BookOpen,
   CalendarRange,
   CheckCircle2,
   ShieldCheck,
@@ -114,6 +115,12 @@ export default function Home() {
                 >
                   Meeting Flow
                 </a>
+                <Link
+                  href="/guide"
+                  className="transition hover:text-foreground"
+                >
+                  Guide
+                </Link>
                 <a
                   href="#transparency"
                   className="transition hover:text-foreground"
@@ -130,6 +137,16 @@ export default function Home() {
                   className="hidden rounded-full px-4 font-medium sm:inline-flex"
                 >
                   <Link href="/login">Sign in</Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="hidden rounded-full px-4 font-medium sm:inline-flex"
+                >
+                  <Link href="/guide">
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    Guide
+                  </Link>
                 </Button>
                 <Button
                   asChild

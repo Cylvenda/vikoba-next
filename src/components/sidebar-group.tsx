@@ -21,6 +21,7 @@ import {
   Cog,
   House,
   Home,
+  BookOpen,
   Settings,
   PiggyBank,
   User,
@@ -36,6 +37,11 @@ const navMain = (groupId: string) => [
     title: "Dashboard",
     url: `/group/${groupId}`,
     icon: <Home />,
+  },
+  {
+    title: "Guide",
+    url: "/guide",
+    icon: <BookOpen />,
   },
   {
     title: "Wallet",
