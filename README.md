@@ -119,3 +119,18 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to view the 
 
 - **Linter checks**: Verify code consistency by running `npm run lint`.
 - **Production Build**: Generate an optimized production package with `npm run build`, then preview it locally using `npm run start`.
+
+## Deploy to Vercel
+
+1. Import the repository in Vercel and set the **Root Directory** to `frontend` (if the repository contains both `backend` and `frontend`).
+2. Add the environment variables below in Vercel. Use your final production domain for `NEXT_PUBLIC_SITE_URL`, including `https://` and without a trailing slash.
+
+```env
+# Server-only URL used by the Next.js API proxy; include the backend /api/ path.
+BACKEND_API_BASE=https://api.your-domain.com/api/
+NEXT_PUBLIC_SITE_URL=https://your-domain.com
+```
+
+3. Deploy. Vercel detects Next.js automatically and runs `npm run build`.
+
+The public site now serves `robots.txt`, `sitemap.xml`, and a branded `/opengraph-image` for Google indexing and previews in WhatsApp, email, Facebook, LinkedIn, and X. After the production domain is live, add `https://your-domain.com/sitemap.xml` to Google Search Console and request indexing for the home page.

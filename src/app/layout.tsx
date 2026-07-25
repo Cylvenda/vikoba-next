@@ -9,6 +9,8 @@ import { LanguageProvider } from "@/components/language/language-provider";
 import { languageScript } from "@/lib/i18n";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://your-vikoba-domain.vercel.app";
+
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 
@@ -21,11 +23,65 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
-    default: "Community Hub",
-    template: "%s | Community Hub",
+    default: "VICOBA Community Hub | Village Community Banking",
+    template: "%s | VICOBA Community Hub",
   },
-  description: "Secure web-based virtual meeting system",
+  description:
+    "VICOBA Community Hub helps village savings groups manage michango, hisa, mikopo, meetings, members, and records securely online.",
+  applicationName: "VICOBA Community Hub",
+  keywords: [
+    "VICOBA",
+    "vikoba Tanzania",
+    "village community banking",
+    "village savings group",
+    "mfumo wa VICOBA",
+    "vikundi vya akiba",
+    "mikopo ya VICOBA",
+    "michango na hisa",
+    "community banking platform",
+  ],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "VICOBA Community Hub",
+    title: "VICOBA Community Hub | Digital Village Banking",
+    description:
+      "Manage VICOBA savings, loans, meetings, members, and records in one secure platform. Simamia akiba, mikopo na mikutano ya kikundi chako.",
+    locale: "en_TZ",
+    alternateLocale: "sw_TZ",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "VICOBA Community Hub digital village banking platform",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "VICOBA Community Hub | Digital Village Banking",
+    description:
+      "Manage VICOBA savings, loans, meetings, members, and records in one secure platform.",
+    images: ["/opengraph-image"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  category: "finance",
 };
 
 export default function RootLayout({
