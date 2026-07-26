@@ -26,7 +26,7 @@ export default function OpenGraphImage() {
             VICOBA COMMUNITY HUB
           </div>
           <div style={{ display: "flex", marginTop: 34, fontSize: 68, lineHeight: 1.05, fontWeight: 800, letterSpacing: -2 }}>
-            Digital village banking for stronger communities.
+            Digital banking groups for stronger communities.
           </div>
           <div style={{ display: "flex", marginTop: 28, fontSize: 29, lineHeight: 1.35, color: "#79697b" }}>
             Simamia akiba, mikopo, wanachama na mikutano ya kikundi chako kwa urahisi.
