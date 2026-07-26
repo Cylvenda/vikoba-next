@@ -4,8 +4,15 @@ const BACKEND_API_ROOT = normalizeApiRoot(
      process.env.BACKEND_API_BASE || "http://127.0.0.1:8000/api/"
 )
 
-const ACCESS_COOKIE_MAX_AGE = 60 * 5
-const REFRESH_COOKIE_MAX_AGE = 60 * 15
+function envPositiveInt(name: string, defaultValue: number) {
+     const value = Number.parseInt(process.env[name] || "", 10)
+     return Number.isSafeInteger(value) && value > 0 ? value : defaultValue
+}
+
+// Keep the browser cookies aligned with the JWTs issued by Django. These are
+// server-only environment variables: do not prefix them with NEXT_PUBLIC_.
+const ACCESS_COOKIE_MAX_AGE = envPositiveInt("AUTH_COOKIE_ACCESS_MAX_AGE", 60 * 60)
+const REFRESH_COOKIE_MAX_AGE = envPositiveInt("AUTH_COOKIE_REFRESH_MAX_AGE", 60 * 60 * 2)
 
 function normalizeApiRoot(value: string) {
      return value.endsWith("/") ? value : `${value}/`

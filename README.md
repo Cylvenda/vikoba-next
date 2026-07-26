@@ -129,6 +129,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to view the 
 # Server-only URL used by the Next.js API proxy; include the backend /api/ path.
 BACKEND_API_BASE=https://api.your-domain.com/api/
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
+# Server-only session values. Keep these identical to the Django backend.
+AUTH_COOKIE_ACCESS_MAX_AGE=3600
+AUTH_COOKIE_REFRESH_MAX_AGE=7200
 ```
 
 3. Deploy. Vercel detects Next.js automatically and runs `npm run build`.
