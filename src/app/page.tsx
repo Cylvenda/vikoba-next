@@ -81,7 +81,7 @@ export default function Home() {
           {/* Header */}
           <header className="sticky top-4 z-30 rounded-full border border-border/80 bg-background/80 px-4 py-3 shadow-lg shadow-chart-3/5 backdrop-blur-md md:px-6">
             <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
+              <div className="flex min-w-0 items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full shadow-inner overflow-hidden">
                   <Image
                     src="/logo.png"
@@ -91,7 +91,7 @@ export default function Home() {
                     className="object-cover"
                   />
                 </div>
-                <div>
+                <div className="hidden sm:block">
                   <p className="text-xs font-bold uppercase tracking-[0.28em] text-chart-4">
                     Community Hub
                   </p>
@@ -128,7 +128,7 @@ export default function Home() {
                 </a>
               </nav>
 
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 <LanguageToggle compact />
                 <ThemeToggle compact />
                 <Button
@@ -141,7 +141,7 @@ export default function Home() {
                 <Button
                   asChild
                   variant="outline"
-                  className="hidden rounded-full px-4 font-medium sm:inline-flex"
+                  className="hidden rounded-full px-4 font-medium md:inline-flex"
                 >
                   <Link href="/guide">
                     <BookOpen className="mr-2 h-4 w-4" />
@@ -151,11 +151,24 @@ export default function Home() {
                 <Button
                   asChild
                   size="lg"
-                  className="rounded-full bg-chart-3 px-5 text-primary-foreground font-semibold hover:bg-chart-2 transition-all duration-300 shadow-md hover:shadow-chart-3/20"
+                  className="hidden rounded-full bg-chart-3 px-5 text-primary-foreground font-semibold shadow-md transition-all duration-300 hover:bg-chart-2 hover:shadow-chart-3/20 sm:inline-flex"
                 >
                   <Link href="/register">
                     {getTranslation(language, "landing.startPlatform")}
                     <ArrowRight className="ml-1 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  size="icon"
+                  className="rounded-full bg-chart-3 text-primary-foreground shadow-md transition-all duration-300 hover:bg-chart-2 hover:shadow-chart-3/20 sm:hidden"
+                >
+                  <Link
+                    href="/register"
+                    aria-label={getTranslation(language, "landing.startPlatform")}
+                    title={getTranslation(language, "landing.startPlatform")}
+                  >
+                    <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
               </div>
