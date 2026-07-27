@@ -11,15 +11,16 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatTzs } from "@/lib/vikoba-finance"
 import { cn } from "@/lib/utils"
-import { 
-  ArrowLeft, 
-  CreditCard, 
-  Smartphone, 
+import {
+  ArrowLeft,
+  CreditCard,
+  Smartphone,
   ShieldCheck,
   CheckCircle2,
   Lock,
   Loader2,
   XCircle,
+  CircleAlert,
 } from "lucide-react"
 import { toast } from "react-toastify"
 import Link from "next/link"
@@ -64,6 +65,7 @@ export default function PaymentPage() {
   const [isFailed, setIsFailed] = useState(false)
   const [isPolling, setIsPolling] = useState(false)
   const [failMessage, setFailMessage] = useState("")
+  const [paymentError, setPaymentError] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("mobile") // 'mobile' or 'card'
   const [loanContext, setLoanContext] = useState<Loan | null>(null)
   const [loanContextLoading, setLoanContextLoading] = useState(type === "loan")
@@ -224,6 +226,7 @@ export default function PaymentPage() {
     }
     
     setIsProcessing(true)
+    setPaymentError("")
 
     try {
       if (type === "loan") {
@@ -295,14 +298,16 @@ export default function PaymentPage() {
       const message =
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
         (err instanceof Error ? err.message : tt("Payment failed. Please try again.", "Malipo yameshindikana. Tafadhali jaribu tena."))
-      toast.error(message)
+      setPaymentError(message)
       setIsProcessing(false)
+      setIsPolling(false)
+      toast.error(message)
     }
   }
 
   const pollTransactionStatus = (uuid: string) => {
     let attempts = 0
-    const maxAttempts = 60 // 2 minutes max (every 2 seconds)
+    const maxAttempts = 30 // 5 minutes max (every 10 seconds)
     
     const interval = setInterval(async () => {
       try {
@@ -310,7 +315,7 @@ export default function PaymentPage() {
         const res = await paymentServices.getTransactionStatus(uuid)
         const status = res.data.status
 
-        if (status === "COMPLETED") {
+        if (status === "SUCCESS") {
           clearInterval(interval)
           setIsPolling(false)
           setIsSuccess(true)
@@ -331,6 +336,12 @@ export default function PaymentPage() {
           setIsProcessing(false)
           setIsFailed(true)
           setFailMessage(tt("Payment prompt expired. Please try again.", "Ombi la malipo limepitwa na muda. Tafadhali jaribu tena."))
+        } else if (status === "CANCELLED") {
+          clearInterval(interval)
+          setIsPolling(false)
+          setIsProcessing(false)
+          setIsFailed(true)
+          setFailMessage(tt("Payment was cancelled.", "Malipo yameghairiwa."))
         }
         
         if (attempts >= maxAttempts) {
@@ -341,9 +352,18 @@ export default function PaymentPage() {
           setFailMessage(tt("We couldn't verify the payment status in time. Please check your group dashboard later.", "Hatukuweza kuthibitisha malipo kwa wakati. Tafadhali kagua dashibodi ya kikundi baadaye."))
         }
       } catch (err) {
+        clearInterval(interval)
+        setIsPolling(false)
+        setIsProcessing(false)
+        const message =
+          (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
+          (err instanceof Error ? err.message : tt("We couldn't verify the payment status. Please try again later.", "Hatukuweza kuthibitisha malipo. Tafadhali jaribu tena baadaye."))
+        setPaymentError(message)
+        setFailMessage(message)
+        setIsFailed(true)
         console.error("Polling error", err)
       }
-    }, 2000)
+    }, 10000)
   }
 
   // Formatting helpers for card inputs
@@ -392,6 +412,24 @@ export default function PaymentPage() {
             <p className="max-w-md text-muted-foreground">
               {tt("We are checking the loan status before allowing repayment.", "Tunakagua hali ya mkopo kabla ya kuruhusu marejesho.")}
             </p>
+          </div>
+        ) : paymentError ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="mb-6 rounded-full bg-destructive/20 p-4">
+              <CircleAlert className="h-16 w-16 text-destructive" />
+            </div>
+            <h2 className="mb-2 text-3xl font-extrabold text-foreground">{tt("Payment Unavailable", "Malipo Hayapatikani")}</h2>
+            <p className="text-muted-foreground max-w-md mb-8">
+              {paymentError}
+            </p>
+            <div className="flex gap-4">
+              <Button onClick={() => { setPaymentError(""); setIsProcessing(false); setIsPolling(false) }} variant="outline">
+                {tt("Try Again", "Jaribu Tena")}
+              </Button>
+              <Button onClick={() => router.push(`/group/${groupId}`)}>
+                {tt("Back to Dashboard", "Rudi kwenye Dashibodi")}
+              </Button>
+            </div>
           </div>
         ) : type === "loan" && !isLoanRepayable ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">

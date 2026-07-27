@@ -81,8 +81,12 @@ export default function LoanPayoutPage() {
       return
     }
 
+    let attempts = 0
+    const maxAttempts = 30
+
     const poll = window.setInterval(async () => {
       try {
+        attempts++
         const response = await paymentServices.getTransactionStatus(transactionUuid)
         const nextStatus = response.data.status as PayoutStatus
         setPayoutStatus(nextStatus)
@@ -93,17 +97,20 @@ export default function LoanPayoutPage() {
               : "Loan money was sent successfully."
           )
         }
-        if (["FAILED", "REVERSED"].includes(nextStatus)) {
+        if (["FAILED", "REVERSED", "CANCELLED", "EXPIRED"].includes(nextStatus)) {
           toast.error(
             language === "sw"
               ? "Malipo hayakukamilika. Fedha za kikundi zimerejeshwa."
               : "The payout was not completed. Group funds were restored."
           )
         }
+        if (attempts >= maxAttempts) {
+          window.clearInterval(poll)
+        }
       } catch {
         // Keep polling; the gateway or network may be briefly unavailable.
       }
-    }, 4000)
+    }, 10000)
 
     return () => window.clearInterval(poll)
   }, [language, payoutStatus, transactionUuid])
