@@ -159,7 +159,7 @@ export default function MeetingSessionPage() {
 
   if (isMeetingOngoing) {
     return (
-      <div className="fixed inset-x-0 bottom-0 top-22 z-40 bg-background md:top-23">
+      <div className="fixed inset-0 z-[60] bg-background">
         <MeetingRealtimePanel
           meetingId={meetingId}
           meetingTitle={selectedMeeting?.title}

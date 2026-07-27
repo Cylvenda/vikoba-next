@@ -39,18 +39,18 @@ function getGridClass(count: number) {
   }
 
   if (count === 2) {
-    return "grid-cols-1 auto-rows-[minmax(280px,1fr)] lg:grid-cols-2"
+    return "grid-cols-1 auto-rows-[minmax(160px,1fr)] sm:auto-rows-[minmax(220px,1fr)] lg:grid-cols-2"
   }
 
   if (count <= 4) {
-    return "grid-cols-1 auto-rows-[minmax(240px,1fr)] md:grid-cols-2"
+    return "grid-cols-1 auto-rows-[minmax(140px,1fr)] sm:auto-rows-[minmax(200px,1fr)] md:grid-cols-2"
   }
 
   if (count <= 6) {
-    return "grid-cols-1 auto-rows-[minmax(220px,1fr)] md:grid-cols-2 2xl:grid-cols-3"
+    return "grid-cols-1 auto-rows-[minmax(120px,1fr)] sm:auto-rows-[minmax(180px,1fr)] md:grid-cols-2 2xl:grid-cols-3"
   }
 
-  return "grid-cols-1 auto-rows-[minmax(190px,1fr)] sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+  return "grid-cols-1 auto-rows-[minmax(100px,1fr)] sm:auto-rows-[minmax(160px,1fr)] sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
 }
 
 export function VideoGrid({ hostIdentity, currentUserIdentity, participantSignals }: VideoGridProps) {

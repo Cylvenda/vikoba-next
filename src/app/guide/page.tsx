@@ -120,43 +120,43 @@ export default function GuidePage() {
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_left,var(--color-chart-3),transparent_30%)] opacity-25" />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_bottom_right,var(--color-chart-1),transparent_35%)] opacity-20" />
 
-        <div className="mx-auto max-w-7xl px-4 py-8 md:px-8 md:py-12">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-2 text-sm font-semibold shadow-sm backdrop-blur">
-              <BookOpen className="h-4 w-4 text-chart-3" />
+        <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-12">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-3 py-1.5 text-xs font-semibold shadow-sm backdrop-blur sm:text-sm sm:px-4 sm:py-2">
+              <BookOpen className="h-3.5 w-3.5 text-chart-3 sm:h-4 sm:w-4" />
               {isSwahili ? "Mwongozo wa Mfumo" : "System Guide"}
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <LanguageToggle compact />
-              <Button asChild variant="outline" className="rounded-full">
+              <Button asChild variant="outline" className="rounded-full text-xs sm:text-sm">
                 <Link href="/login">{getTranslation(language, "actions.signIn")}</Link>
               </Button>
-              <Button asChild className="rounded-full bg-chart-3 hover:bg-chart-2">
+              <Button asChild className="rounded-full bg-chart-3 hover:bg-chart-2 text-xs sm:text-sm">
                 <Link href="/register">
                   {isSwahili ? "Anza kutumia mfumo" : "Start using the system"}
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <ArrowRight className="ml-1.5 h-3.5 w-3.5 sm:ml-2 sm:h-4 sm:w-4" />
                 </Link>
               </Button>
             </div>
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <Badge className="rounded-full bg-chart-3/10 px-3 py-1 text-chart-4 hover:bg-chart-3/10">
+          <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4 sm:space-y-6">
+              <div className="space-y-3 sm:space-y-4">
+                <Badge className="rounded-full bg-chart-3/10 px-2.5 py-0.5 text-[10px] sm:px-3 sm:py-1 sm:text-chart-4 hover:bg-chart-3/10">
                   {isSwahili ? "Ufikiaji wa umma na wanachama" : "Public and member access"}
                 </Badge>
-                <h1 className="max-w-4xl text-4xl font-black tracking-tight md:text-6xl">
+                <h1 className="max-w-4xl text-2xl font-black tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
                   {getTranslation(language, "guide.title")}
                 </h1>
-                <p className="max-w-3xl text-base leading-8 text-muted-foreground md:text-lg">
+                <p className="max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8 md:text-lg">
                   {getTranslation(language, "guide.lead")}
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {quickLinks.map((item) => (
-                  <Button key={item.href} asChild variant="outline" className="rounded-full">
+                  <Button key={item.href} asChild variant="outline" className="rounded-full text-xs sm:text-sm">
                     <Link href={item.href}>{getTranslation(language, item.key)}</Link>
                   </Button>
                 ))}

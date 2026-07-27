@@ -104,7 +104,7 @@ function PanelFrame({
   const CloseIcon = side === "left" ? PanelLeftClose : PanelRightClose
 
   return (
-    <aside className="flex h-[22rem] w-full flex-col overflow-hidden rounded-md border border-border bg-card shadow-sm md:h-[26rem] lg:h-full lg:w-[22rem] xl:w-[24rem]">
+    <aside className="flex h-[16rem] w-full flex-col overflow-hidden rounded-md border border-border bg-card shadow-sm md:h-[22rem] lg:h-full lg:w-[20rem] xl:w-[22rem]">
       <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-foreground">

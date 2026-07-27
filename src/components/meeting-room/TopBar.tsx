@@ -36,22 +36,22 @@ export function TopBar({ title, connectionLabel, currentUtcIso, onLeave, actions
   const { language } = useLanguage()
   const tt = (en: string, sw: string) => language === "sw" ? sw : en
   return (
-    <header className="flex flex-col gap-4 border-b border-gray-200 bg-accent px-5 py-4 backdrop-blur lg:flex-row lg:items-center lg:justify-between">
-      <div className="min-w-0">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
-          <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400" />
+    <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-accent px-3 py-2.5 backdrop-blur sm:px-5 sm:py-3">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground sm:text-xs sm:tracking-[0.2em]">
+          <ShieldCheck className="size-3.5 text-emerald-600 dark:text-emerald-400 sm:size-4" />
           {tt("Secure meeting session", "Kikao salama")}
         </div>
-        <h1 className="mt-2 truncate text-2xl font-semibold text-gray-900 dark:text-gray-100">{title}</h1>
+        <h1 className="truncate text-base font-semibold text-foreground sm:text-lg md:text-2xl">{title}</h1>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 shadow-sm">
-          <Radio className="size-4 text-emerald-600 dark:text-emerald-400" />
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-2 rounded-full border border-border bg-muted/50 px-2.5 py-1 text-[11px] text-foreground sm:px-3 sm:py-1.5 sm:text-sm shadow-sm">
+          <Radio className="size-3.5 text-emerald-600 dark:text-emerald-400 sm:size-4" />
           {connectionLabel}
         </div>
 
-        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 shadow-sm">
+        <div className="hidden sm:flex items-center gap-2 rounded-full border border-border bg-muted/50 px-2.5 py-1 text-[11px] text-foreground sm:px-3 sm:py-1.5 sm:text-sm shadow-sm">
           {formatUtcLabel(currentUtcIso, language)}
         </div>
 
@@ -59,12 +59,12 @@ export function TopBar({ title, connectionLabel, currentUtcIso, onLeave, actions
 
         <Button
           type="button"
-          size="lg"
+          size="sm"
           onClick={onLeave}
-          className="rounded-2xl px-4"
+          className="rounded-lg px-2.5 sm:rounded-xl sm:px-3"
         >
-          <DoorOpen className="size-4" />
-          {tt("Leave meeting", "Ondoka kwenye kikao")}
+          <DoorOpen className="size-3.5 sm:size-4" />
+          <span className="hidden sm:inline">{tt("Leave meeting", "Ondoka kwenye kikao")}</span>
         </Button>
       </div>
     </header>
