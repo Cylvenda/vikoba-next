@@ -455,80 +455,80 @@ export default function GroupFinesPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto rounded-2xl border border-border/70">
-                    <table className="min-w-full divide-y divide-border">
-                      <thead className="bg-background/80">
-                        <tr className="text-left text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                          <th className="px-4 py-3">{tt("Member", "Mwanachama")}</th>
-                          <th className="px-4 py-3">{tt("Issued By", "Iliyotolewa na")}</th>
-                          <th className="px-4 py-3">{tt("Reason", "Sababu")}</th>
-                          <th className="px-4 py-3">{tt("Amount", "Kiasi")}</th>
-                          <th className="px-4 py-3">{tt("Paid", "Kilicholipwa")}</th>
-                          <th className="px-4 py-3">{tt("Balance", "Salio")}</th>
-                          <th className="px-4 py-3">{tt("Due", "Lazima ilipwe")}</th>
-                          <th className="px-4 py-3">{tt("Status", "Hali")}</th>
-                          <th className="px-4 py-3">{tt("Action", "Kitendo")}</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border bg-card/40">
-                        {visibleFines.map((fine) => {
-                          const isMine = fine.member === currentMembership?.membership_id || fine.member_user_id === user?.uuid
-                          const isUnpaid = fine.status === "UNPAID"
-                          return (
-                            <tr key={fine.uuid} className="align-top">
-                              <td className="px-4 py-4">
-                                <p className="font-semibold text-foreground">{fine.member_name}</p>
-                                <p className="text-[11px] text-muted-foreground">{fine.member_email}</p>
-                              </td>
-                              <td className="px-4 py-4 text-sm text-muted-foreground">
-                                {fine.issued_by_name || tt("System", "Mfumo")}
-                              </td>
-                              <td className="px-4 py-4">
-                                <div className="space-y-1">
-                                  <p className="font-semibold text-foreground">{fine.reason}</p>
-                                  {fine.fine_category_name ? (
-                                    <Badge variant="outline" className="text-[10px]">
-                                      {fine.fine_category_name}
-                                    </Badge>
-                                  ) : null}
-                                </div>
-                              </td>
-                              <td className="px-4 py-4 text-sm font-semibold">{formatTzs(Number(fine.amount))}</td>
-                              <td className="px-4 py-4 text-sm">{formatTzs(Number(fine.total_paid))}</td>
-                              <td className="px-4 py-4 text-sm font-bold text-orange-600 dark:text-orange-400">
-                                {formatTzs(Number(fine.balance))}
-                              </td>
-                              <td className="px-4 py-4 text-sm text-muted-foreground">
-                                <div className="flex items-center gap-1.5">
-                                  <Clock3 className="h-3.5 w-3.5" />
-                                  {formatDate(fine.due_date)}
-                                </div>
-                              </td>
-                              <td className="px-4 py-4">
-                                <Badge variant={fineStatusVariants[fine.status]}>{fine.status}</Badge>
-                              </td>
-                              <td className="px-4 py-4">
-                                {isUnpaid && isMine ? (
-                                  <Button
-                                    variant="default"
-                                    onClick={() => router.push(`/group/${groupId}/payment?type=fine&id=${fine.uuid}&amount=${fine.balance}`)}
-                                    className="shrink-0 bg-orange-600 hover:bg-orange-700 text-white"
-                                  >
-                                    <CreditCard className="mr-2 h-4 w-4" />
-                                    {tt("Pay Fine", "Lipa Faini")}
-                                  </Button>
-                                ) : (
-                                  <span className="text-xs text-muted-foreground">
-                                    {isMine ? tt("Already paid", "Tayari imelipwa") : tt("Owner only", "Mmiliki pekee")}
-                                  </span>
-                                )}
-                              </td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                   <div className="overflow-x-auto rounded-2xl border border-border/70">
+                     <table className="min-w-full divide-y divide-border">
+                       <thead className="bg-background/80">
+                         <tr className="text-left text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                           <th className="px-3 py-2.5 sm:px-4 sm:py-3">{tt("Member", "Mwanachama")}</th>
+                           <th className="px-3 py-2.5 sm:px-4 sm:py-3 hidden sm:table-cell">{tt("Issued By", "Iliyotolewa na")}</th>
+                           <th className="px-3 py-2.5 sm:px-4 sm:py-3">{tt("Reason", "Sababu")}</th>
+                           <th className="px-3 py-2.5 sm:px-4 sm:py-3 hidden sm:table-cell">{tt("Amount", "Kiasi")}</th>
+                           <th className="px-3 py-2.5 sm:px-4 sm:py-3 hidden sm:table-cell">{tt("Paid", "Kilicholipwa")}</th>
+                           <th className="px-3 py-2.5 sm:px-4 sm:py-3">{tt("Balance", "Salio")}</th>
+                           <th className="px-3 py-2.5 sm:px-4 sm:py-3 hidden sm:table-cell">{tt("Due", "Lazima ilipwe")}</th>
+                           <th className="px-3 py-2.5 sm:px-4 sm:py-3">{tt("Status", "Hali")}</th>
+                           <th className="px-3 py-2.5 sm:px-4 sm:py-3">{tt("Action", "Kitendo")}</th>
+                         </tr>
+                       </thead>
+                       <tbody className="divide-y divide-border bg-card/40">
+                         {visibleFines.map((fine) => {
+                           const isMine = fine.member === currentMembership?.membership_id || fine.member_user_id === user?.uuid
+                           const isUnpaid = fine.status === "UNPAID"
+                           return (
+                             <tr key={fine.uuid} className="align-top">
+                               <td className="px-3 py-3 sm:px-4 sm:py-4">
+                                 <p className="font-semibold text-foreground text-xs sm:text-sm">{fine.member_name}</p>
+                                 <p className="text-[10px] sm:text-[11px] text-muted-foreground">{fine.member_email}</p>
+                               </td>
+                               <td className="px-3 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm text-muted-foreground hidden sm:table-cell">
+                                 {fine.issued_by_name || tt("System", "Mfumo")}
+                               </td>
+                               <td className="px-3 py-3 sm:px-4 sm:py-4">
+                                 <div className="space-y-1">
+                                   <p className="font-semibold text-foreground text-xs sm:text-sm">{fine.reason}</p>
+                                   {fine.fine_category_name ? (
+                                     <Badge variant="outline" className="text-[9px] sm:text-[10px]">
+                                       {fine.fine_category_name}
+                                     </Badge>
+                                   ) : null}
+                                 </div>
+                               </td>
+                               <td className="px-3 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm font-semibold hidden sm:table-cell">{formatTzs(Number(fine.amount))}</td>
+                               <td className="px-3 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm hidden sm:table-cell">{formatTzs(Number(fine.total_paid))}</td>
+                               <td className="px-3 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm font-bold text-orange-600 dark:text-orange-400">
+                                 {formatTzs(Number(fine.balance))}
+                               </td>
+                               <td className="px-3 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm text-muted-foreground hidden sm:table-cell">
+                                 <div className="flex items-center gap-1.5">
+                                   <Clock3 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                                   {formatDate(fine.due_date)}
+                                 </div>
+                               </td>
+                               <td className="px-3 py-3 sm:px-4 sm:py-4">
+                                 <Badge variant={fineStatusVariants[fine.status]} className="text-[9px] sm:text-[10px]">{fine.status}</Badge>
+                               </td>
+                               <td className="px-3 py-3 sm:px-4 sm:py-4">
+                                 {isUnpaid && isMine ? (
+                                   <Button
+                                     variant="default"
+                                     onClick={() => router.push(`/group/${groupId}/payment?type=fine&id=${fine.uuid}&amount=${fine.balance}`)}
+                                     className="shrink-0 bg-orange-600 hover:bg-orange-700 text-white text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3"
+                                   >
+                                     <CreditCard className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                                     {tt("Pay Fine", "Lipa Faini")}
+                                   </Button>
+                                 ) : (
+                                   <span className="text-[10px] sm:text-xs text-muted-foreground">
+                                     {isMine ? tt("Already paid", "Tayari imelipwa") : tt("Owner only", "Mmiliki pekee")}
+                                   </span>
+                                 )}
+                               </td>
+                             </tr>
+                           )
+                         })}
+                       </tbody>
+                     </table>
+                   </div>
                 )}
               </CardContent>
             </Card>

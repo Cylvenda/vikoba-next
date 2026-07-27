@@ -400,7 +400,7 @@ const Page = () => {
                 </div>
               </div>
 
-              <div className="h-[260px] w-full">
+               <div className="h-[220px] sm:h-[260px] md:h-[280px] w-full">
                 {isMounted && !financialData.isLoading && trendData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>

@@ -156,57 +156,59 @@ export default function GroupHeader() {
 
      return (
           <>
-               <div className="flex flex-col justify-between rounded-md border border-border bg-card/60 backdrop-blur-md p-6 shadow-sm md:flex-row md:items-center relative overflow-hidden">
-                    
-                    <div className="flex items-center gap-4 relative z-10">
-                         <Link href="/home">
-                              <Button variant="outline" size="icon" className="rounded-full shadow-sm hover:border-chart-3/40 transition-colors">
-                                   <ArrowLeft className="w-5 h-5 text-foreground" />
-                              </Button>
-                         </Link>
-                         <div>
-                              <h1 className="text-3xl font-extrabold tracking-tight text-foreground">{selectedGroup?.name}</h1>
-                              <p className="text-sm font-medium text-muted-foreground mt-1">
-                                   <span className="uppercase tracking-widest text-[10px] bg-muted px-2 py-0.5 rounded-full mr-2 border border-border/60">
-                                        {selectedGroup?.is_private ? tt("Private", "Faragha") : tt("Public", "Umma")} {tt("Group", "Kikundi")}
-                                   </span>
-                                   {selectedGroup?.join_code && (
-                                        <button 
-                                             onClick={handleCopyCode}
-                                             className="uppercase tracking-widest text-[10px] bg-green-300  px-2 py-0.5 cursor-pointer rounded-full mr-2 border border-chart-1/30 hover:bg-chart-1/20 transition-colors items-center gap-1.5 inline-flex"
-                                             title={tt("Click to copy join code", "Bofya kunakili msimbo")}
-                                        >
-                                             {tt("Join Code:", "Msimbo:")} <span className="font-bold">{selectedGroup.join_code}</span>
-                                             <Copy className="w-3 h-3" />
-                                        </button>
-                                   )}
-                                   {memberCount} {tt("Members", "Wanachama")} • {tt("Created", "Kimeundwa")} {formatUTCDate(selectedGroup?.created_at || "")}
-                              </p>
-                         </div>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-3 mt-5 md:mt-0 relative z-10">
-                         <Button
-                              variant="outline"
-                              className=" shadow-sm font-bold border-border/80 hover:bg-chart-3/10 hover:text-chart-3 transition-colors"
-                              onClick={() => setIsInviteOpen(true)}
-                              disabled={!selectedGroup?.id}
-                         >
-                              <Users className="w-4 h-4 mr-2" /> {tt("Invite Members", "Alika Wanachama")}
-                         </Button>
-                         
-                         {isLeader && (
-                              <>
-                                   <Button className="bg-chart-4 hover:bg-chart-4/90 text-white font-bold shadow-md" onClick={() => setIsInstantOpen(true)} disabled={!selectedGroup?.id}>
-                                        <Play className="w-4 h-4 mr-2" /> {tt("Start Instant Session", "Anzisha Kikao cha Papo Hapo")}
-                                   </Button>
-                                   <Button className="bg-chart-3 hover:bg-chart-2 text-primary-foreground font-bold shadow-md" onClick={() => setIsScheduleOpen(true)} >
-                                        <CalendarPlus2 className="w-4 h-4 mr-2" /> {tt("Schedule Meeting", "Panga Kikao")}
-                                   </Button>
-                              </>
-                         )}
-                    </div>
-               </div>
+                <div className="flex flex-col md:flex-row justify-between rounded-md border border-border bg-card/60 backdrop-blur-md p-4 md:p-6 shadow-sm relative overflow-hidden gap-4">
+                     
+                     <div className="flex items-center gap-3 relative z-10">
+                          <Link href="/home">
+                               <Button variant="outline" size="icon" className="rounded-full shadow-sm hover:border-chart-3/40 transition-colors shrink-0">
+                                    <ArrowLeft className="w-5 h-5 text-foreground" />
+                               </Button>
+                          </Link>
+                          <div className="min-w-0">
+                               <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground truncate">{selectedGroup?.name}</h1>
+                               <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                                    <span className="uppercase tracking-widest text-[10px] bg-muted px-2 py-0.5 rounded-full border border-border/60">
+                                         {selectedGroup?.is_private ? tt("Private", "Faragha") : tt("Public", "Umma")} {tt("Group", "Kikundi")}
+                                    </span>
+                                    {selectedGroup?.join_code && (
+                                         <button 
+                                              onClick={handleCopyCode}
+                                              className="uppercase tracking-widest text-[10px] bg-green-300 px-2 py-0.5 cursor-pointer rounded-full border border-chart-1/30 hover:bg-chart-1/20 transition-colors inline-flex items-center gap-1 shrink-0"
+                                              title={tt("Click to copy join code", "Bofya kunakili msimbo")}
+                                         >
+                                              {tt("Join Code:", "Msimbo:")} <span className="font-bold">{selectedGroup.join_code}</span>
+                                              <Copy className="w-3 h-3" />
+                                         </button>
+                                    )}
+                                    <span className="text-xs text-muted-foreground">
+                                         {memberCount} {tt("Members", "Wanachama")} • {tt("Created", "Kimeundwa")} {formatUTCDate(selectedGroup?.created_at || "")}
+                                    </span>
+                               </div>
+                          </div>
+                     </div>
+                     
+                     <div className="flex flex-wrap gap-2 md:gap-3 relative z-10">
+                          <Button
+                               variant="outline"
+                               className="shadow-sm font-bold border-border/80 hover:bg-chart-3/10 hover:text-chart-3 transition-colors text-xs sm:text-sm"
+                               onClick={() => setIsInviteOpen(true)}
+                               disabled={!selectedGroup?.id}
+                          >
+                               <Users className="w-4 h-4 mr-1.5 sm:mr-2" /> {tt("Invite Members", "Alika Wanachama")}
+                          </Button>
+                          
+                          {isLeader && (
+                               <>
+                                    <Button className="bg-chart-4 hover:bg-chart-4/90 text-white font-bold shadow-md text-xs sm:text-sm" onClick={() => setIsInstantOpen(true)} disabled={!selectedGroup?.id}>
+                                         <Play className="w-4 h-4 mr-1.5 sm:mr-2" /> {tt("Start Instant Session", "Anzisha Kikao cha Papo Hapo")}
+                                    </Button>
+                                    <Button className="bg-chart-3 hover:bg-chart-2 text-primary-foreground font-bold shadow-md text-xs sm:text-sm" onClick={() => setIsScheduleOpen(true)} >
+                                         <CalendarPlus2 className="w-4 h-4 mr-1.5 sm:mr-2" /> {tt("Schedule Meeting", "Panga Kikao")}
+                                    </Button>
+                               </>
+                          )}
+                     </div>
+                </div>
 
                {/* ======================================= */}
                {/* MODALS */}

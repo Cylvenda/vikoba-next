@@ -16,7 +16,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       </div>
 
       {/* Glassmorphic Auth Card Wrapper */}
-      <Card className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 overflow-hidden rounded-[2rem] border border-border/80 bg-card/60 shadow-2xl shadow-chart-3/5 backdrop-blur-md">
+      <Card className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 overflow-visible md:overflow-hidden rounded-md border border-border/80 bg-card/60 shadow-2xl shadow-chart-3/5 backdrop-blur-md">
         {/* LEFT COLUMN: Framing Product View Bento-Style */}
         <div className="hidden md:block relative p-4 pr-0 h-full min-h-[560px]">
           <div className="relative h-full w-full overflow-hidden rounded-[1.6rem] border border-border/60 bg-muted/30 shadow-inner group">

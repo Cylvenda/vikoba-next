@@ -332,7 +332,7 @@ export default function GroupMeetingsPage() {
                     {isLeader && <p className="text-sm mt-1">{tt("Click schedule to launch your first session.", "Bofya panga kikao ili kuanzisha kikao chako cha kwanza.")}</p>}
                   </div>
                 ) : (
-                  <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="space-y-3 max-h-[400px] sm:max-h-[500px] md:max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                     {groupMeetings.map((meeting) => (
                       <div
                         key={meeting.id}

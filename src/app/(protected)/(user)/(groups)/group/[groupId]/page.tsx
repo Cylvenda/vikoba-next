@@ -523,11 +523,11 @@ export default function GroupPage() {
               </div>
               <div className="flex items-center gap-3">
                 <Calendar className="h-5 w-5 text-muted-foreground" />
-                <Button
+               <Button
                   asChild
                   variant="outline"
                   size="sm"
-                  className="rounded-full"
+                  className="rounded-full h-9 px-3 sm:h-8 sm:px-3"
                 >
                   <Link href={`/group/${selectedGroup.id}/meetings`}>
                     {tt("Read more", "Soma zaidi")}

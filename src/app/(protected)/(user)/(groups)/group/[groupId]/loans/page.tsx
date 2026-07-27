@@ -709,7 +709,8 @@ export default function GroupLoansPage() {
         </div>
 
         <Tabs defaultValue="types" className="space-y-4">
-          <TabsList className={`grid w-full ${isTreasurer ? "grid-cols-4" : "grid-cols-3"} bg-card/70`}>
+          <div className="w-full overflow-x-auto -mx-1 px-1">
+            <TabsList className={`grid w-full ${isTreasurer ? "grid-cols-4" : "grid-cols-3"} bg-card/70 min-w-[320px]`}>
             <TabsTrigger value="types" className="gap-2">
               <Layers3 className="h-4 w-4" />{tt("Loan types", "Aina za mikopo")}</TabsTrigger>
             <TabsTrigger value="requests" className="gap-2">
@@ -727,6 +728,7 @@ export default function GroupLoansPage() {
               {tt("Repayments", "Marejesho")}
             </TabsTrigger>
           </TabsList>
+          </div>
 
           <TabsContent value="types">
             <Card className="border-border/70 bg-card/80 shadow-sm">

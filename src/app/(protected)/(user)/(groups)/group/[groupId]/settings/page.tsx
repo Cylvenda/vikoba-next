@@ -525,10 +525,10 @@ const GroupSettingsPage = () => {
                   <Hash className="h-4 w-4 text-primary" />
                   <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{tt("Join Code", "Msimbo wa Kujiunga")}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl font-extrabold tracking-[0.25em] text-foreground font-mono">
-                    {selectedGroup.join_code ?? "------"}
-                  </span>
+                 <div className="flex items-center gap-3">
+                   <span className="text-2xl sm:text-3xl font-extrabold tracking-[0.25em] text-foreground font-mono">
+                     {selectedGroup.join_code ?? "------"}
+                   </span>
                   <button
                     onClick={copyJoinCode}
                     className="flex items-center gap-1.5 rounded-xl border border-border/80 bg-muted px-3 py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"

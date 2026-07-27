@@ -276,7 +276,7 @@ export default function GroupWalletPage() {
                 <WalletCards className="h-3.5 w-3.5" />
                 {tt("Wallet Center", "Kituo cha Mkoba")}
               </div>
-              <h1 className="text-3xl font-black tracking-tight md:text-4xl">
+               <h1 className="text-2xl sm:text-3xl font-black tracking-tight md:text-4xl">
                 {selectedGroup.name} {tt("Wallet", "Mkoba")}
               </h1>
               <p className="max-w-3xl text-sm text-muted-foreground">
@@ -486,7 +486,7 @@ export default function GroupWalletPage() {
                     </p>
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-3 xl:min-w-[48rem]">
+                   <div className="grid gap-3 md:grid-cols-3">
                     <Input
                       value={actionSearch}
                       onChange={(event) => setActionSearch(event.target.value)}
