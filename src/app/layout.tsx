@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/components/theme/theme-provider";
 import { LanguageProvider } from "@/components/language/language-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://your-vikoba-domain.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://vikoba-opal.vercel.app";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -54,10 +54,10 @@ export const metadata: Metadata = {
     alternateLocale: "sw_TZ",
     images: [
       {
-        url: "/opengraph-image",
-        width: 1200,
-        height: 630,
-        alt: "VICOBA Community Hub digital village banking platform",
+        url: "/logo.png",
+        width: 1024,
+        height: 1024,
+        alt: "VICOBA Community Hub logo",
       },
     ],
   },
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     title: "VICOBA Community Hub | Digital Village Banking",
     description:
       "Manage VICOBA savings, loans, meetings, members, and records in one secure platform.",
-    images: ["/opengraph-image"],
+    images: ["/logo.png"],
   },
   robots: {
     index: true,
