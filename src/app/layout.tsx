@@ -29,6 +29,14 @@ export const metadata: Metadata = {
   description:
     "VICOBA Community Hub helps village savings groups manage michango, hisa, mikopo, meetings, members, and records securely online.",
   applicationName: "VICOBA Community Hub",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
+      { url: "/icon.png", sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   keywords: [
     "VICOBA",
     "vikoba Tanzania",
