@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { BellRing, LayoutDashboard, Settings, ShieldCheck, UserRound } from 'lucide-react'
 import { Button } from '../ui/button'
 import { useAuthUserStore } from '@/store/auth/userAuth.store'
+import { useLanguage } from '@/components/language/language-provider'
 
 interface MenuItemsProps {
      isMobile?: boolean
@@ -11,12 +12,14 @@ interface MenuItemsProps {
 
 const MenuItems = ({ isMobile = false }: MenuItemsProps) => {
      const { user } = useAuthUserStore()
+     const { language } = useLanguage()
+     const tt = (en: string, sw: string) => language === "sw" ? sw : en
      const items = [
-          { icon: LayoutDashboard, label: "Home", href: "/home" },
-          { icon: BellRing, label: "Notifications", href: "/home/notifications" },
-          { icon: UserRound, label: "Profile", href: "/home/profile" },
-          ...(user?.isAdmin ? [{ icon: ShieldCheck, label: "Admin", href: "/admin" }] : []),
-          { icon: Settings, label: "Settings", href: "/home/settings" },
+          { icon: LayoutDashboard, label: tt("Home", "Nyumbani"), href: "/home" },
+          { icon: BellRing, label: tt("Notifications", "Arifa"), href: "/home/notifications" },
+          { icon: UserRound, label: tt("Profile", "Wasifu"), href: "/home/profile" },
+          ...(user?.isAdmin ? [{ icon: ShieldCheck, label: tt("Admin", "Msimamizi"), href: "/admin" }] : []),
+          { icon: Settings, label: tt("Settings", "Mipangilio"), href: "/home/settings" },
      ]
 
      return (

@@ -67,7 +67,13 @@ export function NavMain({
                   asChild
                   className={`rounded-xl transition-all duration-200 ${isActive ? 'bg-chart-3/10 text-chart-3 font-bold shadow-sm' : 'hover:bg-muted font-medium text-muted-foreground hover:text-foreground'}`}
                 >
-                  <Link className="flex flex-row gap-3 items-center w-full py-1" href={item.url} prefetch={false}>
+                  <Link
+                    className="flex flex-row gap-3 items-center w-full py-1"
+                    href={item.url}
+                    prefetch={false}
+                    target={item.url === "/guide" ? "_blank" : undefined}
+                    rel={item.url === "/guide" ? "noopener noreferrer" : undefined}
+                  >
                     <span className={`${isActive ? 'text-chart-3' : 'text-chart-3/70 group-hover:text-chart-3 transition-colors'}`}>{item.icon}</span>
                     <span>{item.title}</span>
                   </Link>
@@ -125,7 +131,13 @@ export function NavMain({
                                     <span>{subItem.title}</span>
                                   </span>
                                 ) : (
-                                  <Link className="flex flex-row gap-2 items-center w-full py-0.5" href={subItem.url || "#"} prefetch={false}>
+                                  <Link
+                                    className="flex flex-row gap-2 items-center w-full py-0.5"
+                                    href={subItem.url || "#"}
+                                    prefetch={false}
+                                    target={subItem.url === "/guide" ? "_blank" : undefined}
+                                    rel={subItem.url === "/guide" ? "noopener noreferrer" : undefined}
+                                  >
                                     <span className="text-chart-3/50 group-hover:text-chart-3/80 transition-colors">{subItem.icon}</span>
                                     <span>{subItem.title}</span>
                                   </Link>

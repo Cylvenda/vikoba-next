@@ -102,8 +102,8 @@ export function ParticipantTile({
       </div>
 
       {reactionEmoji ? (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="rounded-full bg-black/35 px-5 py-3 text-5xl shadow-lg backdrop-blur-md">
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center overflow-hidden" aria-live="polite">
+          <div key={participantSignal?.reactionAt} className="meeting-reaction rounded-full bg-black/35 px-4 py-2 text-4xl shadow-lg backdrop-blur-md sm:px-5 sm:py-3 sm:text-5xl">
             {reactionEmoji}
           </div>
         </div>

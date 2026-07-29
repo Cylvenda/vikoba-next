@@ -12,7 +12,19 @@ type LanguageContextValue = {
 const LanguageContext = createContext<LanguageContextValue | undefined>(undefined)
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<LanguageCode>(() => getStoredLanguage())
+  // The first client render must match the server render. Restore the persisted
+  // preference only after hydration to avoid English/Swahili text mismatches.
+  const [language, setLanguageState] = useState<LanguageCode>("en")
+
+  useEffect(() => {
+    const storedLanguage = getStoredLanguage()
+    const frame = window.requestAnimationFrame(() => {
+      setLanguageState(storedLanguage)
+      setDocumentLanguage(storedLanguage)
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [])
 
   useEffect(() => {
     setDocumentLanguage(language)

@@ -116,6 +116,8 @@ export default function Home() {
                 </a>
                 <Link
                   href="/guide"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="transition hover:text-foreground"
                 >
                   {getTranslation(language, "landing.navGuide")}
@@ -143,7 +145,7 @@ export default function Home() {
                   variant="outline"
                   className="hidden rounded-full px-4 font-medium md:inline-flex"
                 >
-                  <Link href="/guide">
+                  <Link href="/guide" target="_blank" rel="noopener noreferrer">
                     <BookOpen className="mr-2 h-4 w-4" />
                     {getTranslation(language, "landing.navGuide")}
                   </Link>

@@ -36,17 +36,17 @@ export function TopBar({ title, connectionLabel, currentUtcIso, onLeave, actions
   const { language } = useLanguage()
   const tt = (en: string, sw: string) => language === "sw" ? sw : en
   return (
-    <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-accent px-3 py-2.5 backdrop-blur sm:px-5 sm:py-3">
+    <header className="z-20 flex shrink-0 items-center justify-between gap-2 border-b border-border bg-accent px-3 py-2 backdrop-blur sm:px-5 sm:py-3">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground sm:text-xs sm:tracking-[0.2em]">
           <ShieldCheck className="size-3.5 text-emerald-600 dark:text-emerald-400 sm:size-4" />
           {tt("Secure meeting session", "Kikao salama")}
         </div>
-        <h1 className="truncate text-base font-semibold text-foreground sm:text-lg md:text-2xl">{title}</h1>
+        <h1 className="max-w-[55vw] truncate text-sm font-semibold text-foreground sm:max-w-none sm:text-lg md:text-2xl">{title}</h1>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-        <div className="flex items-center gap-2 rounded-full border border-border bg-muted/50 px-2.5 py-1 text-[11px] text-foreground sm:px-3 sm:py-1.5 sm:text-sm shadow-sm">
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <div className="hidden items-center gap-2 rounded-full border border-border bg-muted/50 px-2.5 py-1 text-[11px] text-foreground min-[420px]:flex sm:px-3 sm:py-1.5 sm:text-sm shadow-sm">
           <Radio className="size-3.5 text-emerald-600 dark:text-emerald-400 sm:size-4" />
           {connectionLabel}
         </div>
@@ -55,13 +55,14 @@ export function TopBar({ title, connectionLabel, currentUtcIso, onLeave, actions
           {formatUtcLabel(currentUtcIso, language)}
         </div>
 
-        {actions}
+        <div className="hidden md:block">{actions}</div>
 
         <Button
           type="button"
           size="sm"
           onClick={onLeave}
-          className="rounded-lg px-2.5 sm:rounded-xl sm:px-3"
+          aria-label={tt("Leave meeting", "Ondoka kwenye kikao")}
+          className="size-11 rounded-xl px-0 sm:w-auto sm:px-3"
         >
           <DoorOpen className="size-3.5 sm:size-4" />
           <span className="hidden sm:inline">{tt("Leave meeting", "Ondoka kwenye kikao")}</span>

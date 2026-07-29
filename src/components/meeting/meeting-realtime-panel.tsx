@@ -30,6 +30,7 @@ type MeetingRealtimePanelProps = {
   participants?: ParticipantSession[]
   loading?: boolean
   headerActions?: ReactNode
+  mobileEndSessionAction?: ReactNode
   onRequestToken: () => Promise<boolean> | boolean
   onLeaveRequested?: () => Promise<void> | void
   onDisconnected?: () => Promise<void> | void
@@ -55,6 +56,7 @@ export function MeetingRealtimePanel({
   participants = [],
   loading = false,
   headerActions,
+  mobileEndSessionAction,
   onRequestToken,
   onLeaveRequested,
   onDisconnected,
@@ -172,18 +174,18 @@ export function MeetingRealtimePanel({
 
   if (!canConnect || roomPhase === "setup") {
     return (
-      <div className={fullscreen ? "flex h-full min-h-full items-center justify-center bg-card/30 p-6 text-foreground" : "rounded-2xl border border-border/60 bg-card p-3 shadow-sm text-foreground"}>
-        <div className={fullscreen ? "w-full max-w-6xl rounded-2xl border border-border/60 bg-card p-4 shadow-sm" : "rounded-[28px] border border-border/60 bg-card"}>
+      <div className={fullscreen ? "app-scrollbar flex h-full min-h-0 overflow-y-auto bg-card/30 p-2 text-foreground sm:items-center sm:justify-center sm:p-4 lg:p-6" : "rounded-2xl border border-border/60 bg-card p-2 text-foreground shadow-sm sm:p-3"}>
+        <div className={fullscreen ? "my-auto w-full max-w-7xl rounded-2xl border border-border/60 bg-card p-2 shadow-sm sm:p-4" : "w-full rounded-2xl border border-border/60 bg-card p-2 sm:rounded-[28px] sm:p-3"}>
           {roomPhase === "failed" && connectionMessage ? (
             <div className="mb-4 rounded-xl border border-destructive/30 bg-destructive/10 px-5 py-4 text-sm text-destructive shadow-sm">
               {connectionMessage}
             </div>
           ) : null}
 
-          <div className="mb-4 rounded-xl border border-border/60 bg-muted/30 px-5 py-4 shadow-sm">
+          <div className="mb-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-3 shadow-sm sm:mb-4 sm:px-5 sm:py-4">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-chart-3">{tt("Live Session", "Kikao cha Moja kwa Moja")}</p>
-            <h2 className="mt-2 text-2xl font-bold text-foreground">{tt("Prepare your camera and microphone", "Andaa kamera na kipaza sauti")}</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+            <h2 className="mt-1 text-lg font-bold text-foreground sm:mt-2 sm:text-2xl">{tt("Prepare your camera and microphone", "Andaa kamera na kipaza sauti")}</h2>
+            <p className="mt-1 max-w-3xl text-xs leading-5 text-muted-foreground sm:mt-2 sm:text-sm sm:leading-6">
               {tt("Review your devices, confirm how you want to appear in the session, and then join with a secure token.", "Kagua vifaa vyako, thibitisha jinsi utakavyoonekana, kisha jiunge kwa tokeni salama.")}
             </p>
           </div>
@@ -219,7 +221,7 @@ export function MeetingRealtimePanel({
 
   return (
     <div
-      className={fullscreen ? "relative h-full w-full overflow-hidden bg-background" : "relative overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm"}
+      className={fullscreen ? "relative h-[100dvh] w-full overflow-hidden bg-background" : "relative min-h-0 overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm"}
       data-lk-theme="default"
     >
       <LiveKitRoom
@@ -260,6 +262,7 @@ export function MeetingRealtimePanel({
           currentUserId={userId}
           currentUserName={userName}
           headerActions={headerActions}
+          mobileEndSessionAction={mobileEndSessionAction}
           onLeaveRequested={async () => {
             await onLeaveRequested?.()
           }}

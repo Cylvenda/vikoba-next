@@ -5,6 +5,7 @@ import { Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useTheme } from "./theme-provider"
+import { useLanguage } from "@/components/language/language-provider"
 
 interface ThemeToggleProps {
   className?: string
@@ -14,6 +15,8 @@ interface ThemeToggleProps {
 
 export default function ThemeToggle({ className, compact = false, showLabel = false }: ThemeToggleProps) {
   const { theme, toggleTheme } = useTheme()
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -38,21 +41,21 @@ export default function ThemeToggle({ className, compact = false, showLabel = fa
       onClick={toggleTheme}
       aria-label={
         !mounted
-          ? "Toggle theme"
+          ? tt("Toggle theme", "Badili mandhari")
           : isDark
-            ? "Switch to light mode"
-            : "Switch to dark mode"
+            ? tt("Switch to light mode", "Tumia mandhari angavu")
+            : tt("Switch to dark mode", "Tumia mandhari meusi")
       }
       title={
         !mounted
-          ? "Toggle theme"
+          ? tt("Toggle theme", "Badili mandhari")
           : isDark
-            ? "Switch to light mode"
-            : "Switch to dark mode"
+            ? tt("Switch to light mode", "Tumia mandhari angavu")
+            : tt("Switch to dark mode", "Tumia mandhari meusi")
       }
     >
       {!mounted ? <Moon /> : isDark ? <Sun /> : <Moon />}
-      {showLabel ? <span>{isDark ? "Light mode" : "Dark mode"}</span> : null}
+      {showLabel ? <span>{isDark ? tt("Light mode", "Mandhari angavu") : tt("Dark mode", "Mandhari meusi")}</span> : null}
     </Button>
   )
 }

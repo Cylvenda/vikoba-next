@@ -32,7 +32,7 @@ export const FormInput = ({
                     <FieldGroup className="border-0 shadow-none ring-0">
                          <FieldSet className="border-0 shadow-none ring-0">
                               {title && (
-                                   <FieldTitle className="text-xl font-bold">
+                                   <FieldTitle className="text-lg font-bold leading-tight sm:text-xl">
                                         {title}
                                    </FieldTitle>
                               )}
@@ -135,24 +135,24 @@ export const PasswordInput = <T extends FieldValues>({ label, name, placeholder,
                                    </Link>
                               )}
                          </FieldLabel>
-                         <div className='flex flex-row justify-between items-center gap-1 '>
+                         <div className='flex min-w-0 flex-row items-center gap-2'>
                               <Input
                                    {...field}
                                    id={id}
                                    type={type}
                                    placeholder={placeholder}
                                    aria-invalid={fieldState.invalid}
-                                   className="p-5 focus-visible:border-chart-3 focus-visible:ring-2 focus-visible:ring-chart-3/40"
+                                   className="min-w-0 p-5 focus-visible:border-chart-3 focus-visible:ring-2 focus-visible:ring-chart-3/40"
                               />
 
-                              <span className='cursor-pointer rounded-2xl border border-input bg-background p-2'>
-                                   {
-                                        show ?
-                                             <EyeClosed onClick={() => setShow(false)} />
-                                             :
-                                             <Eye onClick={() => setShow(true)} />
-                                   }
-                              </span>
+                              <button
+                                   type="button"
+                                   onClick={() => setShow((current) => !current)}
+                                   aria-label={show ? "Hide password" : "Show password"}
+                                   className='flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-input bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                              >
+                                   {show ? <EyeClosed /> : <Eye />}
+                              </button>
                          </div>
                          {fieldState.invalid && (<FieldError errors={[fieldState.error]} />)}
 

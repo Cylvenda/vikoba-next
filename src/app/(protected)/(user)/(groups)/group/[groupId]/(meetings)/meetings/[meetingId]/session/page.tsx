@@ -11,7 +11,7 @@ import { useAuthUserStore } from "@/store/auth/userAuth.store"
 import { useGroupStore } from "@/store/group/groupUser.store"
 import { toast } from "react-toastify"
 import { getMeetingDetailHref } from "@/lib/meeting-routes"
-import { Video, ShieldAlert, Users, PhoneOff, ArrowLeft } from "lucide-react"
+import { Video, ShieldAlert, Users, PhoneOff, ArrowLeft, CircleStop } from "lucide-react"
 import { useLanguage } from "@/components/language/language-provider"
 
 export default function MeetingSessionPage() {
@@ -157,9 +157,24 @@ export default function MeetingSessionPage() {
     </div>
   )
 
+  const mobileEndSessionAction = isLeader && isMeetingOngoing ? (
+    <Button
+      type="button"
+      size="icon"
+      variant="destructive"
+      className="size-11 shrink-0 rounded-full shadow-sm"
+      onClick={handleEnd}
+      disabled={loading}
+      aria-label={tt("End session for everyone", "Maliza kikao kwa wote")}
+      title={tt("End Session", "Maliza Kikao")}
+    >
+      <CircleStop className="size-5" />
+    </Button>
+  ) : null
+
   if (isMeetingOngoing) {
     return (
-      <div className="fixed inset-0 z-[60] bg-background">
+      <div className="fixed inset-0 z-[60] h-[100dvh] overflow-hidden bg-background">
         <MeetingRealtimePanel
           meetingId={meetingId}
           meetingTitle={selectedMeeting?.title}
@@ -177,6 +192,7 @@ export default function MeetingSessionPage() {
           participants={participants}
           loading={loading}
           headerActions={roomHeaderActions}
+          mobileEndSessionAction={mobileEndSessionAction}
           onRequestToken={handleJoin}
           onLeaveRequested={handleLeaveRequested}
           onConnected={handleRoomConnected}
@@ -252,6 +268,7 @@ export default function MeetingSessionPage() {
                   participants={participants}
                   loading={loading}
                   headerActions={roomHeaderActions}
+                  mobileEndSessionAction={mobileEndSessionAction}
                   onRequestToken={handleJoin}
                   onLeaveRequested={handleLeaveRequested}
                   onConnected={handleRoomConnected}

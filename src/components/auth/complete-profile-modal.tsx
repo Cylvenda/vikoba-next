@@ -6,12 +6,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useAuthUserStore } from "@/store/auth/userAuth.store"
+import { useLanguage } from "@/components/language/language-provider"
 
 function needsProfileCompletion(firstName?: string, lastName?: string) {
   return !firstName?.trim() || !lastName?.trim()
 }
 
 export function CompleteProfileModal() {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const { user, loading, updateUserProfile } = useAuthUserStore()
   const [firstName, setFirstName] = useState(user?.firstName || "")
   const [lastName, setLastName] = useState(user?.lastName || "")
@@ -29,11 +32,11 @@ export function CompleteProfileModal() {
     const nextErrors: { firstName?: string; lastName?: string } = {}
 
     if (!trimmedFirstName) {
-      nextErrors.firstName = "First name is required."
+      nextErrors.firstName = tt("First name is required.", "Jina la kwanza linahitajika.")
     }
 
     if (!trimmedLastName) {
-      nextErrors.lastName = "Last name is required."
+      nextErrors.lastName = tt("Last name is required.", "Jina la mwisho linahitajika.")
     }
 
     if (Object.keys(nextErrors).length > 0) {
@@ -52,7 +55,7 @@ export function CompleteProfileModal() {
       return
     }
 
-    toast.success("Your profile is now complete.")
+    toast.success(tt("Your profile is now complete.", "Wasifu wako sasa umekamilika."))
   }
 
   return (
@@ -64,10 +67,10 @@ export function CompleteProfileModal() {
       >
         <DialogHeader>
           <div className="mb-2">
-            <p className="font-semibold uppercase tracking-[0.28em] text-chart-4 text-left">Complete Profile</p>
-            <DialogTitle className="mt-3 text-2xl font-semibold tracking-tight text-left">Finish setting up your account</DialogTitle>
+            <p className="font-semibold uppercase tracking-[0.28em] text-chart-4 text-left">{tt("Complete Profile", "Kamilisha Wasifu")}</p>
+            <DialogTitle className="mt-3 text-2xl font-semibold tracking-tight text-left">{tt("Finish setting up your account", "Kamilisha kuweka akaunti yako")}</DialogTitle>
             <DialogDescription className="mt-2 text-sm leading-6 text-muted-foreground text-left">
-              Please add your first name and last name before continuing. This helps identify you correctly across groups and meetings.
+              {tt("Please add your first name and last name before continuing. This helps identify you correctly across groups and meetings.", "Tafadhali ongeza jina lako la kwanza na la mwisho kabla ya kuendelea. Hii husaidia kukutambua vizuri kwenye vikundi na mikutano.")}
             </DialogDescription>
           </div>
         </DialogHeader>
@@ -75,13 +78,13 @@ export function CompleteProfileModal() {
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <label htmlFor="complete-first-name" className="text-sm font-medium">
-              First name
+              {tt("First name", "Jina la kwanza")}
             </label>
             <Input
               id="complete-first-name"
               value={firstName}
               onChange={(event) => setFirstName(event.target.value)}
-              placeholder="Enter your first name"
+              placeholder={tt("Enter your first name", "Weka jina lako la kwanza")}
               className="h-11"
             />
             {errors.firstName ? <p className="text-sm text-destructive">{errors.firstName}</p> : null}
@@ -89,20 +92,20 @@ export function CompleteProfileModal() {
 
           <div className="space-y-2">
             <label htmlFor="complete-last-name" className="text-sm font-medium">
-              Last name
+              {tt("Last name", "Jina la mwisho")}
             </label>
             <Input
               id="complete-last-name"
               value={lastName}
               onChange={(event) => setLastName(event.target.value)}
-              placeholder="Enter your last name"
+              placeholder={tt("Enter your last name", "Weka jina lako la mwisho")}
               className="h-11"
             />
             {errors.lastName ? <p className="text-sm text-destructive">{errors.lastName}</p> : null}
           </div>
 
           <Button type="submit" className="mt-2 w-full bg-chart-3 text-primary-foreground hover:bg-chart-2" disabled={loading}>
-            {loading ? "Saving..." : "Save and Continue"}
+            {loading ? tt("Saving...", "Inahifadhi...") : tt("Save and Continue", "Hifadhi na Uendelee")}
           </Button>
         </form>
       </DialogContent>

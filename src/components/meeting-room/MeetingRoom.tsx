@@ -43,6 +43,7 @@ type MeetingRoomProps = {
   currentUserName?: string
   minutesContent?: string | null
   headerActions?: ReactNode
+  mobileEndSessionAction?: ReactNode
   onLeaveRequested: () => Promise<void> | void
   participantRoles?: ParticipantRoleMap
 }
@@ -104,8 +105,13 @@ function PanelFrame({
   const CloseIcon = side === "left" ? PanelLeftClose : PanelRightClose
 
   return (
-    <aside className="flex h-[16rem] w-full flex-col overflow-hidden rounded-md border border-border bg-card shadow-sm md:h-[22rem] lg:h-full lg:w-[20rem] xl:w-[22rem]">
-      <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
+    <aside
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      className="absolute inset-x-2 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-40 flex max-h-[min(68dvh,34rem)] min-h-[18rem] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl lg:static lg:z-auto lg:h-full lg:max-h-none lg:min-h-0 lg:w-[20rem] lg:shrink-0 lg:rounded-md lg:shadow-sm xl:w-[22rem]"
+    >
+      <div className="flex items-start justify-between gap-3 border-b border-border px-4 py-3 sm:px-5 sm:py-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-foreground">
             <CloseIcon className="size-4 text-muted-foreground" />
@@ -113,7 +119,7 @@ function PanelFrame({
           </div>
           <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         </div>
-        <Button type="button" variant="ghost" size="icon" className="shrink-0 rounded-2xl" onClick={onClose}>
+        <Button type="button" variant="ghost" size="icon" className="size-11 shrink-0 rounded-xl" onClick={onClose}>
           <X className="size-4" />
           <span className="sr-only">{language === "sw" ? "Funga paneli" : "Close panel"}</span>
         </Button>
@@ -134,6 +140,7 @@ export function MeetingRoom({
   currentUserId,
   currentUserName,
   headerActions,
+  mobileEndSessionAction,
   onLeaveRequested,
   participantRoles = {},
 }: MeetingRoomProps) {
@@ -546,13 +553,10 @@ export function MeetingRoom({
       toast.error(tt("Failed to share your reaction with the room.", "Imeshindikana kutuma mwitikio wako."))
     })
 
-    toast.success(`${emoji} ${tt("Reaction sent", "Mwitikio umetumwa")}`, {
-      autoClose: 1500,
-    })
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background">
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden bg-background">
       <TopBar
         title={meetingTitle}
         connectionLabel={connectionState}
@@ -561,7 +565,19 @@ export function MeetingRoom({
         onLeave={() => void handleLeave()}
       />
 
-      <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-hidden px-4 pb-2 pt-4 sm:pb-3 sm:pt-3 lg:flex-row lg:pt-4">
+      {(leftPanel || rightPanel) ? (
+        <button
+          type="button"
+          aria-label={tt("Close open meeting panel", "Funga paneli ya kikao")}
+          className="absolute inset-0 z-30 bg-black/45 backdrop-blur-[1px] lg:hidden"
+          onClick={() => {
+            setLeftPanel(null)
+            setRightPanel(null)
+          }}
+        />
+      ) : null}
+
+      <div className="flex min-h-0 flex-1 gap-1 overflow-hidden px-2 pb-2 pt-2 sm:px-4 sm:pb-3 sm:pt-3 lg:flex-row lg:pt-4">
         {leftPanel ? (
           <PanelFrame
             side="left"
@@ -628,6 +644,7 @@ export function MeetingRoom({
         canAccessMinutes={isHost}
         activeDocumentsPanel={leftPanel}
         activePeoplePanel={rightPanel}
+        mobileEndSessionAction={mobileEndSessionAction}
         onToggleRaisedHand={handleToggleRaisedHand}
         onSendReaction={handleSendReaction}
         onLeave={() => void handleLeave()}
@@ -636,9 +653,11 @@ export function MeetingRoom({
             return
           }
 
+          setRightPanel(null)
           setLeftPanel((current) => (current === tab ? null : tab))
         }}
         onOpenPeoplePanel={(tab) => {
+          setLeftPanel(null)
           setRightPanel((current) => (current === tab ? null : tab))
         }}
       />

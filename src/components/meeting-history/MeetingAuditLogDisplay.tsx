@@ -103,7 +103,7 @@ export function MeetingAuditLogDisplay({ auditLogs }: MeetingAuditLogDisplayProp
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 min-[400px]:grid-cols-2 md:grid-cols-4">
             <div className="text-center">
               <div className="text-2xl font-bold">{auditLogs.length}</div>
               <div className="text-sm text-muted-foreground">Total Actions</div>

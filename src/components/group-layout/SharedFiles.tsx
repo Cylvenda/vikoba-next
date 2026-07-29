@@ -12,7 +12,7 @@ export default function SharedFiles() {
      return (
           <div className="rounded-2xl bg-card p-4 shadow">
                <h3 className="text-lg font-bold mb-4">{language === "sw" ? "Faili Zilizoshirikiwa" : "Shared Files"}</h3>
-               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+               <div className="grid grid-cols-1 gap-4 min-[400px]:grid-cols-2 md:grid-cols-4">
                     {files.map(f => (
                          <div key={f.name} className="flex flex-col items-center rounded-xl border border-border p-3 transition hover:bg-muted/60">
                               <div className="mb-2 text-2xl text-chart-3">📄</div>

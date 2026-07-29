@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import { Poppins, Inter } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ToastContainer } from "react-toastify";
-import { ThemeProvider, themeScript } from "@/components/theme/theme-provider";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 import { LanguageProvider } from "@/components/language/language-provider";
-import { languageScript } from "@/lib/i18n";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://your-vikoba-domain.vercel.app";
@@ -91,10 +89,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning className={cn("h-full antialiased", poppins.variable, "font-sans", inter.variable)}>
-      <head>
-        <Script id="theme-script" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
-        <Script id="language-script" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: languageScript }} />
-      </head>
       <body className="min-h-screen bg-background font-sans">
         <ThemeProvider >
           <LanguageProvider>

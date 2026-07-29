@@ -294,7 +294,7 @@ const GroupSettingsPage = () => {
               </Field>
 
               <Field label={tt("Visibility", "Mwonekano")} hint={tt("Public groups are discoverable. Private groups require an invite or join code.", "Vikundi vya umma vinaweza kutafutwa. Vikundi vya faragha vinahitaji mwaliko au msimbo.")}>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {(["PUBLIC", "PRIVATE"] as const).map((v) => (
                     <button
                       key={v}

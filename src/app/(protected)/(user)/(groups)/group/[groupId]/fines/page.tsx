@@ -725,7 +725,7 @@ export default function GroupFinesPage() {
                   <Input required placeholder={tt("E.g. Late for meeting", "Mfano: kuchelewa kikaoni")} value={issueForm.reason} onChange={e => setIssueForm({...issueForm, reason: e.target.value})} disabled={issueForm.fine_category_uuid !== 'custom'} />
                 </FieldContent>
               </Field>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field>
                   <FieldLabel>{tt("Amount (TZS)", "Kiasi (TZS)")}</FieldLabel>
                   <FieldContent>

@@ -9,6 +9,7 @@ import MenuItems from './MenuItems'
 import { useMeetingStore } from '@/store/meeting/meeting.store'
 import { useAuthUserStore } from '@/store/auth/userAuth.store'
 import ThemeToggle from '@/components/theme/theme-toggle'
+import { useLanguage } from '@/components/language/language-provider'
 
 interface HeaderProps {
      showMenu: boolean
@@ -17,6 +18,8 @@ interface HeaderProps {
 
 const Header = ({ showMenu, setShowMenu }: HeaderProps) => {
      const { user } = useAuthUserStore()
+     const { language } = useLanguage()
+     const tt = (en: string, sw: string) => language === "sw" ? sw : en
      const { meetings } = useMeetingStore()
      const meetingsToday = meetings.filter((meeting) => {
           const scheduledDate = new Date(meeting.scheduled_start)
@@ -35,20 +38,20 @@ const Header = ({ showMenu, setShowMenu }: HeaderProps) => {
                          </h1>
                          <h2 className='text-sm'>
                               {
-                                   new Date().toLocaleDateString("en-US", {
+                                   new Date().toLocaleDateString(language === "sw" ? "sw-TZ" : "en-US", {
                                         weekday: "long",
                                         year: "numeric",
                                    month: "long",
                                    day: "numeric",
                                    })
-                              } · {meetingsToday} meetings today
+                              } · {meetingsToday} {tt("meetings today", "mikutano leo")}
                          </h2>
                     </div>
 
                     {/* Mobile menu toggle */}
                     <div className='flex items-center gap-2 md:hidden'>
                          <ThemeToggle compact />
-                         <Button onClick={() => setShowMenu(!showMenu)} size='icon-lg' variant='outline' className='rounded-2xl'>
+                         <Button aria-label={showMenu ? tt("Close menu", "Funga menyu") : tt("Open menu", "Fungua menyu")} onClick={() => setShowMenu(!showMenu)} size='icon-lg' variant='outline' className='rounded-2xl'>
                               {showMenu ? <X /> : <Menu />}
                          </Button>
                     </div>

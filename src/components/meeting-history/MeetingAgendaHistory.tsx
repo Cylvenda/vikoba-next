@@ -1,3 +1,5 @@
+"use client"
+
 import React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -11,6 +13,7 @@ import {
   Layers,
   Timer
 } from "lucide-react"
+import { useLanguage } from "@/components/language/language-provider"
 
 interface MeetingAgendaHistoryProps {
   agendaSections: AgendaSection[]
@@ -18,6 +21,8 @@ interface MeetingAgendaHistoryProps {
 }
 
 export function MeetingAgendaHistory({ agendaSections, agendaItems }: MeetingAgendaHistoryProps) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const getItemsForSection = (sectionId: string): AgendaItem[] => {
     return agendaItems
       .filter(item => item.section === sectionId)
@@ -47,26 +52,26 @@ export function MeetingAgendaHistory({ agendaSections, agendaItems }: MeetingAge
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="w-5 h-5" />
-            Agenda Summary
+            {tt("Agenda Summary", "Muhtasari wa Ajenda")}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 min-[400px]:grid-cols-2 md:grid-cols-4">
             <div className="text-center">
               <div className="text-2xl font-bold">{totalItems}</div>
-              <div className="text-sm text-muted-foreground">Total Items</div>
+              <div className="text-sm text-muted-foreground">{tt("Total Items", "Jumla ya Hoja")}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">{completedItems}</div>
-              <div className="text-sm text-muted-foreground">Completed</div>
+              <div className="text-sm text-muted-foreground">{tt("Completed", "Zilizokamilika")}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold">{completionPercentage}%</div>
-              <div className="text-sm text-muted-foreground">Completion</div>
+              <div className="text-sm text-muted-foreground">{tt("Completion", "Ukamilishaji")}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold">{totalAllocatedTime}m</div>
-              <div className="text-sm text-muted-foreground">Allocated Time</div>
+              <div className="text-sm text-muted-foreground">{tt("Allocated Time", "Muda Uliopangwa")}</div>
             </div>
           </div>
 
@@ -79,7 +84,7 @@ export function MeetingAgendaHistory({ agendaSections, agendaItems }: MeetingAge
               />
             </div>
             <div className="text-center text-sm text-muted-foreground mt-2">
-              {completionPercentage}% of agenda items completed
+              {completionPercentage}% {tt("of agenda items completed", "ya hoja za ajenda zimekamilika")}
             </div>
           </div>
         </CardContent>
@@ -90,9 +95,9 @@ export function MeetingAgendaHistory({ agendaSections, agendaItems }: MeetingAge
         <Card>
           <CardContent className="p-6 text-center">
             <Layers className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-medium mb-2">No Agenda Items</h3>
+            <h3 className="text-lg font-medium mb-2">{tt("No Agenda Items", "Hakuna Hoja za Ajenda")}</h3>
             <p className="text-muted-foreground">
-              This meeting didn&apos;t have any structured agenda items.
+              {tt("This meeting did not have any structured agenda items.", "Kikao hiki hakikuwa na hoja za ajenda zilizopangwa.")}
             </p>
           </CardContent>
         </Card>
@@ -113,17 +118,17 @@ export function MeetingAgendaHistory({ agendaSections, agendaItems }: MeetingAge
                     )}
                   </div>
                   <Badge variant="outline">
-                    {getItemsForSection(section.id).length} items
+                    {getItemsForSection(section.id).length} {tt("items", "hoja")}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
                 {getItemsForSection(section.id).map((item) => (
-                  <AgendaItemRow key={item.id} item={item} />
+                  <AgendaItemRow key={item.id} item={item} language={language} />
                 ))}
                 {getItemsForSection(section.id).length === 0 && (
                   <div className="text-center text-muted-foreground py-4">
-                    No items in this section
+                    {tt("No items in this section", "Hakuna hoja katika sehemu hii")}
                   </div>
                 )}
               </CardContent>
@@ -134,11 +139,11 @@ export function MeetingAgendaHistory({ agendaSections, agendaItems }: MeetingAge
           {getUnsectionedItems().length > 0 && (
             <Card className="border-l-4 border-l-gray-400 dark:border-l-gray-600">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Additional Items</CardTitle>
+                <CardTitle className="text-lg">{tt("Additional Items", "Hoja za Ziada")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {getUnsectionedItems().map((item) => (
-                  <AgendaItemRow key={item.id} item={item} />
+                  <AgendaItemRow key={item.id} item={item} language={language} />
                 ))}
               </CardContent>
             </Card>
@@ -151,9 +156,11 @@ export function MeetingAgendaHistory({ agendaSections, agendaItems }: MeetingAge
 
 interface AgendaItemRowProps {
   item: AgendaItem
+  language?: "en" | "sw"
 }
 
-function AgendaItemRow({ item }: AgendaItemRowProps) {
+function AgendaItemRow({ item, language = "en" }: AgendaItemRowProps) {
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   return (
     <div className="border rounded-lg p-4 bg-background">
       <div className="flex items-start gap-3">
@@ -178,7 +185,7 @@ function AgendaItemRow({ item }: AgendaItemRowProps) {
             )}
             {item.completed && (
               <Badge variant="default" className="bg-green-600">
-                Completed
+                {tt("Completed", "Imekamilika")}
               </Badge>
             )}
           </div>
@@ -194,7 +201,7 @@ function AgendaItemRow({ item }: AgendaItemRowProps) {
           <div className="mt-3 bg-blue-50 dark:bg-blue-950/50 p-3 rounded text-sm">
             <div className="flex items-center mb-1">
               <FileText className="w-3 h-3 text-blue-600 dark:text-blue-400 mr-1" />
-              <strong className="text-blue-800 dark:text-blue-300">Host Notes:</strong>
+              <strong className="text-blue-800 dark:text-blue-300">{tt("Host Notes:", "Maelezo ya Mwenyeji:")}</strong>
             </div>
             <p className="text-blue-700 dark:text-blue-400 whitespace-pre-wrap">{item.notes}</p>
           </div>
@@ -205,12 +212,12 @@ function AgendaItemRow({ item }: AgendaItemRowProps) {
             <div className="mt-3 text-xs text-muted-foreground space-y-1">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-3 h-3" />
-                <span>Completed at {item.completed_at ? new Date(item.completed_at).toLocaleString() : 'Unknown time'}</span>
+                <span>{tt("Completed at", "Imekamilika saa")} {item.completed_at ? new Date(item.completed_at).toLocaleString(language === "sw" ? "sw-TZ" : "en-US") : tt("Unknown time", "Muda haujulikani")}</span>
               </div>
               {item.completed_by_email && (
                 <div className="flex items-center gap-2">
                   <Timer className="w-3 h-3" />
-                  <span>Completed by {item.completed_by_email}</span>
+                  <span>{tt("Completed by", "Imekamilishwa na")} {item.completed_by_email}</span>
                 </div>
               )}
             </div>

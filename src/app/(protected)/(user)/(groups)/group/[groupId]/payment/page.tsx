@@ -623,7 +623,7 @@ export default function PaymentPage() {
                           <div className="space-y-4">
                             <div className="space-y-2">
                               <Label htmlFor="provider">{tt("Network Provider", "Mtandao wa Simu")}</Label>
-                              <div className="grid grid-cols-3 gap-3">
+                              <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-3">
                                 {["M-Pesa", "Tigo Pesa", "Airtel"].map((provider) => (
                                   <div 
                                     key={provider}
@@ -687,7 +687,7 @@ export default function PaymentPage() {
                               {errors.cardNumber && <p className="text-xs text-destructive font-medium">{errors.cardNumber}</p>}
                             </div>
                             
-                            <div className="grid grid-cols-2 gap-5">
+                            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                               <div className="space-y-2">
                                 <Label htmlFor="expiry">{tt("Expiration Date", "Tarehe ya Kuisha")}</Label>
                                 <Input 

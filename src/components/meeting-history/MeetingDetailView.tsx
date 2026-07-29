@@ -24,6 +24,7 @@ import { MeetingAgendaHistory } from "./MeetingAgendaHistory"
 import { MeetingAuditLogDisplay } from "./MeetingAuditLogDisplay"
 import { AgendaMinutesHistory } from "@/components/meeting/AgendaMinutesHistory"
 import { useAuthUserStore } from "@/store/auth/userAuth.store"
+import { useLanguage } from "@/components/language/language-provider"
 
 interface MeetingDetailViewProps {
   meetingId: string
@@ -35,6 +36,8 @@ export function MeetingDetailView({ meetingId, onBack }: MeetingDetailViewProps)
    const [loading, setLoading] = useState(true)
    const [recalculating, setRecalculating] = useState(false)
    const { user } = useAuthUserStore()
+   const { language } = useLanguage()
+   const tt = (en: string, sw: string) => language === "sw" ? sw : en
 
   useEffect(() => {
     const loadMeetingDetails = async () => {
@@ -44,7 +47,7 @@ export function MeetingDetailView({ meetingId, onBack }: MeetingDetailViewProps)
         setMeeting(response.data)
       } catch (error: unknown) {
         const errorResponse = error as { response?: { data?: { detail?: string } } }
-        toast.error(errorResponse.response?.data?.detail || "Failed to load meeting details")
+        toast.error(errorResponse.response?.data?.detail || tt("Failed to load meeting details", "Imeshindikana kupakia maelezo ya kikao"))
       } finally {
         setLoading(false)
       }
@@ -64,7 +67,7 @@ export function MeetingDetailView({ meetingId, onBack }: MeetingDetailViewProps)
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString(language === "sw" ? "sw-TZ" : "en-US", {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -73,7 +76,7 @@ export function MeetingDetailView({ meetingId, onBack }: MeetingDetailViewProps)
   }
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString('en-US', {
+    return new Date(dateString).toLocaleTimeString(language === "sw" ? "sw-TZ" : "en-US", {
       hour: 'numeric',
       minute: '2-digit'
     })
@@ -85,14 +88,14 @@ export function MeetingDetailView({ meetingId, onBack }: MeetingDetailViewProps)
     setRecalculating(true)
     try {
       const response = await meetingServices.recalculateAttendance(meeting.id)
-      toast.success(response.data.detail || "Attendance recalculated successfully")
+      toast.success(response.data.detail || tt("Attendance recalculated successfully", "Mahudhurio yamehesabiwa upya"))
 
       // Reload meeting details to show updated attendance
       const updatedResponse = await meetingServices.getMeetingHistory(meetingId)
       setMeeting(updatedResponse.data)
     } catch (error: unknown) {
       const errorResponse = error as { response?: { data?: { detail?: string } } }
-      toast.error(errorResponse.response?.data?.detail || "Failed to recalculate attendance")
+      toast.error(errorResponse.response?.data?.detail || tt("Failed to recalculate attendance", "Imeshindikana kuhesabu mahudhurio upya"))
     } finally {
       setRecalculating(false)
     }
@@ -102,7 +105,7 @@ export function MeetingDetailView({ meetingId, onBack }: MeetingDetailViewProps)
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-center">Loading meeting details...</div>
+          <div className="text-center">{tt("Loading meeting details...", "Inapakia maelezo ya kikao...")}</div>
         </CardContent>
       </Card>
     )
@@ -112,7 +115,7 @@ export function MeetingDetailView({ meetingId, onBack }: MeetingDetailViewProps)
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-center">Meeting not found</div>
+          <div className="text-center">{tt("Meeting not found", "Kikao hakijapatikana")}</div>
         </CardContent>
       </Card>
     )
@@ -127,7 +130,7 @@ const isHostViewer = user?.email === meeting.host_email
         {onBack && (
           <Button variant="outline" onClick={onBack}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            {meeting?.group ? "Back to Group" : "Back to List"}
+            {meeting?.group ? tt("Back to Group", "Rudi kwenye Kikundi") : tt("Back to List", "Rudi kwenye Orodha")}
           </Button>
         )}
         <div className="flex-1">
@@ -137,7 +140,7 @@ const isHostViewer = user?.email === meeting.host_email
               {meeting.status}
             </Badge>
             <span className="text-muted-foreground">
-              Host: {meeting.host_email}
+              {tt("Host:", "Mwenyeji:")} {meeting.host_email}
             </span>
           </div>
         </div>
@@ -146,7 +149,7 @@ const isHostViewer = user?.email === meeting.host_email
       {/* Meeting Overview */}
       <Card>
         <CardHeader>
-          <CardTitle>Meeting Overview</CardTitle>
+          <CardTitle>{tt("Meeting Overview", "Muhtasari wa Kikao")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -155,7 +158,7 @@ const isHostViewer = user?.email === meeting.host_email
                 <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Date</p>
+                <p className="text-sm text-muted-foreground">{tt("Date", "Tarehe")}</p>
                 <p className="font-medium">{formatDate(meeting.scheduled_start)}</p>
               </div>
             </div>
@@ -165,7 +168,7 @@ const isHostViewer = user?.email === meeting.host_email
                 <Clock className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Time</p>
+                <p className="text-sm text-muted-foreground">{tt("Time", "Muda")}</p>
                 <p className="font-medium">{formatTime(meeting.scheduled_start)}</p>
                 {meeting.scheduled_end && (
                   <p className="text-sm">- {formatTime(meeting.scheduled_end)}</p>
@@ -178,7 +181,7 @@ const isHostViewer = user?.email === meeting.host_email
                 <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Attendance</p>
+                <p className="text-sm text-muted-foreground">{tt("Attendance", "Mahudhurio")}</p>
                 <p className="font-medium">{meeting.present_attendees}/{meeting.total_attendees}</p>
                 <p className="text-sm text-muted-foreground">
                   {meeting.total_attendees > 0
@@ -247,7 +250,8 @@ const isHostViewer = user?.email === meeting.host_email
 
       {/* Detailed Tabs */}
       <Tabs defaultValue="attendance" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <div className="app-scrollbar w-full overflow-x-auto pb-1">
+        <TabsList className="grid min-w-[32rem] w-full grid-cols-4">
           <TabsTrigger value="attendance" className="flex items-center gap-2">
             <Users className="w-4 h-4" />
             Attendance
@@ -265,6 +269,7 @@ const isHostViewer = user?.email === meeting.host_email
             Activity Log
           </TabsTrigger>
         </TabsList>
+        </div>
 
         <TabsContent value="attendance" className="space-y-4">
           {/* Attendance Header with Export */}

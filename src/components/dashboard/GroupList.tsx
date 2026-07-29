@@ -10,6 +10,7 @@ import GroupItem from "./GroupItem";
 import type { Group } from "@/store/group/group.types";
 import { useGroupStore } from "@/store/group/groupUser.store";
 import { toast } from "react-toastify";
+import { useLanguage } from "@/components/language/language-provider";
 
 type GroupListProps = {
   groups: Group[];
@@ -30,6 +31,8 @@ const GroupList = ({
   onCreateOpenChange,
   onJoinOpenChange,
 }: GroupListProps) => {
+  const { language } = useLanguage();
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en;
   const [search, setSearch] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -79,7 +82,7 @@ const GroupList = ({
   const handleJoinGroup = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (joinCode.length !== 6) {
-      toast.error("Join code must be 6 characters long.");
+      toast.error(tt("Join code must be 6 characters long.", "Msimbo wa kujiunga lazima uwe na herufi 6."));
       return;
     }
 
@@ -115,8 +118,8 @@ const GroupList = ({
         <CardHeader className="space-y-4 border-b border-border/60">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <CardTitle className="text-xl">My Groups</CardTitle>
-              <CardDescription className="mt-1">Manage and access your savings groups</CardDescription>
+              <CardTitle className="text-xl">{tt("My Groups", "Vikundi Vyangu")}</CardTitle>
+              <CardDescription className="mt-1">{tt("Manage and access your savings groups", "Simamia na ufikie vikundi vyako vya akiba")}</CardDescription>
             </div>
           </div>
 
@@ -126,7 +129,7 @@ const GroupList = ({
               <Input
                 onChange={(e) => setSearch(e.target.value)}
                 type="text"
-                placeholder="Search groups..."
+                placeholder={tt("Search groups...", "Tafuta vikundi...")}
                 className="pl-9 bg-muted/50 border-none rounded-xl"
               />
             </div>
@@ -137,8 +140,8 @@ const GroupList = ({
           <div className="divide-y divide-border/60">
             {displayedGroups.length === 0 ? (
               <div className="py-12 text-center">
-                <p className="text-sm font-medium text-foreground">No groups found</p>
-                <p className="text-xs text-muted-foreground mt-1">Try creating a new one or adjusting your search.</p>
+                <p className="text-sm font-medium text-foreground">{tt("No groups found", "Hakuna vikundi vilivyopatikana")}</p>
+                <p className="text-xs text-muted-foreground mt-1">{tt("Try creating a new one or adjusting your search.", "Jaribu kuunda kikundi kipya au kubadilisha utafutaji.")}</p>
               </div>
             ) : (
               displayedGroups.map((group) => (
@@ -157,9 +160,9 @@ const GroupList = ({
       <Dialog open={isCreateOpen} onOpenChange={(open) => { if (!open) setCreateOpen(false) }}>
         <DialogContent className="sm:max-w-xl p-6 sm:p-8">
           <DialogHeader>
-            <DialogTitle className="text-xl font-extrabold">Create a New Group</DialogTitle>
+            <DialogTitle className="text-xl font-extrabold">{tt("Create a New Group", "Unda Kikundi Kipya")}</DialogTitle>
             <DialogDescription className="mt-1 text-sm text-muted-foreground">
-              Set up a new group for your host workflow.
+              {tt("Set up a new group for your host workflow.", "Anzisha kikundi kipya kwa shughuli zako.")}
             </DialogDescription>
           </DialogHeader>
 
@@ -169,13 +172,13 @@ const GroupList = ({
                 htmlFor="group-name"
                 className="mb-1.5 block text-sm font-medium text-foreground"
               >
-                Group name
+                {tt("Group name", "Jina la kikundi")}
               </label>
               <Input
                 id="group-name"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                placeholder="Engineering Leadership"
+                placeholder={tt("Community Savings Group", "Kikundi cha Akiba")}
                 className="bg-background"
                 required
               />
@@ -186,14 +189,14 @@ const GroupList = ({
                 htmlFor="group-description"
                 className="mb-1.5 block text-sm font-medium text-foreground"
               >
-                Description
+                {tt("Description", "Maelezo")}
               </label>
               <textarea
                 id="group-description"
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
                 className="min-h-[120px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 resize-none"
-                placeholder="What this group is for"
+                placeholder={tt("What this group is for", "Madhumuni ya kikundi hiki")}
               />
             </div>
 
@@ -204,7 +207,7 @@ const GroupList = ({
                 onChange={(event) => setIsPrivate(event.target.checked)}
                 className="rounded border-input text-primary focus:ring-primary h-4 w-4"
               />
-              Private group
+              {tt("Private group", "Kikundi binafsi")}
             </label>
 
             <div className="flex justify-end gap-3 pt-2 border-t border-border mt-4">
@@ -213,10 +216,10 @@ const GroupList = ({
                 variant="ghost"
                 onClick={() => setCreateOpen(false)}
               >
-                Cancel
+                {tt("Cancel", "Ghairi")}
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? "Creating..." : "Create Group"}
+                {loading ? tt("Creating...", "Inaunda...") : tt("Create Group", "Unda Kikundi")}
               </Button>
             </div>
           </form>
@@ -226,9 +229,9 @@ const GroupList = ({
       <Dialog open={isJoinOpen} onOpenChange={(open) => { if (!open) setJoinOpen(false) }}>
         <DialogContent className="sm:max-w-md p-6 sm:p-8">
           <DialogHeader>
-            <DialogTitle className="text-xl font-extrabold">Join a Group</DialogTitle>
+            <DialogTitle className="text-xl font-extrabold">{tt("Join a Group", "Jiunge na Kikundi")}</DialogTitle>
             <DialogDescription className="mt-1 text-sm text-muted-foreground">
-              Enter the 6-character short code to request access.
+              {tt("Enter the 6-character short code to request access.", "Weka msimbo wa herufi 6 ili kuomba kujiunga.")}
             </DialogDescription>
           </DialogHeader>
 
@@ -238,7 +241,7 @@ const GroupList = ({
                 htmlFor="join-code"
                 className="mb-1.5 block text-sm font-medium text-foreground"
               >
-                Join Code
+                {tt("Join Code", "Msimbo wa Kujiunga")}
               </label>
               <Input
                 id="join-code"
@@ -257,10 +260,10 @@ const GroupList = ({
                 variant="ghost"
                 onClick={() => setJoinOpen(false)}
               >
-                Cancel
+                {tt("Cancel", "Ghairi")}
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? "Sending Request..." : "Join Group"}
+                {loading ? tt("Sending Request...", "Inatuma Ombi...") : tt("Join Group", "Jiunge na Kikundi")}
               </Button>
             </div>
           </form>

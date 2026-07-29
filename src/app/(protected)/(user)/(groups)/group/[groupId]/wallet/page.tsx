@@ -302,7 +302,7 @@ export default function GroupWalletPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 sm:grid-cols-4">
               <div className="rounded-2xl border border-border bg-background p-4">
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{tt("Balance", "Salio")}</p>
                 <p className="mt-2 text-lg font-extrabold">{formatTzs(totals.balance)}</p>
@@ -537,7 +537,7 @@ export default function GroupWalletPage() {
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="rounded-2xl border border-border bg-background p-4">
                       <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{tt("Actions", "Vitendo")}</p>
                       <p className="mt-2 text-2xl font-extrabold">{actionStats.count}</p>

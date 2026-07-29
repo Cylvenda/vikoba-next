@@ -364,7 +364,7 @@ export default function MembersList() {
       )}
 
       {/* Bento Statistics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-1 gap-4 min-[400px]:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm flex flex-col gap-2">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Users className="w-4 h-4" />

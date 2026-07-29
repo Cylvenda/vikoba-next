@@ -241,7 +241,7 @@ export function AttendanceList({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+          <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-3 md:grid-cols-6">
             {[
               { label: "Total", value: summaryStats.total, color: "text-foreground" },
               { label: "Present", value: summaryStats.present, color: "text-chart-3" },
@@ -310,7 +310,7 @@ export function AttendanceList({
                   </div>
 
                   {/* Time Stats Row */}
-                  <div className="grid grid-cols-3 divide-x divide-border/40">
+                  <div className="grid grid-cols-1 divide-y divide-border/40 min-[400px]:grid-cols-3 min-[400px]:divide-x min-[400px]:divide-y-0">
                     {/* Join Time */}
                     <div className="flex items-center gap-2.5 px-4 py-3">
                       <div className="w-8 h-8 rounded-xl bg-chart-3/10 flex items-center justify-center shrink-0">
@@ -365,7 +365,7 @@ export function AttendanceList({
                         {record.sessions.map((session, sIdx) => {
                           const dur = calcSessionDuration(session.joined_at, session.left_at)
                           return (
-                            <div key={session.id} className="grid grid-cols-3 items-center px-4 py-2.5 text-xs">
+                            <div key={session.id} className="grid grid-cols-1 gap-1 px-4 py-2.5 text-xs min-[400px]:grid-cols-3 min-[400px]:items-center">
                               <div className="flex items-center gap-2">
                                 <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground font-bold flex items-center justify-center text-[10px] shrink-0">
                                   {sIdx + 1}

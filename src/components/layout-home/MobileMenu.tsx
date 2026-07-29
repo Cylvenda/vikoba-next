@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import { useLanguage } from "@/components/language/language-provider";
 
 interface MenuItem {
      icon: React.ComponentType<{ className?: string }>;
@@ -13,12 +14,13 @@ interface MobileMenuProps {
 }
 
 export default function MobileMenu({ menuItems, onClose }: MobileMenuProps) {
+     const { language } = useLanguage()
      return (
           <div className="fixed inset-0 z-50 bg-black/50 md:hidden">
                <div className="h-full w-64 bg-card p-4 text-foreground shadow-xl">
                     <div className="flex justify-between items-center mb-4">
-                         <h2 className="text-lg font-semibold">Menu</h2>
-                         <button onClick={onClose} className="rounded-md p-2 transition hover:bg-muted">
+                         <h2 className="text-lg font-semibold">{language === "sw" ? "Menyu" : "Menu"}</h2>
+                         <button onClick={onClose} aria-label={language === "sw" ? "Funga menyu" : "Close menu"} className="rounded-md p-2 transition hover:bg-muted">
                               <X />
                          </button>
                     </div>

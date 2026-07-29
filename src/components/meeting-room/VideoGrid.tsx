@@ -39,18 +39,18 @@ function getGridClass(count: number) {
   }
 
   if (count === 2) {
-    return "grid-cols-1 auto-rows-[minmax(160px,1fr)] sm:auto-rows-[minmax(220px,1fr)] lg:grid-cols-2"
+    return "grid-cols-1 auto-rows-fr min-[480px]:grid-cols-2"
   }
 
   if (count <= 4) {
-    return "grid-cols-1 auto-rows-[minmax(140px,1fr)] sm:auto-rows-[minmax(200px,1fr)] md:grid-cols-2"
+    return "grid-cols-2 auto-rows-fr"
   }
 
   if (count <= 6) {
-    return "grid-cols-1 auto-rows-[minmax(120px,1fr)] sm:auto-rows-[minmax(180px,1fr)] md:grid-cols-2 2xl:grid-cols-3"
+    return "grid-cols-2 auto-rows-fr 2xl:grid-cols-3"
   }
 
-  return "grid-cols-1 auto-rows-[minmax(100px,1fr)] sm:auto-rows-[minmax(160px,1fr)] sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+  return "grid-cols-2 auto-rows-fr xl:grid-cols-3 2xl:grid-cols-4"
 }
 
 export function VideoGrid({ hostIdentity, currentUserIdentity, participantSignals }: VideoGridProps) {
@@ -85,7 +85,7 @@ export function VideoGrid({ hostIdentity, currentUserIdentity, participantSignal
   const isSingleParticipant = participantCount <= 1
 
   return (
-    <section className="flex h-full min-h-0 flex-1 flex-col rounded-md border border-border bg-card/70 p-3 shadow-sm sm:p-4">
+    <section className="flex h-full min-h-0 flex-1 flex-col rounded-md border border-border bg-card/70 p-1.5 shadow-sm sm:p-4">
 
       {featuredScreenShare ? (
         <div className="flex min-h-0 flex-1 flex-col gap-1 xl:flex-row xl:items-stretch">

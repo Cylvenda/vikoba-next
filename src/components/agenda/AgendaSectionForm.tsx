@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Switch } from "@/components/ui/switch"
 import { meetingServices } from "@/api/services/meeting.service"
 import { toast } from "react-toastify"
+import { useLanguage } from "@/components/language/language-provider"
 
 const agendaSectionSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -35,6 +36,8 @@ export function AgendaSectionForm({
   onCancel,
   initialData
 }: AgendaSectionFormProps) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<AgendaSectionFormData>({
@@ -57,16 +60,16 @@ export function AgendaSectionForm({
 
       if (initialData?.id) {
         await meetingServices.updateAgendaSection(initialData.id, payload)
-        toast.success("Agenda section updated successfully")
+        toast.success(tt("Agenda section updated successfully", "Sehemu ya ajenda imesasishwa"))
       } else {
         await meetingServices.createAgendaSection(payload)
-        toast.success("Agenda section created successfully")
+        toast.success(tt("Agenda section created successfully", "Sehemu ya ajenda imeundwa"))
       }
 
       onSuccess?.()
       form.reset()
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || "Failed to save agenda section")
+      toast.error(error.response?.data?.detail || tt("Failed to save agenda section", "Imeshindikana kuhifadhi sehemu ya ajenda"))
     } finally {
       setIsSubmitting(false)
     }
@@ -76,7 +79,7 @@ export function AgendaSectionForm({
     <Card>
       <CardHeader>
         <CardTitle>
-          {initialData?.id ? "Edit Agenda Section" : "Create Agenda Section"}
+          {initialData?.id ? tt("Edit Agenda Section", "Hariri Sehemu ya Ajenda") : tt("Create Agenda Section", "Unda Sehemu ya Ajenda")}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -87,9 +90,9 @@ export function AgendaSectionForm({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel>{tt("Title", "Kichwa")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Section title" {...field} />
+                    <Input placeholder={tt("Section title", "Kichwa cha sehemu")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -101,10 +104,10 @@ export function AgendaSectionForm({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>{tt("Description", "Maelezo")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Section description (optional)"
+                      placeholder={tt("Section description (optional)", "Maelezo ya sehemu (si lazima)")}
                       className="resize-none"
                       {...field}
                     />
@@ -119,7 +122,7 @@ export function AgendaSectionForm({
               name="order"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Order</FormLabel>
+                  <FormLabel>{tt("Order", "Mpangilio")}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -139,7 +142,7 @@ export function AgendaSectionForm({
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                   <div className="space-y-0.5">
-                    <FormLabel>Active</FormLabel>
+                    <FormLabel>{tt("Active", "Inatumika")}</FormLabel>
                     <div className="text-sm text-muted-foreground">
                       Whether this section is active and visible
                     </div>

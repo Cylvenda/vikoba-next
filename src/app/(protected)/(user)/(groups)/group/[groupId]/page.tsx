@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import {
   TrendingUp,
-  DollarSign,
   PiggyBank,
   FileText,
   ShieldCheck,
@@ -210,7 +209,9 @@ export default function GroupPage() {
                   </h3>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-chart-1/10 text-primary shadow-inner">
-                  <DollarSign className="h-5 w-5" />
+                  <span className="text-[10px] font-extrabold tracking-tight" aria-label="Tanzanian shillings">
+                    TZS
+                  </span>
                 </div>
               </div>
               <p className="mt-3 text-xs text-muted-foreground">

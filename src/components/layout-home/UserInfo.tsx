@@ -8,6 +8,7 @@ import { ChevronDown, LogOut, Settings, UserRound } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { toast } from 'react-toastify'
+import { useLanguage } from '@/components/language/language-provider'
 
 const UserInfo = () => {
      const router = useRouter()
@@ -15,6 +16,8 @@ const UserInfo = () => {
      const [isOpen, setIsOpen] = useState(false)
      const [isLoggingOut, setIsLoggingOut] = useState(false)
      const { user, logout } = useAuthUserStore()
+     const { language } = useLanguage()
+     const tt = (en: string, sw: string) => language === "sw" ? sw : en
 
      const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ")
      const initials = `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.trim() || user?.email?.[0]?.toUpperCase() || "U"
@@ -46,10 +49,10 @@ const UserInfo = () => {
 
           try {
                await logout()
-               toast.success("Logged out successfully.")
+               toast.success(tt("Logged out successfully.", "Umetoka salama."))
                router.replace("/login")
           } catch {
-               toast.error("Failed to log out.")
+               toast.error(tt("Failed to log out.", "Imeshindikana kutoka."))
           } finally {
                setIsLoggingOut(false)
                setIsOpen(false)
@@ -68,7 +71,7 @@ const UserInfo = () => {
                     <div className='relative flex items-center justify-center'>
                          <Image
                               src="/meet.png"
-                              alt='User avatar'
+                              alt={tt("User avatar", "Picha ya mtumiaji")}
                               height={44}
                               width={44}
                               className='h-11 w-11 rounded-full object-cover shadow-xl'
@@ -80,7 +83,7 @@ const UserInfo = () => {
 
                     <div className='max-w-52'>
                          <p className='truncate text-sm font-semibold text-foreground'>
-                              {fullName || "My account"}
+                              {fullName || tt("My account", "Akaunti yangu")}
                          </p>
                          <p className='truncate text-xs text-muted-foreground'>
                               {user?.email}
@@ -96,7 +99,7 @@ const UserInfo = () => {
                          className='absolute right-0 top-[calc(100%+0.75rem)] z-50 w-72 rounded-3xl border border-border bg-card p-2 shadow-2xl'
                     >
                          <div className='rounded-2xl bg-muted/70 px-4 py-3'>
-                              <p className='text-sm font-semibold text-foreground'>{fullName || "Workspace member"}</p>
+                              <p className='text-sm font-semibold text-foreground'>{fullName || tt("Workspace member", "Mwanachama")}</p>
                               <p className='truncate text-xs text-muted-foreground'>{user?.email}</p>
                          </div>
 
@@ -108,7 +111,7 @@ const UserInfo = () => {
                                    className='flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition-colors hover:bg-muted'
                               >
                                    <UserRound className='size-4 text-chart-3' />
-                                   Profile
+                                   {tt("Profile", "Wasifu")}
                               </Link>
 
                               <Link
@@ -118,7 +121,7 @@ const UserInfo = () => {
                                    className='flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition-colors hover:bg-muted'
                               >
                                    <Settings className='size-4 text-chart-3' />
-                                   Settings
+                                   {tt("Settings", "Mipangilio")}
                               </Link>
 
                               <Button
@@ -129,7 +132,7 @@ const UserInfo = () => {
                                    disabled={isLoggingOut}
                               >
                                    <LogOut className='size-4' />
-                                   {isLoggingOut ? "Logging out..." : "Logout"}
+                                   {isLoggingOut ? tt("Logging out...", "Inatoka...") : tt("Logout", "Toka")}
                               </Button>
                          </div>
                     </div>

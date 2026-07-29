@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch"
 import { meetingServices } from "@/api/services/meeting.service"
 import { AgendaSection } from "@/store/meeting/meeting.types"
 import { toast } from "react-toastify"
+import { useLanguage } from "@/components/language/language-provider"
 
 const agendaItemSchema = z.object({
   section: z.string().optional(),
@@ -42,6 +43,8 @@ export function AgendaItemForm({
   isHost = false,
   meetingStatus = "scheduled"
 }: AgendaItemFormProps) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [agendaSections, setAgendaSections] = useState<AgendaSection[]>([])
 
@@ -80,16 +83,16 @@ export function AgendaItemForm({
 
       if (initialData?.id) {
         await meetingServices.updateAgendaItem(initialData.id, payload)
-        toast.success("Agenda item updated successfully")
+        toast.success(tt("Agenda item updated successfully", "Hoja ya ajenda imesasishwa"))
       } else {
         await meetingServices.createAgendaItem(payload)
-        toast.success("Agenda item created successfully")
+        toast.success(tt("Agenda item created successfully", "Hoja ya ajenda imeundwa"))
       }
 
       onSuccess?.()
       form.reset()
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || "Failed to save agenda item")
+      toast.error(error.response?.data?.detail || tt("Failed to save agenda item", "Imeshindikana kuhifadhi hoja ya ajenda"))
     } finally {
       setIsSubmitting(false)
     }
@@ -102,7 +105,7 @@ export function AgendaItemForm({
     <Card>
       <CardHeader>
         <CardTitle>
-          {initialData?.id ? "Edit Agenda Item" : "Create Agenda Item"}
+          {initialData?.id ? tt("Edit Agenda Item", "Hariri Hoja ya Ajenda") : tt("Create Agenda Item", "Unda Hoja ya Ajenda")}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -114,15 +117,15 @@ export function AgendaItemForm({
                 name="section"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Section</FormLabel>
+                    <FormLabel>{tt("Section", "Sehemu")}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a section (optional)" />
+                          <SelectValue placeholder={tt("Select a section (optional)", "Chagua sehemu (si lazima)")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">No section</SelectItem>
+                        <SelectItem value="">{tt("No section", "Hakuna sehemu")}</SelectItem>
                         {agendaSections.map((section) => (
                           <SelectItem key={section.id} value={section.id}>
                             {section.order}. {section.title}
@@ -142,9 +145,9 @@ export function AgendaItemForm({
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel>{tt("Title", "Kichwa")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Agenda item title" {...field} />
+                      <Input placeholder={tt("Agenda item title", "Kichwa cha hoja ya ajenda")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -158,10 +161,10 @@ export function AgendaItemForm({
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>{tt("Description", "Maelezo")}</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Item description (optional)"
+                        placeholder={tt("Item description (optional)", "Maelezo ya hoja (si lazima)")}
                         className="resize-none"
                         {...field}
                       />
@@ -177,10 +180,10 @@ export function AgendaItemForm({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Host Notes</FormLabel>
+                  <FormLabel>{tt("Host Notes", "Maelezo ya Mwenyeji")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Notes for this agenda item (visible during meeting)"
+                      placeholder={tt("Notes for this agenda item (visible during meeting)", "Maelezo ya hoja hii (yanaonekana wakati wa kikao)")}
                       className="resize-none"
                       {...field}
                     />
@@ -191,13 +194,13 @@ export function AgendaItemForm({
             />
 
             {canEditAllFields && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="order"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Order</FormLabel>
+                      <FormLabel>{tt("Order", "Mpangilio")}</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -216,7 +219,7 @@ export function AgendaItemForm({
                   name="allocated_minutes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Allocated Minutes</FormLabel>
+                      <FormLabel>{tt("Allocated Minutes", "Dakika Zilizopangwa")}</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -239,7 +242,7 @@ export function AgendaItemForm({
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                     <div className="space-y-0.5">
-                      <FormLabel>Completed</FormLabel>
+                      <FormLabel>{tt("Completed", "Imekamilika")}</FormLabel>
                       <div className="text-sm text-muted-foreground">
                         Mark this agenda item as completed
                       </div>

@@ -19,6 +19,7 @@ import {
   TrendingUp
 } from "lucide-react"
 import { toast } from "react-toastify"
+import { useLanguage } from "@/components/language/language-provider"
 
 interface MeetingHistoryListProps {
   onMeetingSelect?: (meetingId: string) => void
@@ -26,6 +27,8 @@ interface MeetingHistoryListProps {
 }
 
 export function MeetingHistoryList({ onMeetingSelect, groupId }: MeetingHistoryListProps) {
+  const { language } = useLanguage()
+  const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const [meetings, setMeetings] = useState<MeetingListHistory[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -46,7 +49,7 @@ export function MeetingHistoryList({ onMeetingSelect, groupId }: MeetingHistoryL
     } catch (error: unknown) {
       const errorMessage = error instanceof Error && 'response' in error
         ? (error as any).response?.data?.detail
-        : "Failed to load meeting history"
+        : tt("Failed to load meeting history", "Imeshindikana kupakia historia ya mikutano")
       toast.error(errorMessage)
     } finally {
       setLoading(false)
@@ -88,7 +91,7 @@ export function MeetingHistoryList({ onMeetingSelect, groupId }: MeetingHistoryL
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString(language === "sw" ? "sw-TZ" : "en-US", {
       month: 'short',
       day: 'numeric',
       year: 'numeric'
@@ -96,7 +99,7 @@ export function MeetingHistoryList({ onMeetingSelect, groupId }: MeetingHistoryL
   }
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString('en-US', {
+    return new Date(dateString).toLocaleTimeString(language === "sw" ? "sw-TZ" : "en-US", {
       hour: 'numeric',
       minute: '2-digit'
     })
@@ -106,7 +109,7 @@ export function MeetingHistoryList({ onMeetingSelect, groupId }: MeetingHistoryL
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-center">Loading meeting history...</div>
+          <div className="text-center">{tt("Loading meeting history...", "Inapakia historia ya mikutano...")}</div>
         </CardContent>
       </Card>
     )
@@ -119,7 +122,7 @@ export function MeetingHistoryList({ onMeetingSelect, groupId }: MeetingHistoryL
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="w-5 h-5" />
-            Meeting History Filters
+            {tt("Meeting History Filters", "Vichujio vya Historia ya Mikutano")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -127,7 +130,7 @@ export function MeetingHistoryList({ onMeetingSelect, groupId }: MeetingHistoryL
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search meetings..."
+                placeholder={tt("Search meetings...", "Tafuta mikutano...")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -136,27 +139,27 @@ export function MeetingHistoryList({ onMeetingSelect, groupId }: MeetingHistoryL
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder={tt("Filter by status", "Chuja kwa hali")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
-                <SelectItem value="scheduled">Scheduled</SelectItem>
-                <SelectItem value="ongoing">Ongoing</SelectItem>
-                <SelectItem value="ended">Ended</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectItem value="">{tt("All Statuses", "Hali Zote")}</SelectItem>
+                <SelectItem value="scheduled">{tt("Scheduled", "Imepangwa")}</SelectItem>
+                <SelectItem value="ongoing">{tt("Ongoing", "Inaendelea")}</SelectItem>
+                <SelectItem value="ended">{tt("Ended", "Imemalizika")}</SelectItem>
+                <SelectItem value="cancelled">{tt("Cancelled", "Imeghairiwa")}</SelectItem>
               </SelectContent>
             </Select>
 
             <DatePicker
               value={parseDateString(startDate)}
               onChange={(date) => setStartDate(formatDateToString(date))}
-              placeholder="Start date"
+              placeholder={tt("Start date", "Tarehe ya kuanza")}
             />
 
             <DatePicker
               value={parseDateString(endDate)}
               onChange={(date) => setEndDate(formatDateToString(date))}
-              placeholder="End date"
+              placeholder={tt("End date", "Tarehe ya mwisho")}
             />
           </div>
         </CardContent>
@@ -168,11 +171,11 @@ export function MeetingHistoryList({ onMeetingSelect, groupId }: MeetingHistoryL
           <Card>
             <CardContent className="p-6 text-center">
               <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-medium mb-2">No meetings found</h3>
+              <h3 className="text-lg font-medium mb-2">{tt("No meetings found", "Hakuna mikutano iliyopatikana")}</h3>
               <p className="text-muted-foreground">
                 {searchTerm || statusFilter || startDate || endDate
-                  ? "Try adjusting your filters"
-                  : "No meetings have been scheduled yet"}
+                  ? tt("Try adjusting your filters", "Jaribu kubadilisha vichujio")
+                  : tt("No meetings have been scheduled yet", "Hakuna mikutano iliyopangwa bado")}
               </p>
             </CardContent>
           </Card>
@@ -198,7 +201,7 @@ export function MeetingHistoryList({ onMeetingSelect, groupId }: MeetingHistoryL
                       </p>
                     )}
 
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                    <div className="grid grid-cols-1 gap-4 text-sm min-[400px]:grid-cols-2 lg:grid-cols-4">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-muted-foreground" />
                         <span>{formatDate(meeting.scheduled_start)}</span>

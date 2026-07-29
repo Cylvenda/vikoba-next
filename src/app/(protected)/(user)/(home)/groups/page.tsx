@@ -328,7 +328,7 @@ const GroupsPage = () => {
                         }}
                         className="h-8 rounded-lg text-primary hover:text-primary-foreground hover:bg-primary text-xs font-semibold gap-1"
                       >
-                        {tt("Open Workspace", "Fungua Nafasi")}
+                        {tt("Open Group", "Fungua Kikundi")}
                         <ArrowRight className="h-3.5 w-3.5" />
                       </Button>
                     </div>
