@@ -15,6 +15,7 @@ import { getMeetingSessionHref } from "@/lib/meeting-routes"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import * as XLSX from "xlsx"
 import { useLanguage } from "@/components/language/language-provider"
+import { exportRowsAsDocx } from "@/lib/report-export"
 
 export default function MeetingPage() {
   const params = useParams<{ meetingId: string; groupId: string }>()
@@ -189,38 +190,20 @@ export default function MeetingPage() {
       toast.error(tt("No attendance data to export.", "Hakuna taarifa za mahudhurio za kuhamisha."))
       return
     }
-    const htmlContent = `
-        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-        <head><meta charset='utf-8'><title>${tt("Attendance", "Mahudhurio")}</title></head>
-        <body style="font-family: Arial, sans-serif;">
-            <h2 style="color: #333;">${tt("Attendance Ledger", "Rejista ya Mahudhurio")}: ${selectedMeeting?.title}</h2>
-            <p><strong>${tt("Date", "Tarehe")}:</strong> ${scheduledStart}</p>
-            <table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%; border-color: #ddd;">
-                <tr style="background-color: #f8f9fa;">
-                  <th>${tt("Email", "Barua pepe")}</th><th>${tt("Type", "Aina")}</th><th>${tt("Status", "Hali")}</th><th>${tt("Joined", "Alijiunga")}</th><th>${tt("Duration (Min)", "Muda (Dak)")}</th>
-                </tr>
-                ${attendanceHistory.map(item => `
-                    <tr>
-                        <td>${item.email}</td>
-                        <td>${item.isVerifiedMember ? tt("Member", "Mwanachama") : tt("Guest", "Mgeni")}</td>
-                        <td><strong style="text-transform: uppercase;">${item.status}</strong></td>
-                        <td>${item.joinedAt ? new Date(item.joinedAt).toLocaleString() : tt("Not recorded", "Haijarekodiwa")}</td>
-                        <td>${item.totalDurationMinutes} ${tt("min", "dak")}</td>
-                    </tr>
-                `).join('')}
-            </table>
-        </body>
-        </html>
-    `
-    const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `Attendance_${selectedMeeting?.title || 'Meeting'}.doc`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    const rows = [
+      [tt("Attendance Ledger", "Rejista ya Mahudhurio"), selectedMeeting?.title || ""],
+      [tt("Date", "Tarehe"), scheduledStart],
+      [],
+      [tt("Email", "Barua pepe"), tt("Type", "Aina"), tt("Status", "Hali"), tt("Joined", "Alijiunga"), tt("Duration (Min)", "Muda (Dak)")],
+      ...attendanceHistory.map((item) => [
+        item.email,
+        item.isVerifiedMember ? tt("Member", "Mwanachama") : tt("Guest", "Mgeni"),
+        item.status,
+        item.joinedAt ? new Date(item.joinedAt).toLocaleString() : tt("Not recorded", "Haijarekodiwa"),
+        item.totalDurationMinutes,
+      ]),
+    ]
+    exportRowsAsDocx(rows, `Attendance ${selectedMeeting?.title || "Meeting"}`, tt("Attendance Ledger", "Rejista ya Mahudhurio"))
     toast.success(tt("Attendance exported to Word", "Mahudhurio yamehamishwa kwenda Word"))
   }
 
@@ -276,34 +259,19 @@ export default function MeetingPage() {
       toast.error(tt("No agenda points to export.", "Hakuna hoja za ajenda za kuhamisha."))
       return
     }
-    const htmlContent = `
-        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-        <head><meta charset='utf-8'><title>${tt("Agenda", "Ajenda")}</title></head>
-        <body style="font-family: Arial, sans-serif;">
-            <h2 style="color: #333;">${tt("Formal Agenda", "Ajenda Rasmi")}: ${selectedMeeting?.title}</h2>
-            <p><strong>${tt("Date", "Tarehe")}:</strong> ${scheduledStart}</p>
-            <hr/>
-            <ol style="margin-top: 20px;">
-                ${selectedMeeting.agenda_items.map(item => `
-                    <li style="margin-bottom: 15px;">
-                        <strong style="font-size: 16px;">${item.title}</strong> 
-                        <span style="color: #666; font-size: 14px;">(${item.allocated_minutes} ${tt("min", "dak")})</span><br/>
-                        <p style="margin-top: 5px; color: #444;">${item.description || tt("No description provided.", "Hakuna maelezo yaliyotolewa.")}</p>
-                    </li>
-                `).join('')}
-            </ol>
-        </body>
-        </html>
-    `
-    const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `Agenda_${selectedMeeting?.title || 'Meeting'}.doc`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    const rows = [
+      [tt("Formal Agenda", "Ajenda Rasmi"), selectedMeeting?.title || ""],
+      [tt("Date", "Tarehe"), scheduledStart],
+      [],
+      [tt("Order", "Mpangilio"), tt("Agenda Item", "Hoja ya Ajenda"), tt("Minutes", "Dakika"), tt("Description", "Maelezo")],
+      ...selectedMeeting.agenda_items.map((item, index) => [
+        index + 1,
+        item.title,
+        item.allocated_minutes,
+        item.description || tt("No description provided.", "Hakuna maelezo yaliyotolewa."),
+      ]),
+    ]
+    exportRowsAsDocx(rows, `Agenda ${selectedMeeting?.title || "Meeting"}`, tt("Formal Agenda", "Ajenda Rasmi"))
     toast.success(tt("Agenda exported to Word", "Ajenda imehamishwa kwenda Word"))
   }
 
@@ -454,7 +422,7 @@ export default function MeetingPage() {
                     <DropdownMenuContent align="end" className="rounded-xl">
                       <DropdownMenuItem onClick={handleExportAgendaWord} className="font-medium cursor-pointer">
                         <FileText className="w-4 h-4 mr-2 text-primary" />
-                        {tt("Export as Word (.doc)", "Hamisha kama Word (.doc)")}
+                        {tt("Export for Word (.docx)", "Hamisha kwa Word (.docx)")}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleExportAgendaPdf} className="font-medium cursor-pointer">
                         <FileText className="w-4 h-4 mr-2 text-red-500" />
@@ -573,7 +541,7 @@ export default function MeetingPage() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="rounded-xl">
                       <DropdownMenuItem onClick={handleExportAttendanceWord} className="font-medium cursor-pointer">
-                        <FileText className="w-4 h-4 mr-2 text-primary" /> Word (.doc)
+                        <FileText className="w-4 h-4 mr-2 text-primary" /> Word (.docx)
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleExportAttendanceExcel} className="font-medium cursor-pointer">
                         <FileSpreadsheet className="w-4 h-4 mr-2 text-green-500" /> Excel (.xlsx)

@@ -25,6 +25,7 @@ import type {
   AgendaMinuteNote as HistoryAgendaMinuteNote,
 } from "@/store/meeting/meeting.types";
 import { useLanguage } from "@/components/language/language-provider";
+import { exportRowsAsDocx } from "@/lib/report-export";
 
 export interface AgendaMinuteNote {
   id: string;
@@ -285,73 +286,30 @@ export function AgendaMinutesHistory({
         return;
       }
 
-      const htmlContent = `
-        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-        <head><meta charset='utf-8'><title>${tt("Meeting Minutes", "Kumbukumbu za Kikao")}</title></head>
-        <body style="font-family: Arial, sans-serif;">
-            <h1 style="color: #333; text-align: center;">${tt("Official Meeting Minutes", "Kumbukumbu Rasmi za Kikao")}</h1>
-            <h3 style="color: #555; text-align: center;">${tt("Session", "Kikao")}: ${resolvedMeetingTitle}</h3>
-            <p style="text-align: center;"><strong>${tt("Date Exported", "Tarehe ya Kuhamisha")}:</strong> ${new Date().toLocaleDateString()}</p>
-            <hr style="margin: 20px 0; border: 1px solid #ddd;"/>
-            
-            ${minuteNotes.map(note => `
-                <div style="margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
-                    <h2 style="color: #2c3e50; font-size: 18px; margin-bottom: 5px;">${note.agendaItemTitle}</h2>
-                    <p style="color: #7f8c8d; font-size: 12px; margin-top: 0;">
-                        <strong>${tt("Status", "Hali")}:</strong> <span style="text-transform: uppercase;">${note.status}</span> &nbsp;|&nbsp; 
-                        <strong>${tt("Allocated", "Zimetengwa")}:</strong> ${note.allocatedMinutes} ${tt("min", "dak")} &nbsp;|&nbsp; 
-                        <strong>${tt("Actual Time", "Muda Halisi")}:</strong> ${formatDuration(note.startTime, note.endTime)}
-                    </p>
-                    ${note.agendaItemDescription ? `<p style="font-style: italic; color: #555; font-size: 13px;">${note.agendaItemDescription}</p>` : ''}
-                    
-                    <h4 style="margin-bottom: 5px; color: #34495e;">${tt("Minutes", "Kumbukumbu")}:</h4>
-                    <div style="background-color: #f9f9f9; padding: 10px; border-left: 4px solid #3498db; white-space: pre-wrap; font-size: 14px;">
-                        ${note.notes || `<em>${tt("No official minutes recorded for this point.", "Hakuna kumbukumbu rasmi kwa hoja hii.")}</em>`}
-                    </div>
-
-                    ${isHost && note.hostNotes ? `
-                        <h4 style="margin-bottom: 5px; color: #c0392b;">${tt("Host Notes (Private)", "Maelezo ya Mwenyeji (Faragha)")}:</h4>
-                        <div style="background-color: #fdf2e9; padding: 10px; border-left: 4px solid #e67e22; white-space: pre-wrap; font-size: 14px; color: #d35400;">
-                            ${note.hostNotes}
-                        </div>
-                    ` : ''}
-                </div>
-            `).join('')}
-
-            ${additionalNotes.length > 0 ? `
-                <h2 style="color: #2c3e50; font-size: 20px; margin-top: 30px; border-bottom: 2px solid #ccc; padding-bottom: 5px;">${tt("Additional Notes & Action Items", "Maelezo ya Ziada na Hatua za Utekelezaji")}</h2>
-                ${additionalNotes.map(note => `
-                    <div style="margin-bottom: 20px;">
-                        <h3 style="color: #34495e; font-size: 16px;">${note.title}</h3>
-                        <p style="color: #7f8c8d; font-size: 12px; margin-top: 0;">
-                            <strong>${tt("Created", "Imeundwa")}:</strong> ${formatDateTime(note.created_at)}
-                            ${note.created_by_name || note.created_by_email ? `${tt("by", "na")} ${note.created_by_name || note.created_by_email}` : ''}
-                        </p>
-                        <div style="background-color: #f9f9f9; padding: 10px; border-left: 4px solid #9b59b6; white-space: pre-wrap; font-size: 14px;">
-                            ${note.notes}
-                        </div>
-                        ${isHost && note.host_notes ? `
-                            <h4 style="margin-bottom: 5px; color: #c0392b;">${tt("Host Notes (Private)", "Maelezo ya Mwenyeji (Faragha)")}:</h4>
-                            <div style="background-color: #fdf2e9; padding: 10px; border-left: 4px solid #e67e22; white-space: pre-wrap; font-size: 14px; color: #d35400;">
-                                ${note.host_notes}
-                            </div>
-                        ` : ''}
-                    </div>
-                `).join('')}
-            ` : ''}
-        </body>
-        </html>
-      `;
-
-      const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `Minutes_${resolvedMeetingTitle}.doc`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const rows = [
+        [tt("Official Meeting Minutes", "Kumbukumbu Rasmi za Kikao"), resolvedMeetingTitle],
+        [tt("Date Exported", "Tarehe ya Kuhamisha"), new Date().toLocaleDateString()],
+        [],
+        [tt("Agenda Item", "Hoja ya Ajenda"), tt("Status", "Hali"), tt("Allocated Minutes", "Dakika Zilizotengwa"), tt("Actual Time", "Muda Halisi"), tt("Minutes", "Kumbukumbu"), tt("Host Notes", "Maelezo ya Mwenyeji")],
+        ...minuteNotes.map((note) => [
+          note.agendaItemTitle,
+          note.status,
+          note.allocatedMinutes,
+          formatDuration(note.startTime, note.endTime),
+          note.notes || tt("No official minutes recorded for this point.", "Hakuna kumbukumbu rasmi kwa hoja hii."),
+          isHost ? note.hostNotes : "",
+        ]),
+        [],
+        [tt("Additional Notes & Action Items", "Maelezo ya Ziada na Hatua za Utekelezaji")],
+        ...additionalNotes.map((note) => [
+          note.title,
+          note.notes,
+          isHost ? note.host_notes : "",
+          note.created_by_name || note.created_by_email || "",
+          formatDateTime(note.created_at),
+        ]),
+      ];
+      exportRowsAsDocx(rows, `Minutes ${resolvedMeetingTitle}`, tt("Official Meeting Minutes", "Kumbukumbu Rasmi za Kikao"));
 
       toast.success(tt("Meeting minutes exported to Word", "Kumbukumbu zimehamishwa kwenda Word"));
     } catch (error) {
@@ -436,7 +394,7 @@ export function AgendaMinutesHistory({
           <DropdownMenuContent align="end" className="rounded-xl">
             <DropdownMenuItem onClick={exportMinutesWord} className="font-medium cursor-pointer">
               <FileText className="w-4 h-4 mr-2 text-blue-500" />
-              {tt("Export as Word (.doc)", "Hamisha kama Word (.doc)")}
+              {tt("Export for Word (.docx)", "Hamisha kwa Word (.docx)")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={exportMinutesPdf} className="font-medium cursor-pointer">
               <FileText className="w-4 h-4 mr-2 text-red-500" />

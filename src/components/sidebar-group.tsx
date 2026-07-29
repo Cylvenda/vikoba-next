@@ -66,6 +66,11 @@ export function GroupSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
       icon: <WalletCards />,
     },
     {
+      title: getTranslation(language, "actions.analytics"),
+      url: `/group/${selectedGroup.id}/analytics`,
+      icon: <BarChart3 />,
+    },
+    {
       title: getTranslation(language, "actions.savings"),
       url: `/group/${selectedGroup.id}/savings`,
       icon: <PiggyBank />,

@@ -1,6 +1,7 @@
 import api from "../axios"
 import { API_ENDPOINTS } from "../endpoints"
 import type { ApiResponse } from "../types"
+import type { VikobaFinanceSnapshot } from "@/lib/vikoba-finance"
 
 export type LoanProduct = {
   uuid: string
@@ -294,6 +295,16 @@ const mapFine = (fine: Fine): Fine => fine
 const mapFineList = (fines: Fine[]) => fines.map(mapFine)
 
 export const financeServices = {
+  async getFinancialSnapshot(
+    groupUuid: string,
+    params?: { month?: string; date_from?: string; date_to?: string; all_activity?: boolean },
+  ): Promise<ApiResponse<VikobaFinanceSnapshot>> {
+    const response = await api.get<VikobaFinanceSnapshot>(`finance/groups/${groupUuid}/snapshot/`, {
+      params,
+    })
+    return { status: response.status, data: response.data }
+  },
+
   async getContributions(groupUuid: string): Promise<ApiResponse<Contribution[]>> {
     const response = await api.get<Contribution[]>(API_ENDPOINTS.FINANCE_CONTRIBUTIONS, {
       params: {

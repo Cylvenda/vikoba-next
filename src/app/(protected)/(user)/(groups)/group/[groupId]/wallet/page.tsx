@@ -24,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatTzs, type VikobaFinanceSnapshot } from "@/lib/vikoba-finance"
 import { useLanguage } from "@/components/language/language-provider"
 import type { MemberWalletReport } from "@/api/services/finance.service"
+import { exportRowsAsCsv, exportRowsAsXlsx } from "@/lib/report-export"
 
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat("en-TZ", {
@@ -89,7 +90,7 @@ export default function GroupWalletPage() {
   const [actionSearch, setActionSearch] = useState("")
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo] = useState("")
-  const [exportFormat, setExportFormat] = useState<"csv" | "xls">("csv")
+  const [exportFormat, setExportFormat] = useState<"csv" | "xlsx">("csv")
 
   useEffect(() => {
     if (!groupId) return
@@ -223,37 +224,12 @@ export default function GroupWalletPage() {
       ]),
     ]
 
-    const csvEscape = (value: string | number | null | undefined) =>
-      `"${String(value ?? "").replaceAll('"', '""')}"`
-
-    const buildCsv = () =>
-      reportRows
-        .map((row) =>
-          row.length === 0 ? "" : row.map((cell) => csvEscape(cell)).join(",")
-        )
-        .join("\n")
-
-    const buildXls = () => {
-      const htmlRows = reportRows
-        .map((row) => {
-          if (row.length === 0) return "<tr><td></td></tr>"
-          return `<tr>${row.map((cell) => `<td>${String(cell ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")}</td>`).join("")}</tr>`
-        })
-        .join("")
-
-      return `<!doctype html><html><head><meta charset="utf-8" /></head><body><table>${htmlRows}</table></body></html>`
+    const fileName = `${selectedGroup?.name || "group"}-wallet-report`
+    if (exportFormat === "xlsx") {
+      exportRowsAsXlsx(reportRows, fileName, tt("Wallet Report", "Ripoti ya Mkoba"))
+    } else {
+      exportRowsAsCsv(reportRows, fileName)
     }
-
-    const fileBody = exportFormat === "xls" ? buildXls() : buildCsv()
-    const mimeType = exportFormat === "xls" ? "application/vnd.ms-excel" : "text/csv;charset=utf-8"
-    const extension = exportFormat === "xls" ? "xls" : "csv"
-    const blob = new Blob([fileBody], { type: mimeType })
-    const url = URL.createObjectURL(blob)
-    const anchor = document.createElement("a")
-    anchor.href = url
-    anchor.download = `${(selectedGroup?.name || "group").toLowerCase().replaceAll(" ", "-")}-wallet-report.${extension}`
-    anchor.click()
-    URL.revokeObjectURL(url)
   }
 
   if (!selectedGroup) {
@@ -286,13 +262,13 @@ export default function GroupWalletPage() {
 
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2 rounded-full border border-border bg-background px-2 py-1">
-                <Select value={exportFormat} onValueChange={(value) => setExportFormat(value as "csv" | "xls")}>
+                <Select value={exportFormat} onValueChange={(value) => setExportFormat(value as "csv" | "xlsx")}>
                   <SelectTrigger className="h-8 rounded-full border-0 bg-transparent px-3">
                     <SelectValue placeholder={tt("CSV", "CSV")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="csv">{tt("CSV export", "Hamisha CSV")}</SelectItem>
-                    <SelectItem value="xls">{tt("Excel export", "Hamisha Excel")}</SelectItem>
+                    <SelectItem value="xlsx">{tt("Excel export (.xlsx)", "Hamisha Excel (.xlsx)")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button variant="outline" onClick={exportWalletReport} className="rounded-full">
