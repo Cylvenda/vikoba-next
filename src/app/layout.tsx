@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/components/theme/theme-provider";
 import { LanguageProvider } from "@/components/language/language-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://vikoba-opal.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://vikoba.cylvenda.co.tz";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 

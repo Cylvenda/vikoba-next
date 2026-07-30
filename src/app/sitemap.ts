@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://vikoba-opal.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://vikoba.cylvenda.co.tz";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
