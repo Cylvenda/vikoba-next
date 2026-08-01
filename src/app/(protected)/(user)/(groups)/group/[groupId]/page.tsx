@@ -40,7 +40,6 @@ export default function GroupPage() {
   const { meetings, fetchMeetings } = useMeetingStore();
   const {
     snapshot,
-    isLoading: isFinanceLoading,
     fetchSnapshot,
   } = useFinanceStore();
   const { user } = useAuthUserStore();
@@ -48,6 +47,8 @@ export default function GroupPage() {
   const tt = (en: string, sw: string) => language === "sw" ? sw : en;
   const [myLoans, setMyLoans] = useState<Loan[]>([]);
   const [myFines, setMyFines] = useState<Fine[]>([]);
+  const [loadedPersonalFinanceGroupId, setLoadedPersonalFinanceGroupId] = useState("");
+  const isPersonalFinanceLoading = !selectedGroup?.id || loadedPersonalFinanceGroupId !== selectedGroup.id;
   const isMounted = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -59,7 +60,7 @@ export default function GroupPage() {
   );
 
   useEffect(() => {
-    void fetchMeetings();
+    void fetchMeetings(selectedGroup?.id);
     if (selectedGroup?.id) {
       void fetchSnapshot(selectedGroup.id);
     }
@@ -68,25 +69,32 @@ export default function GroupPage() {
   useEffect(() => {
     if (!selectedGroup?.id || !user?.uuid) return;
 
-    void financeServices.getLoans(selectedGroup.id).then((res) => {
-      const my = res.data.filter(
-        (loan) =>
-          ["ACTIVE", "OVERDUE"].includes(loan.status) &&
-          (loan.borrower_user_id === user?.uuid ||
-            loan.borrower === currentMembership?.membership_id),
-      );
-      setMyLoans(my);
+    let cancelled = false;
+    void Promise.allSettled([
+      financeServices.getLoans(selectedGroup.id),
+      financeServices.getFines(selectedGroup.id),
+    ]).then(([loansResult, finesResult]) => {
+      if (cancelled) return;
+      if (loansResult.status === "fulfilled") {
+        setMyLoans(loansResult.value.data.filter(
+          (loan) =>
+            ["ACTIVE", "OVERDUE"].includes(loan.status) &&
+            (loan.borrower_user_id === user?.uuid || loan.borrower === currentMembership?.membership_id),
+        ));
+      }
+      if (finesResult.status === "fulfilled") {
+        setMyFines(finesResult.value.data.filter(
+          (fine) =>
+            fine.status === "UNPAID" &&
+            (fine.member_user_id === user?.uuid || fine.member === currentMembership?.membership_id),
+        ));
+      }
+      setLoadedPersonalFinanceGroupId(selectedGroup.id);
     });
 
-    void financeServices.getFines(selectedGroup.id).then((res) => {
-      const my = res.data.filter(
-        (fine) =>
-          fine.status === "UNPAID" &&
-          (fine.member_user_id === user?.uuid ||
-            fine.member === currentMembership?.membership_id),
-      );
-      setMyFines(my);
-    });
+    return () => {
+      cancelled = true;
+    };
   }, [selectedGroup?.id, user?.uuid, currentMembership?.membership_id]);
 
   const totalCapital = snapshot
@@ -152,19 +160,8 @@ export default function GroupPage() {
     });
     return Array.from(map.values()).reverse();
   }, [language, snapshot]);
-  if (!selectedGroup) {
-    return (
-      <div className="w-full p-4 md:p-6 lg:p-8">
-        <div className="text-center text-muted-foreground animate-pulse font-medium">
-          {" "}
-          {tt("Loading group operations...", "Inapakia shughuli za kikundi...")}
-        </div>
-      </div>
-    );
-  }
-
   const groupMeetings = meetings.filter(
-    (meeting) => meeting.group === selectedGroup.id,
+    (meeting) => meeting.group === selectedGroup?.id,
   );
   const pendingVerificationCount = selectedGroupMembers.filter(
     (member) => !member.is_verified,
@@ -249,11 +246,11 @@ export default function GroupPage() {
                     {tt("My Active Loans", "Mikopo Yangu Inayoendelea")}
                   </p>
                   <h3 className="text-2xl font-extrabold tracking-tight text-chart-3">
-                    {myLoans.length > 0
+                    {isPersonalFinanceLoading
+                      ? tt("Loading...", "Inapakia...")
+                      : myLoans.length > 0
                       ? formatTzs(myTotalLoans)
-                      : isFinanceLoading
-                        ? tt("Loading...", "Inapakia...")
-                        : tt("None", "Hakuna")}
+                      : tt("None", "Hakuna")}
                   </h3>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-chart-3/10 text-chart-3 shadow-inner">
@@ -274,11 +271,11 @@ export default function GroupPage() {
                     {tt("My Unpaid Fines", "Faini Zangu Zisizolipwa")}
                   </p>
                   <h3 className="text-2xl font-extrabold tracking-tight text-rose-600 dark:text-rose-400">
-                    {myFines.length > 0
+                    {isPersonalFinanceLoading
+                      ? tt("Loading...", "Inapakia...")
+                      : myFines.length > 0
                       ? formatTzs(myTotalFines)
-                      : isFinanceLoading
-                        ? tt("Loading...", "Inapakia...")
-                        : tt("None", "Hakuna")}
+                      : tt("None", "Hakuna")}
                   </h3>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/10 text-rose-500 shadow-inner">
@@ -389,9 +386,9 @@ export default function GroupPage() {
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
-                    {isFinanceLoading
-                      ? tt("Recalculating ledger trends...", "Inakokotoa upya mwenendo wa rejista...")
-                      : tt("No recent activity logged to generate charts.", "Hakuna shughuli za karibuni za kutengeneza chati.")}
+                    {snapshot
+                      ? tt("No recent activity logged to generate charts.", "Hakuna shughuli za karibuni za kutengeneza chati.")
+                      : tt("Loading...", "Inapakia...")}
                   </div>
                 )}
               </div>
@@ -450,9 +447,9 @@ export default function GroupPage() {
                   </>
                 ) : (
                   <div className="text-xs text-muted-foreground">
-                    {isFinanceLoading
-                      ? tt("Synthesizing asset ledger...", "Inakusanya rejista ya mali...")
-                      : tt("No positive assets reported.", "Hakuna mali chanya iliyoripotiwa.")}
+                    {snapshot
+                      ? tt("No positive assets reported.", "Hakuna mali chanya iliyoripotiwa.")
+                      : tt("Loading...", "Inapakia...")}
                   </div>
                 )}
               </div>
@@ -493,7 +490,7 @@ export default function GroupPage() {
                 {tt("Expected Interest Return", "Mapato ya Riba Yanayotarajiwa")}
               </p>
               <p className="mt-2 text-2xl font-extrabold text-foreground">
-                {snapshot ? formatTzs(snapshot.expectedInterestReturn) : "..."}
+                {snapshot ? formatTzs(snapshot.expectedInterestReturn) : tt("Loading...", "Inapakia...")}
               </p>
             </CardContent>
           </Card>
@@ -503,7 +500,7 @@ export default function GroupPage() {
                 {tt("Monthly Collections", "Makusanyo ya Mwezi")}
               </p>
               <p className="mt-2 text-2xl font-extrabold text-foreground">
-                {snapshot ? formatTzs(snapshot.monthlyCollections) : "..."}
+                {snapshot ? formatTzs(snapshot.monthlyCollections) : tt("Loading...", "Inapakia...")}
               </p>
             </CardContent>
           </Card>
@@ -530,7 +527,7 @@ export default function GroupPage() {
                   size="sm"
                   className="rounded-full h-9 px-3 sm:h-8 sm:px-3"
                 >
-                  <Link href={`/group/${selectedGroup.id}/meetings`}>
+                  <Link href={selectedGroup?.id ? `/group/${selectedGroup.id}/meetings` : "#"}>
                     {tt("Read more", "Soma zaidi")}
                   </Link>
                 </Button>

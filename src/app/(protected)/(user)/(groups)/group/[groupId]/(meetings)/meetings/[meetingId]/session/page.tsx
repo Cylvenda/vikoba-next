@@ -18,12 +18,11 @@ export default function MeetingSessionPage() {
   const params = useParams<{ meetingId: string; groupId: string }>()
   const router = useRouter()
   const meetingId = Array.isArray(params?.meetingId) ? params.meetingId[0] : params?.meetingId
-  const groupId = Array.isArray(params?.groupId) ? params.groupId[0] : params?.groupId
   const { language } = useLanguage()
   const tt = (en: string, sw: string) => language === "sw" ? sw : en
   
   const { user } = useAuthUserStore()
-  const { selectedGroupMembers, fetchSelectedGroupMembers } = useGroupStore()
+  const { selectedGroupMembers } = useGroupStore()
   
   const {
     selectedMeeting,
@@ -32,7 +31,7 @@ export default function MeetingSessionPage() {
     participants,
     realtimeConnection,
     loading,
-    fetchMeetingById,
+    fetchMeetingBootstrap,
     fetchAttendance,
     fetchParticipants,
     startMeeting,
@@ -45,24 +44,13 @@ export default function MeetingSessionPage() {
   useEffect(() => {
     if (!meetingId) return
 
-    const load = async () => {
-      await fetchMeetingById(meetingId)
-      await fetchAttendance(meetingId)
-      await fetchParticipants(meetingId)
-      if (groupId && selectedGroupMembers.length === 0) {
-        await fetchSelectedGroupMembers(groupId)
-      }
-    }
-
-    void load()
-  }, [meetingId, groupId, fetchMeetingById, fetchAttendance, fetchParticipants, fetchSelectedGroupMembers, selectedGroupMembers.length])
+    void fetchMeetingBootstrap(meetingId)
+  }, [meetingId, fetchMeetingBootstrap])
 
   useMeetingLiveSync({
     meetingId,
     status: selectedMeeting?.status,
-    refreshMeeting: fetchMeetingById,
-    refreshAttendance: fetchAttendance,
-    refreshParticipants: fetchParticipants,
+    refreshMeetingState: fetchMeetingBootstrap,
   })
 
   // ==========================================

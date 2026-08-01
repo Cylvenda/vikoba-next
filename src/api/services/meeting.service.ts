@@ -72,8 +72,10 @@ const mapAdditionalNote = (note: AdditionalNoteApi): AdditionalNoteDto => ({
 })
 
 export const meetingServices = {
-  async getMeetings(): Promise<ApiResponse<Meeting[]>> {
-    const response = await api.get<Meeting[]>(API_ENDPOINTS.USER_MEETINGS)
+  async getMeetings(groupUuid?: string): Promise<ApiResponse<Meeting[]>> {
+    const response = await api.get<Meeting[]>(API_ENDPOINTS.USER_MEETINGS, {
+      params: groupUuid ? { group_uuid: groupUuid } : undefined,
+    })
 
     return {
       status: response.status,
@@ -87,6 +89,19 @@ export const meetingServices = {
       status: response.status,
       data: response.data,
     }
+  },
+
+  async getMeetingBootstrap(meetingId: string): Promise<ApiResponse<{
+    meeting: Meeting
+    attendance: AttendanceRecord[]
+    participants: ParticipantSession[]
+  }>> {
+    const response = await api.get<{
+      meeting: Meeting
+      attendance: AttendanceRecord[]
+      participants: ParticipantSession[]
+    }>(`${API_ENDPOINTS.USER_MEETINGS}${meetingId}/bootstrap/`)
+    return { status: response.status, data: response.data }
   },
 
   async createMeeting(payload: {

@@ -321,7 +321,7 @@ export default function GroupHeader() {
                                         type="text"
                                         value={meetingTitle}
                                         onChange={(event) => setMeetingTitle(event.target.value)}
-                                        placeholder={tt("Weekly Ledger Reconciliation", "Upatanisho wa Rejista wa Wiki")}
+                                        placeholder={tt("Weekly Group Meeting", "Kikao cha Kikundi cha Wiki")}
                                         className="rounded-md"
                                         required
                                    />

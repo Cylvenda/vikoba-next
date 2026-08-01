@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { DatePicker, formatDateToString, parseDateString } from "@/components/ui/date-picker"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatTzs, type VikobaFinanceSnapshot } from "@/lib/vikoba-finance"
@@ -469,16 +470,16 @@ export default function GroupWalletPage() {
                       placeholder={tt("Search actions...", "Tafuta vitendo...")}
                       className="rounded-full"
                     />
-                    <Input
-                      type="date"
-                      value={dateFrom}
-                      onChange={(event) => setDateFrom(event.target.value)}
+                    <DatePicker
+                      value={parseDateString(dateFrom)}
+                      onChange={(date) => setDateFrom(formatDateToString(date))}
+                      placeholder={tt("Start date", "Tarehe ya kuanza")}
                       className="rounded-full"
                     />
-                    <Input
-                      type="date"
-                      value={dateTo}
-                      onChange={(event) => setDateTo(event.target.value)}
+                    <DatePicker
+                      value={parseDateString(dateTo)}
+                      onChange={(date) => setDateTo(formatDateToString(date))}
+                      placeholder={tt("End date", "Tarehe ya mwisho")}
                       className="rounded-full"
                     />
                   </div>

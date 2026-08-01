@@ -230,7 +230,7 @@ export function ControlBar({
               <SmilePlus className="size-4" />
               {tt("Reactions", "Miitikio")}
             </DropdownMenuLabel>
-            <div className="grid grid-cols-7 gap-1 p-1">
+            <div className="grid grid-cols-4 gap-1 p-1 sm:grid-cols-7">
               {REACTION_EMOJIS.map((emoji) => (
                 <button
                   key={emoji}

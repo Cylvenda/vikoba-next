@@ -56,24 +56,20 @@ export function GroupSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
       icon: <Home />,
     },
     {
-      title: getTranslation(language, "actions.guide"),
-      url: "/guide",
-      icon: <BookOpen />,
-    },
-    {
-      title: getTranslation(language, "actions.wallet"),
-      url: `/group/${selectedGroup.id}/wallet`,
-      icon: <WalletCards />,
-    },
-    {
-      title: getTranslation(language, "actions.analytics"),
-      url: `/group/${selectedGroup.id}/analytics`,
-      icon: <BarChart3 />,
+      title: getTranslation(language, "actions.members"),
+      url: `/group/${selectedGroup.id}/members`,
+      icon: <Users />,
     },
     {
       title: getTranslation(language, "actions.savings"),
       url: `/group/${selectedGroup.id}/savings`,
       icon: <PiggyBank />,
+    },
+
+    {
+      title: getTranslation(language, "actions.wallet"),
+      url: `/group/${selectedGroup.id}/wallet`,
+      icon: <WalletCards />,
     },
     {
       title: getTranslation(language, "actions.loans"),
@@ -81,19 +77,19 @@ export function GroupSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
       icon: <WalletCards />,
     },
     {
-      title: getTranslation(language, "actions.fines"),
-      url: `/group/${selectedGroup.id}/fines`,
-      icon: <FileText />,
-    },
-    {
       title: getTranslation(language, "actions.meetings"),
       url: getGroupMeetingsHref(selectedGroup.id),
       icon: <Calendar />,
     },
     {
-      title: getTranslation(language, "actions.members"),
-      url: `/group/${selectedGroup.id}/members`,
-      icon: <Users />,
+      title: getTranslation(language, "actions.fines"),
+      url: `/group/${selectedGroup.id}/fines`,
+      icon: <FileText />,
+    },
+    {
+      title: getTranslation(language, "actions.analytics"),
+      url: `/group/${selectedGroup.id}/analytics`,
+      icon: <BarChart3 />,
     },
     {
       title: getTranslation(language, "actions.settings"),
@@ -129,6 +125,11 @@ export function GroupSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
       icon: <User />,
     },
     {
+      title: getTranslation(language, "actions.guide"),
+      url: "/guide",
+      icon: <BookOpen />,
+    },
+    {
       title: "Settings",
       url: "/settings",
       icon: <Cog />,
@@ -142,7 +143,7 @@ export function GroupSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
           <TeamSwitcher
             teams={{
               name: selectedGroup?.name || "Group Dashboard",
-              logo: <BarChart3  />,
+              logo: <BarChart3 />,
               role: roleLabel,
             }}
           />

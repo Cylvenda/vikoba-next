@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { toast } from "react-toastify"
-import { Save, UserRound } from "lucide-react"
+import { Eye, EyeOff, KeyRound, Save, UserRound } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -22,6 +22,13 @@ export default function ProfilePage() {
     phone: user?.phone || "",
   })
   const [saving, setSaving] = useState(false)
+  const [changingPassword, setChangingPassword] = useState(false)
+  const [showPasswords, setShowPasswords] = useState(false)
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  })
 
   const handleChange = (field: keyof typeof formData, value: string) => {
     setFormData((current) => ({
@@ -47,6 +54,45 @@ export default function ProfilePage() {
       toast.error(tt("Failed to update your profile.", "Imeshindikana kusasisha wasifu wako."))
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handlePasswordSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (passwordData.newPassword.length < 8) {
+      toast.error(tt("The new password must contain at least 8 characters.", "Nenosiri jipya lazima liwe na angalau herufi 8."))
+      return
+    }
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error(tt("The new passwords do not match.", "Manenosiri mapya hayafanani."))
+      return
+    }
+    if (passwordData.currentPassword === passwordData.newPassword) {
+      toast.error(tt("Choose a new password different from your current password.", "Chagua nenosiri jipya tofauti na nenosiri lako la sasa."))
+      return
+    }
+
+    setChangingPassword(true)
+    try {
+      await userServices.changePassword({
+        current_password: passwordData.currentPassword,
+        new_password: passwordData.newPassword,
+      })
+      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })
+      setShowPasswords(false)
+      toast.success(tt("Password changed successfully.", "Nenosiri limebadilishwa kwa mafanikio."))
+    } catch (error: unknown) {
+      const responseData = (error as {
+        response?: { data?: { current_password?: string[]; new_password?: string[]; detail?: string } }
+      })?.response?.data
+      const message = responseData?.current_password?.[0]
+        || responseData?.new_password?.[0]
+        || responseData?.detail
+        || tt("Failed to change your password.", "Imeshindikana kubadilisha nenosiri lako.")
+      toast.error(message)
+    } finally {
+      setChangingPassword(false)
     }
   }
 
@@ -179,6 +225,91 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-none bg-card shadow-sm">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-2xl bg-chart-3/10 text-chart-3">
+              <KeyRound className="size-5" />
+            </div>
+            <div>
+              <CardTitle>{tt("Change password", "Badilisha nenosiri")}</CardTitle>
+              <CardDescription className="mt-1">
+                {tt("Confirm your current password, then choose a secure new password.", "Thibitisha nenosiri lako la sasa, kisha chagua nenosiri jipya salama.")}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <form className="space-y-5" onSubmit={handlePasswordSubmit}>
+            <div className="grid gap-4 lg:grid-cols-3">
+              <div>
+                <label htmlFor="current-password" className="mb-2 block text-sm font-medium">
+                  {tt("Current password", "Nenosiri la sasa")}
+                </label>
+                <Input
+                  id="current-password"
+                  type={showPasswords ? "text" : "password"}
+                  autoComplete="current-password"
+                  required
+                  value={passwordData.currentPassword}
+                  onChange={(event) => setPasswordData((current) => ({ ...current, currentPassword: event.target.value }))}
+                  placeholder={tt("Enter current password", "Weka nenosiri la sasa")}
+                  className="h-10 rounded-2xl"
+                />
+              </div>
+              <div>
+                <label htmlFor="new-password" className="mb-2 block text-sm font-medium">
+                  {tt("New password", "Nenosiri jipya")}
+                </label>
+                <Input
+                  id="new-password"
+                  type={showPasswords ? "text" : "password"}
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                  value={passwordData.newPassword}
+                  onChange={(event) => setPasswordData((current) => ({ ...current, newPassword: event.target.value }))}
+                  placeholder={tt("At least 8 characters", "Angalau herufi 8")}
+                  className="h-10 rounded-2xl"
+                />
+              </div>
+              <div>
+                <label htmlFor="confirm-password" className="mb-2 block text-sm font-medium">
+                  {tt("Confirm new password", "Thibitisha nenosiri jipya")}
+                </label>
+                <Input
+                  id="confirm-password"
+                  type={showPasswords ? "text" : "password"}
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                  value={passwordData.confirmPassword}
+                  onChange={(event) => setPasswordData((current) => ({ ...current, confirmPassword: event.target.value }))}
+                  placeholder={tt("Repeat new password", "Rudia nenosiri jipya")}
+                  className="h-10 rounded-2xl"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 border-t border-border/70 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <Button
+                type="button"
+                variant="ghost"
+                className="justify-start gap-2 sm:justify-center"
+                onClick={() => setShowPasswords((current) => !current)}
+              >
+                {showPasswords ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                {showPasswords ? tt("Hide passwords", "Ficha manenosiri") : tt("Show passwords", "Onyesha manenosiri")}
+              </Button>
+              <Button type="submit" className="bg-chart-3" disabled={changingPassword}>
+                <KeyRound className="size-4" />
+                {changingPassword ? tt("Changing password...", "Inabadilisha nenosiri...") : tt("Change password", "Badilisha nenosiri")}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
       </div>
     </div>
   )

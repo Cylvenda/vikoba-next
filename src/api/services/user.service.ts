@@ -21,6 +21,14 @@ export const userServices = {
           }
      },
 
+     async changePassword(payload: { current_password: string; new_password: string }) {
+          const response = await api.post(API_ENDPOINTS.USER_PASSWORD_CHANGE, payload)
+          return {
+               status: response.status,
+               data: response.data,
+          }
+     },
+
      async emailActivation(payload: string) {
           const response = await api.post(API_ENDPOINTS.USER_RESEND_ACTIVATION_EMAIL, { email: payload })
           return {

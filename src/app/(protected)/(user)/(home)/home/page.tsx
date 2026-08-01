@@ -5,7 +5,6 @@ import { useAuthUserStore } from "@/store/auth/userAuth.store";
 import { useGroupStore } from "@/store/group/groupUser.store";
 import { useMeetingStore } from "@/store/meeting/meeting.store";
 import { financeServices } from "@/api/services/finance.service";
-import axiosInstance from "@/api/axios";
 import { formatTzs } from "@/lib/vikoba-finance";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
@@ -43,8 +42,8 @@ import { useLanguage } from "@/components/language/language-provider";
 const Page = () => {
   const router = useRouter();
   const { user } = useAuthUserStore();
-  const { groups, invitations, fetchGroups, fetchMyInvitations, createGroup, joinGroupByCode, setSelectedGroup } = useGroupStore();
-  const { meetings, fetchMeetings } = useMeetingStore();
+  const { groups, invitations, fetchGroups, createGroup, joinGroupByCode, setSelectedGroup } = useGroupStore();
+  const { meetings } = useMeetingStore();
   const { language } = useLanguage();
   const isSwahili = language === "sw";
   const tt = (en: string, sw: string) => (isSwahili ? sw : en);
@@ -65,7 +64,7 @@ const Page = () => {
     activeLoans: 0,
     unpaidFines: 0,
     consolidatedCash: 0,
-    isLoading: false,
+    isLoading: true,
   });
   type RecentActivity = {
     id: string
@@ -85,99 +84,21 @@ const Page = () => {
   );
 
   useEffect(() => {
-    void fetchGroups();
-    void fetchMyInvitations();
-    void fetchMeetings();
-  }, [fetchGroups, fetchMyInvitations, fetchMeetings]);
-
-  useEffect(() => {
-    if (groups.length === 0) {
-      return;
-    }
-
     let isCancelled = false;
     const fetchAllData = async () => {
       setFinancialData((prev) => ({ ...prev, isLoading: true }));
       try {
-        let aggregatedSavings = 0;
-        let aggregatedLoans = 0;
-        let aggregatedFines = 0;
-        let aggregatedCash = 0;
-        const combinedActivities: RecentActivity[] = [];
-
-        await Promise.all(
-          groups.map(async (group) => {
-            try {
-              // 1. Fetch group snapshot
-              const snapshotRes = await axiosInstance.get(`finance/groups/${group.id}/snapshot/`);
-              const snapshot = snapshotRes.data;
-              aggregatedCash += Number(snapshot.availableCash);
-
-              if (snapshot.recentActivity) {
-                combinedActivities.push(
-                  ...snapshot.recentActivity.map((act: {
-                    id: string
-                    title: string
-                    type: string
-                    amount: number
-                    status: string
-                    actor: string
-                    happenedAt: string
-                  }) => ({
-                    ...act,
-                    groupName: group.name,
-                  }))
-                );
-              }
-
-              // 2. Fetch user's own contributions in this group
-              const contributionsRes = await financeServices.getContributions(group.id);
-              const myVerifiedContributions = contributionsRes.data.filter(
-                (c) =>
-                  c.status === "VERIFIED" &&
-                  c.member_user_id === user?.uuid
-              );
-              aggregatedSavings += myVerifiedContributions.reduce((sum, c) => sum + Number(c.amount), 0);
-
-              // 3. Fetch user's own loans in this group
-              const loansRes = await financeServices.getLoans(group.id);
-              const myActiveLoans = loansRes.data.filter(
-                (loan) =>
-                  ["ACTIVE", "OVERDUE"].includes(loan.status) &&
-                  loan.borrower_user_id === user?.uuid
-              );
-              aggregatedLoans += myActiveLoans.reduce((sum, loan) => sum + Number(loan.remaining_balance || loan.balance), 0);
-
-              // 4. Fetch user's own fines in this group
-              const finesRes = await financeServices.getFines(group.id);
-              const myUnpaidFines = finesRes.data.filter(
-                (fine) =>
-                  fine.status === "UNPAID" &&
-                  fine.member_user_id === user?.uuid
-              );
-              aggregatedFines += myUnpaidFines.reduce((sum, fine) => sum + Number(fine.balance || fine.amount), 0);
-            } catch (err) {
-              const status = (err as { response?: { status?: number } })?.response?.status
-              if (status !== 403) {
-                console.error(`Failed to fetch finance data for group ${group.id}:`, err);
-              }
-            }
-          })
-        );
+        const { data } = await financeServices.getUserOverview();
 
         if (!isCancelled) {
-          const sortedActivities = combinedActivities
-            .sort((a, b) => new Date(b.happenedAt).getTime() - new Date(a.happenedAt).getTime())
-            .slice(0, 5);
-
           setFinancialData({
-            totalSavings: aggregatedSavings,
-            activeLoans: aggregatedLoans,
-            unpaidFines: aggregatedFines,
-            consolidatedCash: aggregatedCash,
+            totalSavings: data.totalSavings,
+            activeLoans: data.activeLoans,
+            unpaidFines: data.unpaidFines,
+            consolidatedCash: data.consolidatedCash,
             isLoading: false,
           });
-          setRecentActivities(sortedActivities);
+          setRecentActivities(data.recentActivity);
         }
       } catch (err) {
         console.error("Failed to aggregate user financial overview:", err);
@@ -192,7 +113,7 @@ const Page = () => {
     return () => {
       isCancelled = true;
     };
-  }, [groups, user?.uuid]);
+  }, []);
 
   const todaysMeetings = useMemo(() => {
     const today = new Date();

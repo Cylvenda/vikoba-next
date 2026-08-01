@@ -490,7 +490,7 @@ export default function GroupSavingsPage() {
                         <ContributionCard
                           key={contribution.uuid}
                           contribution={contribution}
-                          action={
+                          action={contribution.member_user_id === user?.uuid ? (
                             <Button
                               size="sm"
                               variant="outline"
@@ -504,7 +504,7 @@ export default function GroupSavingsPage() {
                               <RefreshCcw className="mr-1.5 h-3.5 w-3.5" />
                               {tt("Retry payment", "Jaribu malipo tena")}
                             </Button>
-                          }
+                          ) : undefined}
                         />
                       ))}
                     </div>

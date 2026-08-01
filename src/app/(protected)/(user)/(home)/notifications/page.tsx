@@ -134,7 +134,7 @@ export default function Page() {
                     </CardHeader>
                </Card>
 
-                <div className="grid gap-4 sm:gap-5 grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 min-[400px]:grid-cols-2 sm:gap-5 lg:grid-cols-4">
                     {overviewItems.map((item) => (
                          <Card key={item.label} className="border-none bg-card shadow-sm">
                               <CardContent className="flex items-center justify-between p-5">

@@ -45,7 +45,7 @@ export default function GroupMeetingsPage() {
   useEffect(() => {
     if (!groupId) return
 
-    void fetchMeetings()
+    void fetchMeetings(groupId)
 
     if (!selectedGroup || selectedGroup.id !== groupId) {
       void fetchGroupById(groupId)
@@ -297,7 +297,7 @@ export default function GroupMeetingsPage() {
                         </Link>
                       </Button>
                       <Button asChild variant="outline" className="w-full rounded-xl border-chart-3/30 hover:bg-chart-3/10 bg-card/50 text-chart-4 font-semibold shadow-sm">
-                        <Link href={getMeetingDetailHref(nextMeeting.id, nextMeeting.group)}>{tt("View Ledger Details", "Tazama Maelezo ya Rejista")}</Link>
+                        <Link href={getMeetingDetailHref(nextMeeting.id, nextMeeting.group)}>{tt("View Meeting Details", "Tazama Maelezo ya Kikao")}</Link>
                       </Button>
                     </div>
                   </div>
@@ -322,7 +322,7 @@ export default function GroupMeetingsPage() {
                 </div>
 
                 {loading && groupMeetings.length === 0 ? (
-                  <div className="py-12 text-center text-muted-foreground font-medium">{tt("Loading ledger data...", "Inapakia taarifa za rejista...")}</div>
+                  <div className="py-12 text-center text-muted-foreground font-medium">{tt("Loading meeting data...", "Inapakia taarifa za kikao...")}</div>
                 ) : groupMeetings.length === 0 ? (
                   <div className="py-16 text-center text-muted-foreground flex flex-col items-center">
                     <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
@@ -450,7 +450,7 @@ export default function GroupMeetingsPage() {
                 type="text"
                 value={meetingTitle}
                 onChange={(event) => setMeetingTitle(event.target.value)}
-                placeholder={tt("Weekly Ledger Reconciliation", "Upatanisho wa Rejista wa Kila Wiki")}
+                placeholder={tt("Weekly Group Meeting", "Kikao cha Kikundi cha Kila Wiki")}
                 className="rounded-md"
                 required
               />

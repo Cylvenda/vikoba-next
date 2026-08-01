@@ -109,13 +109,13 @@ const translations: Record<LanguageCode, TranslationTree> = {
       quickStartTitle: "Quick Start",
       step1Title: "1. Join or sign in",
       step1Body:
-        "Members sign in, while new users register and request to join a group.",
+        "Register or sign in, request to join with the group code, then wait for leadership approval and activation.",
       step2Title: "2. Open your workspace",
       step2Body:
-        "Use the dashboard for group activities, wallet reports, loans, fines, and meetings.",
+        "Open the group workspace to access members, savings, wallet, loans, fines, meetings, and analytics.",
       step3Title: "3. Follow the process",
       step3Body:
-        "Savings, loans, and fines should flow through the correct finance process so reports stay accurate.",
+        "Follow transaction status, retry only your own pending savings, and use filtered analytics exports for reconciliation.",
       sectionMembers: "Members",
       sectionLeadership: "Leadership",
       sectionFinance: "Finance Flow",
@@ -123,6 +123,7 @@ const translations: Record<LanguageCode, TranslationTree> = {
       sectionLoans: "Loan Process",
       sectionFines: "Fine Process",
       sectionMeetings: "Meetings",
+      sectionAnalytics: "Analytics and Exports",
       walletTitle: "Wallet and reporting rules",
       walletGroupTitle: "Group wallet",
       walletGroupBody:
@@ -153,6 +154,7 @@ const translations: Record<LanguageCode, TranslationTree> = {
       helpBody:
         "Start with the dashboard, then move into your group workspace. If you are a leader, focus on the wallet, loans, fines, and meetings pages. If you are a member, use your group dashboard and wallet pages to understand your balances and actions.",
       quickLinkDashboard: "Dashboard",
+      quickLinkAnalytics: "Analytics",
       quickLinkWallet: "Wallet",
       quickLinkLoans: "Loans",
       quickLinkFines: "Fines",
@@ -263,13 +265,13 @@ const translations: Record<LanguageCode, TranslationTree> = {
       quickStartTitle: "Mwongozo wa Haraka",
       step1Title: "1. Jiunge au ingia",
       step1Body:
-        "Wanachama huingia, huku watumiaji wapya wakijisajili na kuomba kujiunga na kikundi.",
+        "Jisajili au ingia, omba kujiunga kwa msimbo wa kikundi, kisha subiri idhini na uanzishaji wa uongozi.",
       step2Title: "2. Fungua nafasi yako ya kazi",
       step2Body:
-        "Tumia dashibodi kwa shughuli za kikundi, ripoti za mkoba, mikopo, faini, na vikao.",
+        "Fungua nafasi ya kikundi kupata wanachama, akiba, mkoba, mikopo, faini, vikao, na uchambuzi.",
       step3Title: "3. Fuata taratibu",
       step3Body:
-        "Akiba, mikopo, na faini zipitie mchakato sahihi wa fedha ili ripoti zibaki sahihi.",
+        "Fuatilia hali ya miamala, rudia akiba yako mwenyewe inayosubiri, na tumia ripoti za uchambuzi zilizochujwa kufanya usawazishaji.",
       sectionMembers: "Wanachama",
       sectionLeadership: "Uongozi",
       sectionFinance: "Mtiririko wa Fedha",
@@ -277,6 +279,7 @@ const translations: Record<LanguageCode, TranslationTree> = {
       sectionLoans: "Mchakato wa Mkopo",
       sectionFines: "Mchakato wa Faini",
       sectionMeetings: "Vikao",
+      sectionAnalytics: "Uchambuzi na Upakuaji",
       walletTitle: "Kanuni za mkoba na ripoti",
       walletGroupTitle: "Mkoba wa kikundi",
       walletGroupBody:
@@ -307,6 +310,7 @@ const translations: Record<LanguageCode, TranslationTree> = {
       helpBody:
         "Anza na dashibodi, kisha nenda kwenye nafasi yako ya kikundi. Ukiwa kiongozi, zingatia kurasa za mkoba, mikopo, faini, na vikao. Ukiwa mwanachama, tumia dashibodi na ukurasa wa mkoba kuelewa salio na vitendo vyako.",
       quickLinkDashboard: "Dashibodi",
+      quickLinkAnalytics: "Uchambuzi",
       quickLinkWallet: "Mkoba",
       quickLinkLoans: "Mikopo",
       quickLinkFines: "Faini",

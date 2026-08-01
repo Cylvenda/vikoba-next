@@ -172,23 +172,111 @@ export function exportRowsAsDocx(
   fileBaseName: string,
   title: string,
 ) {
-  const tableRows = rows.map((row, rowIndex) => {
-    const cells = row.length > 0 ? row : [""]
-    return `<w:tr>${cells.map((cell) => (
-      `<w:tc><w:tcPr><w:tcW w:w="2400" w:type="dxa"/></w:tcPr><w:p><w:r>${rowIndex === 0 ? "<w:rPr><w:b/></w:rPr>" : ""}<w:t xml:space="preserve">${xmlEscape(cell)}</w:t></w:r></w:p></w:tc>`
-    )).join("")}</w:tr>`
-  }).join("")
+  const isBlankRow = (row: ReportRow) => row.length === 0 || row.every((cell) => String(cell ?? "").trim() === "")
+  const meaningfulRows = rows.filter((row, index) => !(index === 0 && row.length === 1))
+  const blocks: ReportRow[][] = []
+  let currentBlock: ReportRow[] = []
+
+  meaningfulRows.forEach((row) => {
+    if (isBlankRow(row)) {
+      if (currentBlock.length > 0) blocks.push(currentBlock)
+      currentBlock = []
+      return
+    }
+    currentBlock.push(row)
+  })
+  if (currentBlock.length > 0) blocks.push(currentBlock)
+
+  const metadataRows = blocks.shift() ?? []
+  const maximumColumns = Math.max(1, ...blocks.flatMap((block) => block.map((row) => row.length)))
+  const landscape = maximumColumns >= 5
+  const contentWidth = landscape ? 14200 : 9600
+
+  const cellWidth = (columnIndex: number, columnCount: number) => {
+    if (columnCount === 6) {
+      return [1800, 1700, 3900, 2200, 1400, 2200][columnIndex]
+    }
+    if (columnCount === 2) return [Math.round(contentWidth * 0.58), Math.round(contentWidth * 0.42)][columnIndex]
+    return Math.floor(contentWidth / Math.max(columnCount, 1))
+  }
+
+  const renderCell = (cell: ReportCell, columnIndex: number, columnCount: number, header: boolean, shaded: boolean) => {
+    const numeric = typeof cell === "number"
+    const value = numeric ? cell.toLocaleString("en-US", { maximumFractionDigits: 2 }) : String(cell ?? "")
+    const alignment = header ? "center" : numeric ? "right" : columnCount >= 5 && columnIndex === 2 ? "both" : "left"
+    const fill = header ? "17324D" : shaded ? "F3F6F8" : "FFFFFF"
+    return `<w:tc>
+      <w:tcPr>
+        <w:tcW w:w="${cellWidth(columnIndex, columnCount)}" w:type="dxa"/>
+        <w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>
+        <w:vAlign w:val="center"/>
+      </w:tcPr>
+      <w:p>
+        <w:pPr><w:jc w:val="${alignment}"/><w:spacing w:before="40" w:after="40" w:line="260" w:lineRule="auto"/></w:pPr>
+        <w:r>
+          <w:rPr>${header ? "<w:b/><w:color w:val=\"FFFFFF\"/>" : numeric ? "<w:b/><w:color w:val=\"17324D\"/>" : ""}<w:sz w:val="19"/></w:rPr>
+          <w:t xml:space="preserve">${xmlEscape(value)}</w:t>
+        </w:r>
+      </w:p>
+    </w:tc>`
+  }
+
+  const renderTable = (block: ReportRow[]) => {
+    const headerRow = block[0] ?? []
+    const rawHeading = String(headerRow[0] ?? "Report Details")
+    const sectionHeading = ({
+      "Summary": "Financial Summary",
+      "Muhtasari": "Muhtasari wa Fedha",
+      "Category": "Cash Movement by Category",
+      "Aina": "Mzunguko wa Fedha kwa Aina",
+      "Transaction Date": "Transaction Ledger",
+      "Tarehe ya Muamala": "Rejista ya Miamala",
+    } as Record<string, string>)[rawHeading] ?? rawHeading
+    const columnCount = Math.max(1, ...block.map((row) => row.length))
+    const normalizedRows = block.map((row) => [...row, ...Array(Math.max(0, columnCount - row.length)).fill("")])
+    const tableRows = normalizedRows.map((row, rowIndex) => (
+      `<w:tr>
+        <w:trPr>${rowIndex === 0 ? "<w:tblHeader/>" : ""}<w:cantSplit/></w:trPr>
+        ${row.map((cell, columnIndex) => renderCell(cell, columnIndex, columnCount, rowIndex === 0, rowIndex > 0 && rowIndex % 2 === 0)).join("")}
+      </w:tr>`
+    )).join("")
+
+    return `<w:p>
+      <w:pPr><w:keepNext/><w:spacing w:before="260" w:after="100"/></w:pPr>
+      <w:r><w:rPr><w:b/><w:color w:val="D04A02"/><w:sz w:val="25"/></w:rPr><w:t>${xmlEscape(sectionHeading)}</w:t></w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="${contentWidth}" w:type="dxa"/>
+        <w:tblLayout w:type="fixed"/>
+        <w:tblCellMar><w:top w:w="100" w:type="dxa"/><w:left w:w="120" w:type="dxa"/><w:bottom w:w="100" w:type="dxa"/><w:right w:w="120" w:type="dxa"/></w:tblCellMar>
+        <w:tblBorders><w:top w:val="single" w:color="AAB7C4" w:sz="6"/><w:left w:val="single" w:color="AAB7C4" w:sz="6"/><w:bottom w:val="single" w:color="AAB7C4" w:sz="6"/><w:right w:val="single" w:color="AAB7C4" w:sz="6"/><w:insideH w:val="single" w:color="D7DEE5" w:sz="4"/><w:insideV w:val="single" w:color="D7DEE5" w:sz="4"/></w:tblBorders>
+      </w:tblPr>
+      ${tableRows}
+    </w:tbl>`
+  }
+
+  const metadataTable = metadataRows.length > 0
+    ? `<w:tbl>
+        <w:tblPr><w:tblW w:w="${contentWidth}" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:shd w:val="clear" w:fill="F3F6F8"/><w:tblCellMar><w:top w:w="90" w:type="dxa"/><w:left w:w="140" w:type="dxa"/><w:bottom w:w="90" w:type="dxa"/><w:right w:w="140" w:type="dxa"/></w:tblCellMar></w:tblPr>
+        ${metadataRows.map((row) => `<w:tr><w:trPr><w:cantSplit/></w:trPr>
+          <w:tc><w:tcPr><w:tcW w:w="2200" w:type="dxa"/></w:tcPr><w:p><w:r><w:rPr><w:b/><w:color w:val="17324D"/></w:rPr><w:t>${xmlEscape(row[0])}</w:t></w:r></w:p></w:tc>
+          <w:tc><w:tcPr><w:tcW w:w="${contentWidth - 2200}" w:type="dxa"/></w:tcPr><w:p><w:pPr><w:jc w:val="both"/></w:pPr><w:r><w:t>${xmlEscape(row.slice(1).join(" "))}</w:t></w:r></w:p></w:tc>
+        </w:tr>`).join("")}
+      </w:tbl>`
+    : ""
+
+  const reportSections = blocks.map(renderTable).join("")
 
   const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:body>
-    <w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:sz w:val="32"/></w:rPr><w:t>${xmlEscape(title)}</w:t></w:r></w:p>
-    <w:p/>
-    <w:tbl>
-      <w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders><w:top w:val="single" w:sz="4"/><w:left w:val="single" w:sz="4"/><w:bottom w:val="single" w:sz="4"/><w:right w:val="single" w:sz="4"/><w:insideH w:val="single" w:sz="4"/><w:insideV w:val="single" w:sz="4"/></w:tblBorders></w:tblPr>
-      ${tableRows}
-    </w:tbl>
-    <w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="900" w:bottom="1134" w:left="900"/></w:sectPr>
+    <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:after="100"/></w:pPr><w:r><w:rPr><w:b/><w:color w:val="17324D"/><w:sz w:val="38"/></w:rPr><w:t>${xmlEscape(title)}</w:t></w:r></w:p>
+    <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:after="280"/></w:pPr><w:r><w:rPr><w:b/><w:color w:val="D04A02"/><w:sz w:val="18"/><w:spacing w:val="30"/></w:rPr><w:t>VICOBA COMMUNITY HUB</w:t></w:r></w:p>
+    ${metadataTable}
+    ${reportSections}
+    <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="320"/></w:pPr><w:r><w:rPr><w:i/><w:color w:val="667788"/><w:sz w:val="16"/></w:rPr><w:t>Generated securely by VICOBA Community Hub</w:t></w:r></w:p>
+    <w:sectPr><w:pgSz w:w="${landscape ? "16838" : "11906"}" w:h="${landscape ? "11906" : "16838"}" w:orient="${landscape ? "landscape" : "portrait"}"/><w:pgMar w:top="850" w:right="700" w:bottom="850" w:left="700"/></w:sectPr>
   </w:body>
 </w:document>`
 

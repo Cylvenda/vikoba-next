@@ -258,8 +258,9 @@ export default function MembersList() {
   const pendingJoinRequests = isJoinRequestManager
     ? groupInvitations.filter((invitation) => invitation.status === "PENDING")
     : []
-  const activeMembers = selectedGroupMembers
-    .filter((member) => member.is_active && member.is_verified)
+  const rosterMembers = selectedGroupMembers
+    // Deactivation changes access, but does not remove someone from the roster.
+    .filter((member) => member.is_verified)
     .filter((member) => {
       const name = [member.first_name, member.last_name].join(" ").toLowerCase()
       const email = (member.email ?? "").toLowerCase()
@@ -283,6 +284,9 @@ export default function MembersList() {
     const query = searchQuery.toLowerCase()
     return email.includes(query) || message.includes(query)
   })
+  const activeMemberCount = selectedGroupMembers.filter(
+    (member) => member.is_active && member.is_verified
+  ).length
 
   const handleRespondToJoinRequest = async (invitationId: string, action: "accept" | "decline") => {
     if (!selectedGroup?.id) return
@@ -370,14 +374,14 @@ export default function MembersList() {
             <Users className="w-4 h-4" />
             <span className="text-xs font-bold uppercase tracking-widest">{tt("Total Members", "Jumla ya Wanachama")}</span>
           </div>
-          <p className="text-2xl font-extrabold text-foreground">{selectedGroupMembers.length}</p>
+          <p className="text-2xl font-extrabold text-foreground">{rosterMembers.length}</p>
         </div>
         <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm flex flex-col gap-2">
           <div className="flex items-center gap-2 text-chart-3">
             <CheckCircle2 className="w-4 h-4" />
             <span className="text-xs font-bold uppercase tracking-widest">{tt("Active Members", "Wanachama Hai")}</span>
           </div>
-          <p className="text-2xl font-extrabold text-foreground">{activeMembers.length}</p>
+          <p className="text-2xl font-extrabold text-foreground">{activeMemberCount}</p>
         </div>
         <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm flex flex-col gap-2">
           <div className="flex items-center gap-2 text-green-500">
@@ -422,7 +426,7 @@ export default function MembersList() {
         <TabsList className="grid w-full grid-cols-2 bg-card/70">
           <TabsTrigger value="active" className="gap-2">
             <Users className="h-4 w-4" />
-            {tt("Active Members", "Wanachama Hai")}
+            {tt("Members", "Wanachama")}
           </TabsTrigger>
           <TabsTrigger value="pending" className="gap-2">
             <ShieldAlert className="h-4 w-4" />
@@ -436,16 +440,16 @@ export default function MembersList() {
               <div className="rounded-2xl border border-border/50 bg-card/60 py-16 text-center text-muted-foreground">
                 {tt("Loading members...", "Inapakia wanachama...")}
               </div>
-            ) : activeMembers.length === 0 ? (
+            ) : rosterMembers.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-muted-foreground rounded-2xl border border-border/50 bg-card/60 backdrop-blur-sm">
                 <UserX className="w-10 h-10 mb-3 opacity-25" />
                 <p className="text-sm font-medium">
-                  {searchQuery ? tt("No active members match your search.", "Hakuna wanachama hai wanaolingana na utafutaji.") : tt("No active members found for this group.", "Hakuna wanachama hai katika kikundi hiki.")}
+                  {searchQuery ? tt("No members match your search.", "Hakuna wanachama wanaolingana na utafutaji.") : tt("No members found for this group.", "Hakuna wanachama katika kikundi hiki.")}
                 </p>
               </div>
             ) : (
               <div className="flex flex-col gap-3">
-                {activeMembers.map((member, idx) => {
+                {rosterMembers.map((member, idx) => {
                   const fullName = [member.first_name, member.last_name].join(" ").trim() || member.email
                   const initials = fullName
                     .split(" ")
@@ -462,7 +466,7 @@ export default function MembersList() {
                   return (
                     <div
                       key={member.membership_id}
-                      className="group flex flex-row items-center gap-4 p-4 rounded-2xl border border-border/50 bg-card shadow-sm hover:shadow-md transition-all relative overflow-hidden"
+                      className={`group flex flex-row items-center gap-4 p-4 rounded-2xl border border-border/50 bg-card shadow-sm hover:shadow-md transition-all relative overflow-hidden ${member.is_active ? "" : "opacity-70"}`}
                     >
                       <span className="text-xs font-bold text-muted-foreground/40 w-5 text-right shrink-0 tabular-nums">
                         {idx + 1}
@@ -484,6 +488,14 @@ export default function MembersList() {
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+                        <span className={`mt-1 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider md:hidden ${member.is_active ? "text-chart-3" : "text-orange-500"}`}>
+                          {member.is_active ? (
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          ) : (
+                            <ShieldOff className="w-3.5 h-3.5" />
+                          )}
+                          {member.is_active ? tt("Active", "Hai") : tt("Deactivated", "Amesitishwa")}
+                        </span>
                       </div>
 
                       <div className="hidden sm:block shrink-0">
@@ -491,8 +503,13 @@ export default function MembersList() {
                       </div>
 
                       <div className="hidden md:flex items-center gap-1 shrink-0">
-                        <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-chart-3">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> {tt("Active", "Hai")}
+                        <span className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${member.is_active ? "text-chart-3" : "text-orange-500"}`}>
+                          {member.is_active ? (
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          ) : (
+                            <ShieldOff className="w-3.5 h-3.5" />
+                          )}
+                          {member.is_active ? tt("Active", "Hai") : tt("Deactivated", "Amesitishwa")}
                         </span>
                       </div>
 

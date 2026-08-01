@@ -23,7 +23,8 @@ type MeetingState = {
   realtimeConnection: RealtimeConnection | null
   loading: boolean
   error: string | null
-  fetchMeetings: () => Promise<void>
+  fetchMeetings: (groupUuid?: string) => Promise<void>
+  fetchMeetingBootstrap: (meetingId: string, options?: { silent?: boolean }) => Promise<void>
   fetchMeetingById: (meetingId: string, options?: { silent?: boolean }) => Promise<void>
   fetchAttendance: (meetingId: string, options?: { silent?: boolean }) => Promise<void>
   fetchParticipants: (meetingId: string, options?: { silent?: boolean }) => Promise<void>
@@ -65,11 +66,11 @@ export const useMeetingStore = create<MeetingState>((set) => ({
   loading: false,
   error: null,
 
-  fetchMeetings: async () => {
+  fetchMeetings: async (groupUuid) => {
     set({ loading: true, error: null })
 
     try {
-      const res = await meetingServices.getMeetings()
+      const res = await meetingServices.getMeetings(groupUuid)
       set({
         meetings: sortMeetingsNewestFirst(res.data),
         loading: false,
@@ -79,6 +80,27 @@ export const useMeetingStore = create<MeetingState>((set) => ({
         loading: false,
         error: err instanceof Error ? err.message : "Failed to fetch meetings",
       })
+    }
+  },
+
+  fetchMeetingBootstrap: async (meetingId, options) => {
+    if (!options?.silent) {
+      set({ loading: true, error: null })
+    }
+    try {
+      const res = await meetingServices.getMeetingBootstrap(meetingId)
+      set((state) => ({
+        selectedMeeting: res.data.meeting,
+        currentMinutes: res.data.meeting.minutes || null,
+        attendance: res.data.attendance,
+        participants: res.data.participants,
+        loading: options?.silent ? state.loading : false,
+      }))
+    } catch (err: unknown) {
+      set((state) => ({
+        loading: options?.silent ? state.loading : false,
+        error: err instanceof Error ? err.message : "Failed to load meeting",
+      }))
     }
   },
 

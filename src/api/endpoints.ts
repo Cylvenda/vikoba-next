@@ -17,6 +17,7 @@ export const API_ENDPOINTS = {
      USER_RESEND_ACTIVATION_EMAIL: "auth/users/resend_activation/",
      USER_PASSWORD_RESET: "auth/users/reset_password/",
      USER_PASSWORD_RESET_CONFIRM: "auth/users/reset_password_confirm/",
+     USER_PASSWORD_CHANGE: "auth/users/set_password/",
 
      // Current user
      CURRENT_USER_PROFILE: "me/auth/me/",

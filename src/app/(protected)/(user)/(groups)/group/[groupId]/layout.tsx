@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useGroupStore } from "@/store/group/groupUser.store"
 import { useAuthUserStore } from "@/store/auth/userAuth.store"
@@ -10,7 +10,6 @@ import ThemeToggle from "@/components/theme/theme-toggle"
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { CompleteProfileModal } from "@/components/auth/complete-profile-modal"
-import { Spinner } from "@/components/ui/spinner"
 import LanguageToggle from "@/components/language/language-toggle"
 
 export default function GroupLayout({ children }: { children: React.ReactNode }) {
@@ -19,19 +18,15 @@ export default function GroupLayout({ children }: { children: React.ReactNode })
   const groupId = Array.isArray(params?.groupId) ? params.groupId[0] : params?.groupId
   const { fetchGroupById, fetchSelectedGroupMembers, clearSelectedGroup } = useGroupStore()
   const { initAuth } = useAuthUserStore()
-  const [isBootstrapping, setIsBootstrapping] = useState(true)
-
   useEffect(() => {
     if (!groupId) return
     let cancelled = false;
-    let redirecting = false;
 
     const load = async () => {
       try {
         const isAuthenticated = await initAuth()
         if (!isAuthenticated) {
           if (!cancelled) {
-            redirecting = true;
             router.replace("/");
           }
           return;
@@ -45,12 +40,7 @@ export default function GroupLayout({ children }: { children: React.ReactNode })
       } catch (error) {
         console.error("Group layout bootstrap error:", error)
         if (!cancelled) {
-          redirecting = true;
           router.replace("/");
-        }
-      } finally {
-        if (!cancelled && !redirecting) {
-          setIsBootstrapping(false);
         }
       }
     }
@@ -64,30 +54,11 @@ export default function GroupLayout({ children }: { children: React.ReactNode })
   }, [groupId, fetchGroupById, fetchSelectedGroupMembers, clearSelectedGroup, initAuth, router])
 
   return (
-    <>
-      {isBootstrapping && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-sidebar px-4">
-          <div className="text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-chart-4">
-              Community Hub
-            </p>
-            <p className="mt-3 text-lg font-medium text-foreground">
-              Authenticating your session...
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Please wait while we verify your access to this workspace.
-            </p>
-            <div className="flex justify-center items-center mt-4">
-              <Spinner />
-            </div>
-          </div>
-        </div>
-      )}
       <SidebarProvider>
         <CompleteProfileModal />
         <GroupSidebar />
         <SidebarInset>
-          <header className="flex h-18 shrink-0 sticky top-0 z-50 bg-sidebar items-center justify-between gap-2 border-b border-b-sidebar-border px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+          <header className="sticky top-0 z-50 flex h-14 shrink-0 items-center justify-between gap-2 border-b border-b-sidebar-border bg-sidebar px-3 transition-[width,height] ease-linear sm:h-16 sm:px-4 group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
             <div className="flex min-w-0 items-center gap-2">
               <SidebarTrigger className="-ml-1" />
               <Separator
@@ -96,7 +67,7 @@ export default function GroupLayout({ children }: { children: React.ReactNode })
               />
               <CurrentPageBreadcrumb />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
               <LanguageToggle compact />
               <ThemeToggle />
             </div>
@@ -106,6 +77,5 @@ export default function GroupLayout({ children }: { children: React.ReactNode })
           </div>
         </SidebarInset>
       </SidebarProvider>
-    </>
   )
 }

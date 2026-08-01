@@ -245,6 +245,23 @@ export type WalletReport = {
   memberWallets: MemberWalletReport[]
 }
 
+export type UserFinanceOverview = {
+  totalSavings: number
+  activeLoans: number
+  unpaidFines: number
+  consolidatedCash: number
+  recentActivity: Array<{
+    id: string
+    title: string
+    type: string
+    amount: number
+    status: string
+    actor: string
+    happenedAt: string
+    groupName: string
+  }>
+}
+
 export type CreateContributionPayload = {
   group_id: string
   membership_id: string
@@ -295,6 +312,11 @@ const mapFine = (fine: Fine): Fine => fine
 const mapFineList = (fines: Fine[]) => fines.map(mapFine)
 
 export const financeServices = {
+  async getUserOverview(): Promise<ApiResponse<UserFinanceOverview>> {
+    const response = await api.get<UserFinanceOverview>("finance/overview/")
+    return { status: response.status, data: response.data }
+  },
+
   async getFinancialSnapshot(
     groupUuid: string,
     params?: { month?: string; date_from?: string; date_to?: string; all_activity?: boolean },

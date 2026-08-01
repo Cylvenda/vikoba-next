@@ -8,7 +8,7 @@ import { useGroupStore } from "@/store/group/groupUser.store"
 import { useLanguage } from "@/components/language/language-provider"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import { DatePicker, MonthPicker, formatDateToString, parseDateString } from "@/components/ui/date-picker"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatTzs } from "@/lib/vikoba-finance"
 import { exportRowsAsCsv, exportRowsAsDocx, exportRowsAsXlsx, type ReportRow } from "@/lib/report-export"
@@ -17,6 +17,7 @@ import type { VikobaFinanceSnapshot } from "@/lib/vikoba-finance"
 
 type PeriodMode = "all" | "month" | "range"
 type ExportFormat = "xlsx" | "csv" | "word"
+type TransactionStatusFilter = "all" | "completed" | "pending" | "failed"
 
 const INFLOW_TYPES = new Set(["CONTRIBUTION", "LOAN_REPAYMENT", "FINE_PAYMENT"])
 const OUTFLOW_TYPES = new Set(["LOAN_DISBURSEMENT"])
@@ -28,12 +29,16 @@ export default function FinancialAnalyticsPage() {
   const { snapshot, fetchSnapshot, isLoading } = useFinanceStore()
   const { language } = useLanguage()
   const tt = useCallback((en: string, sw: string) => language === "sw" ? sw : en, [language])
-  const [periodMode, setPeriodMode] = useState<PeriodMode>("month")
+  const [periodMode, setPeriodMode] = useState<PeriodMode>("all")
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7))
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo] = useState("")
   const [exportFormat, setExportFormat] = useState<ExportFormat>("xlsx")
+  const [transactionStatus, setTransactionStatus] = useState<TransactionStatusFilter>("all")
   const [reportSnapshot, setReportSnapshot] = useState<VikobaFinanceSnapshot | null>(null)
+  const [loadedReportKey, setLoadedReportKey] = useState("")
+  const reportKey = `${groupId ?? ""}:${periodMode}:${month}:${dateFrom}:${dateTo}`
+  const isReportLoading = loadedReportKey !== reportKey
 
   useEffect(() => {
     if (groupId) void fetchSnapshot(groupId)
@@ -50,16 +55,20 @@ export default function FinancialAnalyticsPage() {
           : { all_activity: true }
 
     let cancelled = false
-    void financeServices.getFinancialSnapshot(groupId, params).then((response) => {
-      if (!cancelled) setReportSnapshot(response.data)
-    })
+    void financeServices.getFinancialSnapshot(groupId, params)
+      .then((response) => {
+        if (!cancelled) {
+          setReportSnapshot(response.data)
+          setLoadedReportKey(reportKey)
+        }
+      })
 
     return () => {
       cancelled = true
     }
-  }, [dateFrom, dateTo, groupId, month, periodMode])
+  }, [dateFrom, dateTo, groupId, month, periodMode, reportKey])
 
-  const filteredActivity = useMemo(() => {
+  const periodActivity = useMemo(() => {
     const from = dateFrom ? new Date(`${dateFrom}T00:00:00`) : null
     const to = dateTo ? new Date(`${dateTo}T23:59:59.999`) : null
 
@@ -74,6 +83,13 @@ export default function FinancialAnalyticsPage() {
       })
       .sort((left, right) => new Date(right.happenedAt).getTime() - new Date(left.happenedAt).getTime())
   }, [dateFrom, dateTo, month, periodMode, reportSnapshot?.recentActivity, snapshot?.recentActivity])
+
+  const filteredActivity = useMemo(
+    () => periodActivity.filter((item) => (
+      transactionStatus === "all" || item.status.toLowerCase() === transactionStatus
+    )),
+    [periodActivity, transactionStatus],
+  )
 
   const analytics = useMemo(() => {
     const byType = filteredActivity.reduce<Record<string, number>>((result, item) => {
@@ -111,7 +127,9 @@ export default function FinancialAnalyticsPage() {
     [tt("Financial Analytics Report", "Ripoti ya Uchambuzi wa Fedha")],
     [tt("Group", "Kikundi"), selectedGroup?.name ?? ""],
     [tt("Period", "Kipindi"), periodLabel],
+    [tt("Transaction status", "Hali ya muamala"), transactionStatus === "all" ? tt("All", "Zote") : transactionStatus.replace(/^./, (letter) => letter.toUpperCase())],
     [tt("Generated", "Imetengenezwa"), new Date().toLocaleString(language === "sw" ? "sw-TZ" : "en-TZ")],
+    [tt("Transactions included", "Miamala iliyojumuishwa"), filteredActivity.length],
     [],
     [tt("Summary", "Muhtasari"), tt("Amount (TZS)", "Kiasi (TZS)")],
     [tt("Total inflow", "Jumla ya fedha zinazoingia"), analytics.inflow],
@@ -123,15 +141,17 @@ export default function FinancialAnalyticsPage() {
     ...categoryRows.map((row) => [row.label, analytics.byType[row.type] ?? 0]),
     [],
     [tt("Transaction Date", "Tarehe ya Muamala"), tt("Type", "Aina"), tt("Description", "Maelezo"), tt("Actor", "Mhusika"), tt("Status", "Hali"), tt("Amount (TZS)", "Kiasi (TZS)")],
-    ...filteredActivity.map((item) => [
-      new Date(item.happenedAt).toLocaleString(language === "sw" ? "sw-TZ" : "en-TZ"),
-      item.type.replaceAll("_", " "),
-      item.title,
-      item.actor,
-      item.status,
-      Number(item.amount || 0),
-    ]),
-  ], [analytics, categoryRows, filteredActivity, language, periodLabel, selectedGroup?.name, snapshot, tt])
+    ...(filteredActivity.length > 0
+      ? filteredActivity.map((item) => [
+          new Date(item.happenedAt).toLocaleString(language === "sw" ? "sw-TZ" : "en-TZ"),
+          item.type.replaceAll("_", " "),
+          item.title,
+          item.actor,
+          item.status,
+          Number(item.amount || 0),
+        ])
+      : [[tt("No transactions found for the selected period", "Hakuna miamala iliyopatikana katika kipindi kilichochaguliwa"), "", "", "", "", ""]]),
+  ], [analytics, categoryRows, filteredActivity, language, periodLabel, selectedGroup?.name, snapshot, transactionStatus, tt])
 
   const handleExport = () => {
     const baseName = `${selectedGroup?.name || "group"}-financial-report-${periodLabel}`
@@ -146,7 +166,7 @@ export default function FinancialAnalyticsPage() {
 
   return (
     <main className="min-h-screen bg-background p-4 text-foreground md:p-6 lg:p-8">
-      <div className="mx-auto w-full max-w-screen-2xl space-y-6">
+      <div className="mx-auto w-full max-w-screen-3xl space-y-6">
         <section className="rounded-3xl border border-border/80 bg-card/70 p-4 shadow-sm sm:p-6">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
             <div>
@@ -173,9 +193,9 @@ export default function FinancialAnalyticsPage() {
                   <SelectItem value="word">Microsoft Word (.docx)</SelectItem>
                 </SelectContent>
               </Select>
-              <Button type="button" className="h-11" onClick={handleExport} disabled={isLoading}>
+              <Button type="button" className="h-11" onClick={handleExport} disabled={isLoading || isReportLoading}>
                 <Download className="size-4" />
-                {tt("Export Report", "Pakua Ripoti")}
+                {isReportLoading ? tt("Preparing Report...", "Inaandaa Ripoti...") : tt("Export Report", "Pakua Ripoti")}
               </Button>
             </div>
           </div>
@@ -188,7 +208,7 @@ export default function FinancialAnalyticsPage() {
               {tt("Report Period", "Kipindi cha Ripoti")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-4">
+          <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
             <Select value={periodMode} onValueChange={(value) => setPeriodMode(value as PeriodMode)}>
               <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -198,13 +218,24 @@ export default function FinancialAnalyticsPage() {
               </SelectContent>
             </Select>
             {periodMode === "month" ? (
-              <Input className="h-11 md:col-span-2" type="month" value={month} onChange={(event) => setMonth(event.target.value)} />
+              <MonthPicker className="h-11 md:col-span-2" value={month} onChange={setMonth} placeholder={tt("Select month", "Chagua mwezi")} />
             ) : periodMode === "range" ? (
               <>
-                <Input className="h-11" type="date" value={dateFrom} onChange={(event) => setDateFrom(event.target.value)} aria-label={tt("Start date", "Tarehe ya kuanza")} />
-                <Input className="h-11" type="date" value={dateTo} onChange={(event) => setDateTo(event.target.value)} aria-label={tt("End date", "Tarehe ya mwisho")} />
+                <DatePicker className="h-11" value={parseDateString(dateFrom)} onChange={(date) => setDateFrom(formatDateToString(date))} placeholder={tt("Start date", "Tarehe ya kuanza")} />
+                <DatePicker className="h-11" value={parseDateString(dateTo)} onChange={(date) => setDateTo(formatDateToString(date))} placeholder={tt("End date", "Tarehe ya mwisho")} />
               </>
             ) : null}
+            <Select value={transactionStatus} onValueChange={(value) => setTransactionStatus(value as TransactionStatusFilter)}>
+              <SelectTrigger className="h-11">
+                <SelectValue placeholder={tt("Transaction status", "Hali ya muamala")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{tt("All transactions", "Miamala yote")}</SelectItem>
+                <SelectItem value="completed">{tt("Completed", "Iliyokamilika")}</SelectItem>
+                <SelectItem value="pending">{tt("Pending", "Inayosubiri")}</SelectItem>
+                <SelectItem value="failed">{tt("Failed", "Iliyoshindikana")}</SelectItem>
+              </SelectContent>
+            </Select>
             <div className="flex items-center rounded-xl border border-border bg-muted/30 px-4 text-sm text-muted-foreground">
               {filteredActivity.length} {tt("transactions", "miamala")}
             </div>
@@ -258,7 +289,7 @@ export default function FinancialAnalyticsPage() {
                 {tt("Filtered Financial Activity", "Shughuli za Fedha Zilizochujwa")}
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-3 sm:px-6">
               {filteredActivity.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
                   <FileText className="mx-auto mb-3 size-8" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthUserStore } from "@/store/auth/userAuth.store";
 import { useGroupStore } from "@/store/group/groupUser.store";
@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { CompleteProfileModal } from "@/components/auth/complete-profile-modal";
-import { Spinner } from "@/components/ui/spinner";
 import LanguageToggle from "@/components/language/language-toggle";
 
 export default function ProtectedLayout({
@@ -27,23 +26,15 @@ export default function ProtectedLayout({
   const { fetchGroups, fetchMyInvitations } = useGroupStore();
   const { fetchMeetings } = useMeetingStore();
   const router = useRouter();
-  const [isBootstrapping, setIsBootstrapping] = useState(true);
-
   useEffect(() => {
     let cancelled = false;
 
     const run = async () => {
-      // Track whether we initiated a redirect so `finally` knows
-      // NOT to call setIsBootstrapping(false) — prevents a flash of
-      // the sidebar/layout while the browser is still navigating away.
-      let redirecting = false;
-
       try {
         const isAuthenticated = await initAuth();
 
         if (!isAuthenticated) {
           if (!cancelled) {
-            redirecting = true;
             router.replace("/");
           }
           return;
@@ -59,13 +50,7 @@ export default function ProtectedLayout({
         // of revealing a broken dashboard with no user / data loaded.
         console.error("Dashboard bootstrap error:", error);
         if (!cancelled) {
-          redirecting = true;
           router.replace("/");
-        }
-      } finally {
-        // Only unhide the layout when we are staying on the page.
-        if (!cancelled && !redirecting) {
-          setIsBootstrapping(false);
         }
       }
     };
@@ -79,26 +64,7 @@ export default function ProtectedLayout({
   }, []); // store fns are stable Zustand refs
 
   return (
-    <>
-      {isBootstrapping && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-sidebar px-4">
-          <div className="text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-chart-4">
-              Community Hub
-            </p>
-            <p className="mt-3 text-lg font-medium text-foreground">
-              Authenticating your session...
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Please wait while we verify your access to the workspace.
-            </p>
-            <div className="flex justify-center items-center">
-              <Spinner />
-            </div>
-          </div>
-        </div>
-      )}
-      <SidebarProvider>
+    <SidebarProvider>
       <CompleteProfileModal />
       <AppSidebar />
       <SidebarInset>
@@ -121,6 +87,5 @@ export default function ProtectedLayout({
         </div>
       </SidebarInset>
     </SidebarProvider>
-    </>
   );
 }

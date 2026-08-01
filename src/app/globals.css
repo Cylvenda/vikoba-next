@@ -143,6 +143,22 @@
     max-width: 100%;
   }
 
+  img,
+  video,
+  canvas,
+  iframe {
+    max-width: 100%;
+  }
+
+  h1,
+  h2,
+  h3,
+  p,
+  [data-slot="card-title"],
+  [data-slot="card-description"] {
+    overflow-wrap: anywhere;
+  }
+
   input,
   textarea,
   select {
@@ -150,6 +166,14 @@
   }
 
   @media (max-width: 639px) {
+    [data-slot="card-header"] {
+      padding-inline: 1rem;
+    }
+
+    [data-slot="card-content"] {
+      min-width: 0;
+    }
+
     [data-slot="dialog-content"] {
       border-radius: 1rem;
     }

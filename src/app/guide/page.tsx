@@ -3,6 +3,7 @@
 import Link from "next/link"
 import {
   ArrowRight,
+  BarChart3,
   BookOpen,
   Building2,
   CircleDollarSign,
@@ -27,30 +28,30 @@ const userSections = [
     titleKey: "guide.sectionMembers",
     icon: Users,
     steps: [
-      "Join your group and verify your membership.",
-      "Attend meetings, record savings, and follow group rules.",
-      "Review your wallet page to see savings, loans, and fines.",
-      "Pay only your own fines or loan obligations.",
+      { en: "Request to join with the group code, then wait for a leader to approve and activate your membership.", sw: "Omba kujiunga kwa msimbo wa kikundi, kisha subiri kiongozi aidhinishe na kuwezesha uanachama wako." },
+      { en: "Attend meetings, submit your savings, and follow the group rules.", sw: "Hudhuria vikao, wasilisha akiba yako, na fuata kanuni za kikundi." },
+      { en: "Review your member wallet to see savings, loans, fines, and your net position.", sw: "Kagua mkoba wako wa mwanachama kuona akiba, mikopo, faini, na salio lako halisi." },
+      { en: "Retry only your own pending savings transaction and pay only obligations assigned to you.", sw: "Rudia muamala wako mwenyewe wa akiba unaosubiri na ulipe majukumu uliyopewa wewe pekee." },
     ],
   },
   {
     titleKey: "guide.sectionLeadership",
     icon: ShieldCheck,
     steps: [
-      "Chairperson schedules meetings and reviews approvals.",
-      "Secretary records minutes and keeps meeting notes clean.",
-      "Treasurer verifies savings, loan movements, and payments.",
-      "Leaders issue fines, manage loan requests, and watch wallet health.",
+      { en: "The chairperson manages membership, roles, activation, and meeting schedules.", sw: "Mwenyekiti husimamia uanachama, majukumu, uanzishaji, na ratiba za vikao." },
+      { en: "The secretary reviews join requests and records attendance, minutes, and meeting actions.", sw: "Katibu hukagua maombi ya kujiunga na kurekodi mahudhurio, kumbukumbu, na hatua za kikao." },
+      { en: "Authorized leaders record savings for members and monitor transaction status.", sw: "Viongozi wenye ruhusa hurekodi akiba za wanachama na kufuatilia hali ya miamala." },
+      { en: "Leaders manage loans and fines, then use wallet and analytics reports for reconciliation.", sw: "Viongozi husimamia mikopo na faini, kisha hutumia ripoti za mkoba na uchambuzi kufanya usawazishaji." },
     ],
   },
   {
     titleKey: "guide.sectionFinance",
     icon: Landmark,
     steps: [
-      "Verified savings go into the group wallet.",
-      "Loans are disbursed from the group wallet only.",
-      "Loan repayments and fines flow back into the group wallet.",
-      "Member wallet reports are used for analysis and balances.",
+      { en: "Only completed or verified savings increase the group wallet.", sw: "Akiba zilizokamilika au kuthibitishwa pekee ndizo huongeza mkoba wa kikundi." },
+      { en: "Loan disbursements reduce available group cash; repayments and paid fines return cash to it.", sw: "Utoaji wa mkopo hupunguza fedha za kikundi; marejesho na faini zilizolipwa hurudisha fedha humo." },
+      { en: "Pending and failed transactions remain visible for review and do not count as completed cash movement.", sw: "Miamala inayosubiri na iliyoshindikana hubaki kuonekana kwa ukaguzi na haihesabiwi kama fedha iliyokamilika." },
+      { en: "Analytics can be filtered by date and status, then exported with transaction details.", sw: "Uchambuzi unaweza kuchujwa kwa tarehe na hali, kisha kupakuliwa pamoja na maelezo ya miamala." },
     ],
   },
 ]
@@ -58,48 +59,62 @@ const userSections = [
 const processCards = [
   {
     titleKey: "guide.sectionSavings",
+    id: "savings",
     icon: WalletCards,
     points: [
-      "Enter savings during a meeting or through the savings screen.",
-      "Verified contributions increase the group wallet balance.",
-      "Each member receives a personal wallet summary for reporting.",
+      { en: "Members can submit their own savings; authorized leaders can record savings for eligible members.", sw: "Wanachama wanaweza kuwasilisha akiba yao; viongozi wenye ruhusa wanaweza kurekodi akiba kwa wanachama wanaostahili." },
+      { en: "Transactions show completed, pending, or failed status. Only the owner can retry their pending transaction.", sw: "Miamala huonyesha hali ya kukamilika, kusubiri, au kushindwa. Mmiliki pekee anaweza kurudia muamala wake unaosubiri." },
+      { en: "Verified contributions increase the group wallet and appear in the member wallet and reports.", sw: "Michango iliyothibitishwa huongeza mkoba wa kikundi na kuonekana kwenye mkoba wa mwanachama na ripoti." },
     ],
   },
   {
     titleKey: "guide.sectionLoans",
+    id: "loans",
     icon: HandCoins,
     points: [
-      "Members request loans from their group.",
-      "The system checks verified savings and available group cash.",
-      "Once approved, disbursement reduces group wallet cash.",
+      { en: "Active, verified members request loans inside their group.", sw: "Wanachama hai waliothibitishwa huomba mikopo ndani ya kikundi chao." },
+      { en: "Leadership reviews the request against verified savings, terms, and available group cash.", sw: "Uongozi hukagua ombi kwa kuzingatia akiba iliyothibitishwa, masharti, na fedha zilizopo." },
+      { en: "Approved disbursement reduces group cash, while repayments return cash and update reports.", sw: "Utoaji ulioidhinishwa hupunguza fedha za kikundi, huku marejesho yakirudisha fedha na kusasisha ripoti." },
     ],
   },
   {
     titleKey: "guide.sectionFines",
+    id: "fines",
     icon: FileText,
     points: [
-      "Leaders issue fines to specific members.",
-      "Fine payments can only be made by the member who owns the fine.",
-      "Paid fines move back into the group wallet and reports.",
+      { en: "Authorized leaders issue a fine to a specific active member with its reason and due information.", sw: "Viongozi wenye ruhusa hutoa faini kwa mwanachama hai maalum pamoja na sababu na taarifa za mwisho wa malipo." },
+      { en: "A fine can only be paid by the member who owns it.", sw: "Faini inaweza kulipwa na mwanachama aliyepewa pekee." },
+      { en: "Completed fine payments return money to the group wallet and appear in reports.", sw: "Malipo ya faini yaliyokamilika hurudisha fedha kwenye mkoba wa kikundi na kuonekana kwenye ripoti." },
     ],
   },
   {
     titleKey: "guide.sectionMeetings",
+    id: "meetings",
     icon: Megaphone,
     points: [
-      "Meetings are scheduled by leadership and shared with members.",
-      "Attendance, minutes, and actions are tracked in one workspace.",
-      "Meeting activity feeds into the group audit trail.",
+      { en: "Leadership schedules the meeting and members open its details from the group workspace.", sw: "Uongozi hupanga kikao na wanachama hufungua maelezo yake kutoka nafasi ya kikundi." },
+      { en: "The session workspace tracks attendance, agenda items, minutes, and actions.", sw: "Nafasi ya kikao hufuatilia mahudhurio, ajenda, kumbukumbu, na hatua." },
+      { en: "Attendance records and meeting activity remain available after the session for review.", sw: "Rekodi za mahudhurio na shughuli za kikao hubaki kupatikana baada ya kikao kwa ukaguzi." },
+    ],
+  },
+  {
+    titleKey: "guide.sectionAnalytics",
+    id: "analytics",
+    icon: BarChart3,
+    points: [
+      { en: "Choose all dates, a month, or a custom date range.", sw: "Chagua tarehe zote, mwezi, au kipindi maalum cha tarehe." },
+      { en: "Filter transactions by all, completed, pending, or failed status.", sw: "Chuja miamala kwa zote, iliyokamilika, inayosubiri, au iliyoshindikana." },
+      { en: "Export decorated Excel, CSV, or Word reports containing summaries, categories, and transaction rows.", sw: "Pakua ripoti zilizopangwa za Excel, CSV, au Word zenye muhtasari, makundi, na mistari ya miamala." },
     ],
   },
 ]
 
 const leadershipWorkflow = [
-  "Schedule meetings and open the session agenda.",
-  "Verify savings and confirm transactions during the meeting.",
-  "Review loan requests against verified savings and group cash.",
-  "Issue fines when rules are broken and track due dates.",
-  "Reconcile the wallet report after each financial action.",
+  { en: "Approve join requests, assign roles, and activate or deactivate access without removing roster history.", sw: "Idhinisha maombi ya kujiunga, gawa majukumu, na wezesha au sitisha ufikiaji bila kuondoa historia ya orodha." },
+  { en: "Schedule meetings and manage attendance, agenda, minutes, and actions.", sw: "Panga vikao na simamia mahudhurio, ajenda, kumbukumbu, na hatua." },
+  { en: "Review savings status and verify that completed transactions reached the wallet.", sw: "Kagua hali ya akiba na hakikisha miamala iliyokamilika imefika kwenye mkoba." },
+  { en: "Review loans and fines against member records and available group cash.", sw: "Kagua mikopo na faini kwa kulinganisha na rekodi za mwanachama na fedha zilizopo." },
+  { en: "Filter analytics and export a transaction-inclusive report for reconciliation.", sw: "Chuja uchambuzi na pakua ripoti yenye miamala kwa ajili ya usawazishaji." },
 ]
 
 const quickLinks = [
@@ -108,6 +123,7 @@ const quickLinks = [
   { key: "guide.quickLinkLoans", href: "/guide#loans" },
   { key: "guide.quickLinkFines", href: "/guide#fines" },
   { key: "guide.quickLinkMeetings", href: "/guide#meetings" },
+  { key: "guide.quickLinkAnalytics", href: "/guide#analytics" },
 ]
 
 export default function GuidePage() {
@@ -209,9 +225,9 @@ export default function GuidePage() {
                 </div>
                 <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
                   {section.steps.map((step) => (
-                    <li key={step} className="flex gap-2">
+                    <li key={step.en} className="flex gap-2">
                       <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-chart-3" />
-                      <span>{step}</span>
+                      <span>{step[language]}</span>
                     </li>
                   ))}
                 </ul>
@@ -250,7 +266,7 @@ export default function GuidePage() {
         {processCards.map((card) => {
           const Icon = card.icon
           return (
-            <Card key={card.titleKey} className="border-border/80 bg-card/60 shadow-sm backdrop-blur-md">
+            <Card id={card.id} key={card.titleKey} className="scroll-mt-6 border-border/80 bg-card/60 shadow-sm backdrop-blur-md">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
                   <div className="rounded-2xl bg-chart-1/10 p-3 text-chart-1">
@@ -260,9 +276,9 @@ export default function GuidePage() {
                 </div>
                 <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
                   {card.points.map((point) => (
-                    <li key={point} className="flex gap-2">
+                    <li key={point.en} className="flex gap-2">
                       <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-chart-1" />
-                      <span>{point}</span>
+                      <span>{point[language]}</span>
                     </li>
                   ))}
                 </ul>
@@ -305,11 +321,11 @@ export default function GuidePage() {
                 </p>
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
                   {leadershipWorkflow.map((item, index) => (
-                    <div key={item} className="rounded-xl border border-border/70 p-4 text-sm text-muted-foreground">
+                    <div key={item.en} className="rounded-xl border border-border/70 p-4 text-sm text-muted-foreground">
                       <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-chart-3/10 text-xs font-bold text-chart-3">
                         {index + 1}
                       </span>
-                      {item}
+                      {item[language]}
                     </div>
                   ))}
                 </div>

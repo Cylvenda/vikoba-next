@@ -20,22 +20,19 @@ import { exportRowsAsDocx } from "@/lib/report-export"
 export default function MeetingPage() {
   const params = useParams<{ meetingId: string; groupId: string }>()
   const meetingId = Array.isArray(params?.meetingId) ? params.meetingId[0] : params?.meetingId
-  const groupId = Array.isArray(params?.groupId) ? params.groupId[0] : params?.groupId
   const router = useRouter()
   const { language } = useLanguage()
   const tt = (en: string, sw: string) => language === "sw" ? sw : en
   
   const { user } = useAuthUserStore()
-  const { selectedGroupMembers, fetchSelectedGroupMembers } = useGroupStore()
+  const { selectedGroupMembers } = useGroupStore()
   
   const {
     selectedMeeting,
     attendance,
     participants,
     loading,
-    fetchMeetingById,
-    fetchAttendance,
-    fetchParticipants,
+    fetchMeetingBootstrap,
     addAgendaItem,
     removeAgendaItem,
     startMeeting,
@@ -48,17 +45,8 @@ export default function MeetingPage() {
   useEffect(() => {
     if (!meetingId) return
 
-    const load = async () => {
-      await fetchMeetingById(meetingId)
-      await fetchAttendance(meetingId)
-      await fetchParticipants(meetingId)
-      if (groupId && selectedGroupMembers.length === 0) {
-        await fetchSelectedGroupMembers(groupId)
-      }
-    }
-
-    void load()
-  }, [meetingId, groupId, fetchMeetingById, fetchAttendance, fetchParticipants, fetchSelectedGroupMembers, selectedGroupMembers.length])
+    void fetchMeetingBootstrap(meetingId)
+  }, [meetingId, fetchMeetingBootstrap])
 
   // ==========================================
   // Role-Based Access Control & Logic
@@ -191,7 +179,7 @@ export default function MeetingPage() {
       return
     }
     const rows = [
-      [tt("Attendance Ledger", "Rejista ya Mahudhurio"), selectedMeeting?.title || ""],
+      [tt("Attendance Record", "Rekodi ya Mahudhurio"), selectedMeeting?.title || ""],
       [tt("Date", "Tarehe"), scheduledStart],
       [],
       [tt("Email", "Barua pepe"), tt("Type", "Aina"), tt("Status", "Hali"), tt("Joined", "Alijiunga"), tt("Duration (Min)", "Muda (Dak)")],
@@ -203,7 +191,7 @@ export default function MeetingPage() {
         item.totalDurationMinutes,
       ]),
     ]
-    exportRowsAsDocx(rows, `Attendance ${selectedMeeting?.title || "Meeting"}`, tt("Attendance Ledger", "Rejista ya Mahudhurio"))
+    exportRowsAsDocx(rows, `Attendance ${selectedMeeting?.title || "Meeting"}`, tt("Attendance Record", "Rekodi ya Mahudhurio"))
     toast.success(tt("Attendance exported to Word", "Mahudhurio yamehamishwa kwenda Word"))
   }
 
@@ -329,7 +317,7 @@ export default function MeetingPage() {
       <div className="min-h-[80vh] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-muted-foreground">
           <CalendarCheck className="w-10 h-10 animate-pulse text-chart-3/50" />
-          <p className="font-medium tracking-tight">{tt("Loading session ledger...", "Inapakia rejista ya kikao...")}</p>
+          <p className="font-medium tracking-tight">{tt("Loading session details...", "Inapakia maelezo ya kikao...")}</p>
         </div>
       </div>
     )

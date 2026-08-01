@@ -45,6 +45,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { DatePicker, formatDateToString, parseDateString } from "@/components/ui/date-picker"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
@@ -735,14 +736,18 @@ export default function GroupFinesPage() {
                 <Field>
                   <FieldLabel>{tt("Due Date", "Tarehe ya Malipo")}</FieldLabel>
                   <FieldContent>
-                    <Input required type="date" value={issueForm.due_date} onChange={e => setIssueForm({...issueForm, due_date: e.target.value})} />
+                    <DatePicker
+                      value={parseDateString(issueForm.due_date)}
+                      onChange={(date) => setIssueForm({ ...issueForm, due_date: formatDateToString(date) })}
+                      placeholder={tt("Select due date", "Chagua tarehe ya malipo")}
+                    />
                   </FieldContent>
                 </Field>
               </div>
             </FieldGroup>
             <div className="flex justify-end gap-3 pt-4">
               <Button type="button" variant="outline" onClick={() => setIsIssueModalOpen(false)}>{tt("Cancel", "Ghairi")}</Button>
-              <Button type="submit" disabled={submitting || !issueForm.membership_uuid}>{submitting ? tt("Issuing...", "Inatoa...") : tt("Issue Fine", "Toa Faini")}</Button>
+              <Button type="submit" disabled={submitting || !issueForm.membership_uuid || !issueForm.due_date}>{submitting ? tt("Issuing...", "Inatoa...") : tt("Issue Fine", "Toa Faini")}</Button>
             </div>
           </form>
         </DialogContent>
