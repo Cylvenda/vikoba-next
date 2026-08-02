@@ -26,6 +26,7 @@ import type {
 } from "@/store/meeting/meeting.types";
 import { useLanguage } from "@/components/language/language-provider";
 import { exportRowsAsDocx } from "@/lib/report-export";
+import { useGroupStore } from "@/store/group/groupUser.store";
 
 export interface AgendaMinuteNote {
   id: string;
@@ -68,6 +69,7 @@ export function AgendaMinutesHistory({
   additionalNotes = [],
 }: AgendaMinutesHistoryProps) {
   const { language } = useLanguage();
+  const { selectedGroup } = useGroupStore();
   const tt = (en: string, sw: string) => language === "sw" ? sw : en;
   const resolvedMeetingTitle = meetingTitle || tt("Meeting", "Kikao");
   const [fetchedMinuteNotes, setFetchedMinuteNotes] = useState<
@@ -210,6 +212,7 @@ export function AgendaMinutesHistory({
         </head>
         <body>
             <h1>${tt("Official Meeting Minutes", "Kumbukumbu Rasmi za Kikao")}</h1>
+            <h3>${tt("Group", "Kikundi")}: ${selectedGroup?.name || tt("Not recorded", "Hakijarekodiwa")}</h3>
             <h3>${tt("Session", "Kikao")}: ${resolvedMeetingTitle}</h3>
             <div class="meta-header">${tt("Date Exported", "Tarehe ya Kuhamisha")}: ${new Date().toLocaleDateString()}</div>
             
@@ -288,6 +291,7 @@ export function AgendaMinutesHistory({
 
       const rows = [
         [tt("Official Meeting Minutes", "Kumbukumbu Rasmi za Kikao"), resolvedMeetingTitle],
+        [tt("Group", "Kikundi"), selectedGroup?.name || tt("Not recorded", "Hakijarekodiwa")],
         [tt("Date Exported", "Tarehe ya Kuhamisha"), new Date().toLocaleDateString()],
         [],
         [tt("Agenda Item", "Hoja ya Ajenda"), tt("Status", "Hali"), tt("Allocated Minutes", "Dakika Zilizotengwa"), tt("Actual Time", "Muda Halisi"), tt("Minutes", "Kumbukumbu"), tt("Host Notes", "Maelezo ya Mwenyeji")],

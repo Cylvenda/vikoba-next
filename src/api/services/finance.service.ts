@@ -260,6 +260,8 @@ export type UserFinanceOverview = {
     happenedAt: string
     groupName: string
   }>
+  recentActivityTotal?: number
+  recentActivityLimit?: number
 }
 
 export type CreateContributionPayload = {

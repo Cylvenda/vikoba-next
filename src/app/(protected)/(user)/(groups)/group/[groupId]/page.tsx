@@ -135,30 +135,25 @@ export default function GroupPage() {
 
   const trendData = useMemo(() => {
     if (!snapshot?.recentActivity) return [];
-    const map = new Map<
-      string,
-      { name: string; amount: number; title: string; actor: string }
-    >();
-    snapshot.recentActivity.forEach((item) => {
-      const dateKey = new Date(item.happenedAt).toISOString().slice(0, 10);
-      const label = new Date(item.happenedAt).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-      const existing = map.get(dateKey);
-      const entry = {
-        name: label,
+    return [...snapshot.recentActivity].reverse().map((item) => {
+      const happenedAt = new Date(item.happenedAt)
+      return {
+        id: item.id,
+        name: happenedAt.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        happenedAtLabel: happenedAt.toLocaleString("en-US", {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        }),
         amount: Number(item.amount),
         title: item.title || item.type,
         actor: item.actor || (language === "sw" ? "Mfumo" : "System"),
-      };
-      if (existing) {
-        existing.amount += entry.amount;
-      } else {
-        map.set(dateKey, entry);
       }
-    });
-    return Array.from(map.values()).reverse();
+    })
   }, [language, snapshot]);
   const groupMeetings = meetings.filter(
     (meeting) => meeting.group === selectedGroup?.id,
@@ -302,6 +297,12 @@ export default function GroupPage() {
                   <p className="text-xs text-muted-foreground">
                     {tt("Financial velocity over recent transactions", "Mwenendo wa fedha katika miamala ya hivi karibuni")}
                   </p>
+                  <p className="mt-1 text-xs font-medium text-foreground">
+                    {tt(
+                      `Showing ${snapshot?.recentActivity.length ?? 0} of ${Math.max(snapshot?.recentActivityTotal ?? 0, snapshot?.recentActivity.length ?? 0)} existing transactions (latest ${snapshot?.recentActivityLimit ?? 50} maximum)`,
+                      `Inaonyesha miamala ${snapshot?.recentActivity.length ?? 0} kati ya ${Math.max(snapshot?.recentActivityTotal ?? 0, snapshot?.recentActivity.length ?? 0)} iliyopo (miamala ${snapshot?.recentActivityLimit ?? 50} ya mwisho kwa kiwango cha juu)`,
+                    )}
+                  </p>
                 </div>
                 <div className="flex items-center gap-1.5 rounded-full bg-chart-1/10 px-2.5 py-1 text-xs font-bold text-chart-1">
                   <Activity className="h-3.5 w-3.5" />
@@ -363,7 +364,7 @@ export default function GroupPage() {
                                   {data.actor}
                                 </p>
                                 <p className="text-muted-foreground">
-                                  {data.name}
+                                  {data.happenedAtLabel}
                                 </p>
                                 <p className="font-extrabold text-chart-3">
                                   {formatTzs(data.amount)}

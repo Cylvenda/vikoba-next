@@ -12,6 +12,8 @@ export type LoanPayoutPreview = {
   finance_wallet_balance: string
   gateway_balance: string
   receiver: Record<string, unknown>
+  demo_payout_enabled: boolean
+  gateway_available: boolean
 }
 
 export const paymentServices = {
@@ -37,6 +39,16 @@ export const paymentServices = {
       status: string
       message: string
     }>(`/payments/payouts/loans/${loanUuid}/initiate/`, {
+      confirmed: true,
+    })
+  },
+  simulateLoanPayout: async (loanUuid: string) => {
+    return await axiosInstance.post<{
+      loan_uuid: string
+      status: string
+      installment_count: number
+      message: string
+    }>(`/payments/payouts/loans/${loanUuid}/simulate/`, {
       confirmed: true,
     })
   },

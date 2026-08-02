@@ -1,6 +1,5 @@
 import React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { AttendanceRecord, ParticipantSession } from "@/store/meeting/meeting.types"
@@ -21,7 +20,8 @@ import {
   ChevronRight,
 } from "lucide-react"
 import { toast } from "react-toastify"
-import * as XLSX from 'xlsx'
+import { exportRowsAsCsv, exportRowsAsXlsx, type ReportRow } from "@/lib/report-export"
+import { useGroupStore } from "@/store/group/groupUser.store"
 
 interface AttendanceListProps {
   attendanceRecords: AttendanceRecord[]
@@ -34,6 +34,7 @@ export function AttendanceList({
   participantSessions,
   meetingTitle,
 }: AttendanceListProps) {
+  const { selectedGroup } = useGroupStore()
   const getStatusColor = (status: string) => {
     switch (status) {
       case "present": return "bg-chart-3/15 text-chart-3 border-chart-3/25"
@@ -87,12 +88,12 @@ export function AttendanceList({
     return Math.round((new Date(left_at).getTime() - new Date(joined_at).getTime()) / 1000 / 60)
   }
 
-  const buildFileName = (extension: "xlsx" | "csv") => {
+  const buildFileName = () => {
     const safeMeetingTitle = (meetingTitle || "meeting-attendance")
       .replace(/[^a-z0-9]+/gi, "-")
       .replace(/^-+|-+$/g, "")
       .toLowerCase()
-    return `${safeMeetingTitle || "meeting-attendance"}-${new Date().toISOString().split("T")[0]}.${extension}`
+    return `${safeMeetingTitle || "meeting-attendance"}-${new Date().toISOString().split("T")[0]}`
   }
 
   // Combine attendance records with session data
@@ -125,52 +126,45 @@ export function AttendanceList({
 
   const exportToExcel = () => {
     try {
-      const excelData = sortedAttendance.map((record, index) => {
-        const sessionDetails = record.sessions.map((session, sessionIndex) => ({
-          [`Session ${sessionIndex + 1} Joined`]: formatDateTimeFull(session.joined_at),
-          [`Session ${sessionIndex + 1} Left`]: formatDateTimeFull(session.left_at),
-          [`Session ${sessionIndex + 1} Duration`]: session.left_at
-            ? formatDuration(calcSessionDuration(session.joined_at, session.left_at) ?? 0)
-            : 'In Progress'
-        })).reduce((acc, curr) => ({ ...acc, ...curr }), {})
-
-        return {
-          '#': index + 1,
-          'Name': record.user_name || '',
-          'Email': record.user_email,
-          'Status': getStatusText(record.status),
-          'First Joined': formatDateTimeFull(record.first_joined_at),
-          'Last Left': formatDateTimeFull(record.last_left_at),
-          'Total Duration': formatDuration(record.total_duration_minutes),
-          'Duration (Minutes)': record.total_duration_minutes,
-          'Number of Sessions': record.totalSessions,
-          'Verified Member': record.is_verified_member ? 'Yes' : 'No',
-          ...sessionDetails
-        }
-      })
-
-      const summaryData = [
-        { 'Metric': 'Total Attendees', 'Value': summaryStats.total },
-        { 'Metric': 'Present', 'Value': summaryStats.present },
-        { 'Metric': 'Late', 'Value': summaryStats.late },
-        { 'Metric': 'Left Early', 'Value': summaryStats.left_early },
-        { 'Metric': 'Absent', 'Value': summaryStats.absent },
-        { 'Metric': 'Average Duration', 'Value': formatDuration(Math.round(summaryStats.averageDuration)) },
-        {},
-        { 'Export Date': new Date().toLocaleString() },
-        { 'Report Type': 'Meeting Attendance Report' }
+      const maximumSessions = Math.max(0, ...sortedAttendance.map((record) => record.sessions.length))
+      const sessionHeaders = Array.from({ length: maximumSessions }, (_, index) => [
+        `Session ${index + 1} Joined`, `Session ${index + 1} Left`, `Session ${index + 1} Duration`,
+      ]).flat()
+      const rows: ReportRow[] = [
+        ["Meeting Attendance Report"],
+        ["Group", selectedGroup?.name || "Not recorded"],
+        ["Meeting", meetingTitle || "Meeting"],
+        ["Export Date", new Date().toLocaleString()],
+        [],
+        ["Summary", "Value"],
+        ["Total Attendees", summaryStats.total],
+        ["Present", summaryStats.present],
+        ["Late", summaryStats.late],
+        ["Left Early", summaryStats.left_early],
+        ["Absent", summaryStats.absent],
+        ["Average Duration", formatDuration(Math.round(summaryStats.averageDuration))],
+        [],
+        ["#", "Name", "Email", "Status", "First Joined", "Last Left", "Total Duration", "Duration (Minutes)", "Number of Sessions", "Verified Member", ...sessionHeaders],
+        ...sortedAttendance.map((record, index) => [
+          index + 1,
+          record.user_name || "",
+          record.user_email,
+          getStatusText(record.status),
+          formatDateTimeFull(record.first_joined_at),
+          formatDateTimeFull(record.last_left_at),
+          formatDuration(record.total_duration_minutes),
+          record.total_duration_minutes,
+          record.totalSessions,
+          record.is_verified_member ? "Yes" : "No",
+          ...Array.from({ length: maximumSessions }, (_, sessionIndex) => {
+            const session = record.sessions[sessionIndex]
+            return session
+              ? [formatDateTimeFull(session.joined_at), formatDateTimeFull(session.left_at), session.left_at ? formatDuration(calcSessionDuration(session.joined_at, session.left_at) ?? 0) : "In Progress"]
+              : ["", "", ""]
+          }).flat(),
+        ]),
       ]
-
-      const worksheetData = [...summaryData, {}, ...excelData]
-      const wb = XLSX.utils.book_new()
-      const ws = XLSX.utils.json_to_sheet(worksheetData)
-      ws['!cols'] = [
-        { wch: 5 }, { wch: 25 }, { wch: 30 }, { wch: 12 },
-        { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 18 },
-        { wch: 15 }, { wch: 15 },
-      ]
-      XLSX.utils.book_append_sheet(wb, ws, 'Attendance Report')
-      XLSX.writeFile(wb, buildFileName("xlsx"))
+      exportRowsAsXlsx(rows, buildFileName(), "Attendance Report")
       toast.success('Attendance report exported to Excel successfully')
     } catch (error) {
       console.error('Excel export failed:', error)
@@ -180,24 +174,25 @@ export function AttendanceList({
 
   const exportToCSV = () => {
     try {
-      const csvData = sortedAttendance.map((record) => ({
-        'Name': record.user_name || '',
-        'Email': record.user_email,
-        'Status': getStatusText(record.status),
-        'First Joined': formatDateTimeFull(record.first_joined_at),
-        'Last Left': formatDateTimeFull(record.last_left_at),
-        'Total Duration (Minutes)': record.total_duration_minutes,
-        'Number of Sessions': record.totalSessions,
-        'Verified Member': record.is_verified_member ? 'Yes' : 'No'
-      }))
-      const wb = XLSX.utils.book_new()
-      const ws = XLSX.utils.json_to_sheet(csvData)
-      ws['!cols'] = [
-        { wch: 25 }, { wch: 30 }, { wch: 12 }, { wch: 20 },
-        { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
+      const rows: ReportRow[] = [
+        ["Meeting Attendance Report"],
+        ["Group", selectedGroup?.name || "Not recorded"],
+        ["Meeting", meetingTitle || "Meeting"],
+        ["Export Date", new Date().toLocaleString()],
+        [],
+        ["Name", "Email", "Status", "First Joined", "Last Left", "Total Duration (Minutes)", "Number of Sessions", "Verified Member"],
+        ...sortedAttendance.map((record) => [
+          record.user_name || "",
+          record.user_email,
+          getStatusText(record.status),
+          formatDateTimeFull(record.first_joined_at),
+          formatDateTimeFull(record.last_left_at),
+          record.total_duration_minutes,
+          record.totalSessions,
+          record.is_verified_member ? "Yes" : "No",
+        ]),
       ]
-      XLSX.utils.book_append_sheet(wb, ws, 'Attendance')
-      XLSX.writeFile(wb, buildFileName("csv"))
+      exportRowsAsCsv(rows, buildFileName())
       toast.success('Attendance data exported to CSV successfully')
     } catch (error) {
       console.error('CSV export failed:', error)
@@ -205,7 +200,7 @@ export function AttendanceList({
     }
   }
 
-  const ExportMenu = () => (
+  const renderExportMenu = () => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button size="sm" variant="outline" className="rounded-xl border-border/80 font-bold">
@@ -237,7 +232,7 @@ export function AttendanceList({
               <Users className="w-5 h-5" />
               Attendance Summary
             </CardTitle>
-            <ExportMenu />
+            {renderExportMenu()}
           </div>
         </CardHeader>
         <CardContent>
@@ -264,7 +259,7 @@ export function AttendanceList({
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-bold">Attendance Details</CardTitle>
-            <ExportMenu />
+            {renderExportMenu()}
           </div>
         </CardHeader>
         <CardContent>

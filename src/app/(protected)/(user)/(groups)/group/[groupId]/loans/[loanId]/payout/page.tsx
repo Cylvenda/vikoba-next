@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   BadgeCheck,
   CircleAlert,
+  FlaskConical,
   LoaderCircle,
   LockKeyhole,
   Send,
@@ -52,6 +53,7 @@ export default function LoanPayoutPage() {
   const [loading, setLoading] = useState(true)
   const [confirmed, setConfirmed] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [demoSubmitting, setDemoSubmitting] = useState(false)
   const [transactionUuid, setTransactionUuid] = useState<string | null>(null)
   const [payoutStatus, setPayoutStatus] = useState<PayoutStatus>("IDLE")
   const [loadError, setLoadError] = useState("")
@@ -130,6 +132,25 @@ export default function LoanPayoutPage() {
     }
   }
 
+  async function releaseDemoLoan() {
+    if (!confirmed) return
+    setDemoSubmitting(true)
+    try {
+      const response = await paymentServices.simulateLoanPayout(loanId)
+      toast.success(
+        tt(
+          `Demo release complete. ${response.data.installment_count} installments generated; no money was transferred.`,
+          `Jaribio limekamilika. Awamu ${response.data.installment_count} zimetengenezwa; hakuna fedha zilizotumwa.`
+        )
+      )
+      router.push(`/group/${groupId}/loans/${loanId}`)
+    } catch (error) {
+      toast.error(errorMessage(error))
+    } finally {
+      setDemoSubmitting(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-[65vh] items-center justify-center">
@@ -183,8 +204,8 @@ export default function LoanPayoutPage() {
               </h1>
               <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
                 {tt(
-                  "Review the beneficiary, fee, and wallet balance. The loan activates only after ClickPesa confirms delivery.",
-                  "Kagua mpokeaji, ada na salio la pochi. Mkopo utaanza baada ya ClickPesa kuthibitisha fedha zimefika."
+                  "Choose a real ClickPesa payout or a presentation release that transfers no money.",
+                  "Chagua malipo halisi ya ClickPesa au utoaji wa maonyesho ambao hautumi fedha."
                 )}
               </p>
             </div>
@@ -210,7 +231,9 @@ export default function LoanPayoutPage() {
                   <strong>{formatTzs(Number(preview.amount))}</strong>
                 </div>
                 <div className="flex items-center justify-between border-b border-chart-1/15 py-2 text-sm">
-                  <span className="text-muted-foreground">{tt("ClickPesa fee", "Ada ya ClickPesa")}</span>
+                  <span className="text-muted-foreground">
+                    {preview.gateway_available ? tt("ClickPesa fee", "Ada ya ClickPesa") : tt("ClickPesa fee unavailable", "Ada ya ClickPesa haipatikani")}
+                  </span>
                   <strong>{formatTzs(Number(preview.fee))}</strong>
                 </div>
                 <div className="flex items-end justify-between gap-4 pt-5">
@@ -229,8 +252,8 @@ export default function LoanPayoutPage() {
                   />
                   <span className="text-sm leading-6">
                     {tt(
-                      "I have verified the member, mobile number, amount, and fee. I authorize this real-money payout.",
-                      "Nimethibitisha mwanachama, namba ya simu, kiasi na ada. Ninaruhusu malipo haya ya fedha halisi."
+                      "I have verified the member and amount. I understand the real button transfers money, while the demo button only activates the loan and creates installments.",
+                      "Nimethibitisha mwanachama na kiasi. Ninaelewa kitufe halisi kinatuma fedha, huku kitufe cha jaribio kinaanzisha mkopo na kutengeneza awamu pekee."
                     )}
                   </span>
                 </label>
@@ -257,21 +280,46 @@ export default function LoanPayoutPage() {
                 </div>
               )}
 
-              <Button
-                size="lg"
-                className="h-12 w-full rounded-2xl font-bold"
-                disabled={!confirmed || submitting || isProcessing || isFinished}
-                onClick={() => void releaseMoney()}
-              >
-                {submitting || isProcessing ? (
-                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="mr-2 h-4 w-4" />
+              <div className="space-y-3">
+                <Button
+                  size="lg"
+                  className="h-12 w-full rounded-2xl font-bold"
+                  disabled={!confirmed || submitting || isProcessing || isFinished || !preview.gateway_available || demoSubmitting}
+                  onClick={() => void releaseMoney()}
+                >
+                  {submitting || isProcessing ? (
+                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="mr-2 h-4 w-4" />
+                  )}
+                  {isProcessing
+                    ? tt("Waiting for confirmation", "Inasubiri uthibitisho")
+                    : tt("Release money with ClickPesa", "Toa fedha kupitia ClickPesa")}
+                </Button>
+
+                {!preview.gateway_available && (
+                  <p className="text-center text-xs text-destructive">
+                    {tt("Real payout is currently unavailable because ClickPesa could not be reached.", "Malipo halisi hayapatikani kwa sasa kwa sababu ClickPesa haikuweza kufikiwa.")}
+                  </p>
                 )}
-                {isProcessing
-                  ? tt("Waiting for confirmation", "Inasubiri uthibitisho")
-                  : tt("Release money with ClickPesa", "Toa fedha kupitia ClickPesa")}
-              </Button>
+
+                {preview.demo_payout_enabled && (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-12 w-full rounded-2xl border-amber-500/50 bg-amber-500/10 font-bold text-amber-800 hover:bg-amber-500/20"
+                  disabled={!confirmed || demoSubmitting || submitting || isProcessing || isFinished}
+                  onClick={() => void releaseDemoLoan()}
+                >
+                  {demoSubmitting ? (
+                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <FlaskConical className="mr-2 h-4 w-4" />
+                  )}
+                  {tt("Demo release — no real money", "Toa kwa jaribio — hakuna fedha halisi")}
+                </Button>
+                )}
+              </div>
 
               {isFinished && (
                 <Button
@@ -292,9 +340,15 @@ export default function LoanPayoutPage() {
                   <WalletCards className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[.14em] text-muted-foreground">{tt("Group ClickPesa cash", "Fedha za kikundi ClickPesa")}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[.14em] text-muted-foreground">
+                    {tt("Group ClickPesa cash", "Fedha za kikundi ClickPesa")}
+                  </p>
                   <p className="mt-2 text-2xl font-black">{formatTzs(Number(preview.group_wallet_balance))}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{tt("Available for real gateway payouts", "Zinazopatikana kwa malipo halisi")}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {preview.gateway_available
+                      ? tt("Available for real gateway payouts", "Zinazopatikana kwa malipo halisi")
+                      : tt("Gateway balance is currently unavailable", "Salio la huduma halipatikani kwa sasa")}
+                  </p>
                 </div>
                 <div className="border-t border-border/70 pt-4">
                   <p className="text-xs text-muted-foreground">{tt("Internal finance wallet", "Pochi ya ndani ya fedha")}</p>
@@ -307,9 +361,9 @@ export default function LoanPayoutPage() {
               <CardContent className="p-6">
                 <h2 className="font-bold">{tt("What happens next?", "Nini kitafuata?")}</h2>
                 <ol className="mt-4 space-y-4 text-sm text-muted-foreground">
-                  <li className="flex gap-3"><span className="font-black text-chart-1">1</span>{tt("Funds are reserved to prevent duplicate payouts.", "Fedha zinahifadhiwa kuzuia malipo kurudiwa.")}</li>
-                  <li className="flex gap-3"><span className="font-black text-chart-1">2</span>{tt("ClickPesa sends money to the member wallet.", "ClickPesa inatuma fedha kwenye pochi ya mwanachama.")}</li>
-                  <li className="flex gap-3"><span className="font-black text-chart-1">3</span>{tt("Only a successful transfer activates the loan.", "Uhamisho uliofanikiwa pekee ndio huanzisha mkopo.")}</li>
+                  <li className="flex gap-3"><span className="font-black text-chart-1">1</span>{tt("Real release sends money through ClickPesa.", "Utoaji halisi unatuma fedha kupitia ClickPesa.")}</li>
+                  <li className="flex gap-3"><span className="font-black text-chart-1">2</span>{tt("Demo release sends no money.", "Utoaji wa jaribio hautumi fedha.")}</li>
+                  <li className="flex gap-3"><span className="font-black text-chart-1">3</span>{tt("Both activate the loan and generate installments after completion.", "Zote zinaanzisha mkopo na kutengeneza awamu baada ya kukamilika.")}</li>
                 </ol>
               </CardContent>
             </Card>

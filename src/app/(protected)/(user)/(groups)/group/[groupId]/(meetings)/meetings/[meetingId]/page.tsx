@@ -13,9 +13,8 @@ import { toast } from "react-toastify"
 import type { AttendanceRecord, ParticipantSession } from "@/store/meeting/meeting.types"
 import { getMeetingSessionHref } from "@/lib/meeting-routes"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import * as XLSX from "xlsx"
 import { useLanguage } from "@/components/language/language-provider"
-import { exportRowsAsDocx } from "@/lib/report-export"
+import { exportRowsAsDocx, exportRowsAsXlsx } from "@/lib/report-export"
 
 export default function MeetingPage() {
   const params = useParams<{ meetingId: string; groupId: string }>()
@@ -25,7 +24,7 @@ export default function MeetingPage() {
   const tt = (en: string, sw: string) => language === "sw" ? sw : en
   
   const { user } = useAuthUserStore()
-  const { selectedGroupMembers } = useGroupStore()
+  const { selectedGroup, selectedGroupMembers } = useGroupStore()
   
   const {
     selectedMeeting,
@@ -160,16 +159,22 @@ export default function MeetingPage() {
       toast.error(tt("No attendance data to export.", "Hakuna taarifa za mahudhurio za kuhamisha."))
       return
     }
-    const ws = XLSX.utils.json_to_sheet(attendanceHistory.map(item => ({
-      [tt("Email Address", "Anwani ya Barua Pepe")]: item.email,
-      [tt("Membership Type", "Aina ya Uanachama")]: item.isVerifiedMember ? tt("Member", "Mwanachama") : tt("Guest", "Mgeni"),
-      [tt("Attendance Status", "Hali ya Mahudhurio")]: item.status,
-      [tt("Time Joined", "Muda wa Kujiunga")]: item.joinedAt ? new Date(item.joinedAt).toLocaleString() : tt("Not recorded", "Haijarekodiwa"),
-      [tt("Total Duration (Min)", "Jumla ya Muda (Dak)")]: item.totalDurationMinutes
-    })))
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, "Attendance")
-    XLSX.writeFile(wb, `Attendance_${selectedMeeting?.title || 'Meeting'}.xlsx`)
+    const rows = [
+      [tt("Attendance Report", "Ripoti ya Mahudhurio")],
+      [tt("Group", "Kikundi"), selectedGroup?.name || tt("Not recorded", "Hakijarekodiwa")],
+      [tt("Meeting", "Kikao"), selectedMeeting?.title || ""],
+      [tt("Date", "Tarehe"), scheduledStart],
+      [],
+      [tt("Email Address", "Anwani ya Barua Pepe"), tt("Membership Type", "Aina ya Uanachama"), tt("Attendance Status", "Hali ya Mahudhurio"), tt("Time Joined", "Muda wa Kujiunga"), tt("Total Duration (Min)", "Jumla ya Muda (Dak)")],
+      ...attendanceHistory.map((item) => [
+        item.email,
+        item.isVerifiedMember ? tt("Member", "Mwanachama") : tt("Guest", "Mgeni"),
+        item.status,
+        item.joinedAt ? new Date(item.joinedAt).toLocaleString() : tt("Not recorded", "Haijarekodiwa"),
+        item.totalDurationMinutes,
+      ]),
+    ]
+    exportRowsAsXlsx(rows, `Attendance ${selectedMeeting?.title || "Meeting"}`, tt("Attendance Report", "Ripoti ya Mahudhurio"))
     toast.success(tt("Attendance exported to Excel", "Mahudhurio yamehamishwa kwenda Excel"))
   }
 
@@ -180,6 +185,7 @@ export default function MeetingPage() {
     }
     const rows = [
       [tt("Attendance Record", "Rekodi ya Mahudhurio"), selectedMeeting?.title || ""],
+      [tt("Group", "Kikundi"), selectedGroup?.name || tt("Not recorded", "Hakijarekodiwa")],
       [tt("Date", "Tarehe"), scheduledStart],
       [],
       [tt("Email", "Barua pepe"), tt("Type", "Aina"), tt("Status", "Hali"), tt("Joined", "Alijiunga"), tt("Duration (Min)", "Muda (Dak)")],
@@ -217,6 +223,7 @@ export default function MeetingPage() {
         </head>
         <body>
             <h2>${tt("Formal Agenda", "Ajenda Rasmi")}: ${selectedMeeting?.title}</h2>
+            <div class="date">${tt("Group", "Kikundi")}: ${selectedGroup?.name || tt("Not recorded", "Hakijarekodiwa")}</div>
             <div class="date">${tt("Date", "Tarehe")}: ${scheduledStart}</div>
             <ol>
                 ${selectedMeeting.agenda_items.map(item => `
@@ -249,6 +256,7 @@ export default function MeetingPage() {
     }
     const rows = [
       [tt("Formal Agenda", "Ajenda Rasmi"), selectedMeeting?.title || ""],
+      [tt("Group", "Kikundi"), selectedGroup?.name || tt("Not recorded", "Hakijarekodiwa")],
       [tt("Date", "Tarehe"), scheduledStart],
       [],
       [tt("Order", "Mpangilio"), tt("Agenda Item", "Hoja ya Ajenda"), tt("Minutes", "Dakika"), tt("Description", "Maelezo")],

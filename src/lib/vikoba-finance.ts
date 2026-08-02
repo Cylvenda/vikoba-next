@@ -24,6 +24,8 @@ export type VikobaFinanceSnapshot = {
   availableCash: number
   monthlyCollections: number
   recentActivity: VikobaFinanceActivity[]
+  recentActivityTotal?: number
+  recentActivityLimit?: number
   groupWallet?: {
     balance: number
     totalVerifiedSavings: number

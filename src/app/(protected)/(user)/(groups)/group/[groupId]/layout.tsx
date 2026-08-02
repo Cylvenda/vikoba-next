@@ -34,8 +34,10 @@ export default function GroupLayout({ children }: { children: React.ReactNode })
 
         const { selectedGroup } = useGroupStore.getState()
         if (!selectedGroup || selectedGroup.id !== groupId) {
-          await fetchGroupById(groupId)
-          await fetchSelectedGroupMembers(groupId)
+          await Promise.all([
+            fetchGroupById(groupId),
+            fetchSelectedGroupMembers(groupId),
+          ])
         }
       } catch (error) {
         console.error("Group layout bootstrap error:", error)

@@ -1,24 +1,12 @@
-import type { Metadata } from "next";
-import { Poppins, Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { cn } from "@/lib/utils";
 import { ToastContainer } from "react-toastify";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { LanguageProvider } from "@/components/language/language-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import PwaManager from "@/components/pwa/PwaManager";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://vikoba.cylvenda.co.tz";
-
-const inter = Inter({subsets:['latin'],variable:'--font-sans'});
-
-
-// Configure Poppins
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"], // optional: 400=regular, 500=medium, 700=bold
-  variable: "--font-poppins",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -29,13 +17,24 @@ export const metadata: Metadata = {
   description:
     "VICOBA Community Hub helps village savings groups manage michango, hisa, mikopo, meetings, members, and records securely online.",
   applicationName: "VICOBA Community Hub",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "VICOBA Hub",
+    startupImage: [
+      { url: "/screenshots/vicoba-mobile.png" },
+    ],
+  },
+  formatDetection: { telephone: false },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
-      { url: "/icon.png", sizes: "512x512", type: "image/png" },
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
     ],
     shortcut: "/favicon.ico",
-    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   keywords: [
     "VICOBA",
@@ -90,13 +89,24 @@ export const metadata: Metadata = {
   category: "finance",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#c2410c" },
+    { media: "(prefers-color-scheme: dark)", color: "#7c2d12" },
+  ],
+  colorScheme: "light dark",
+};
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn("h-full antialiased", poppins.variable, "font-sans", inter.variable)}>
+    <html lang="en" suppressHydrationWarning className="h-full font-sans antialiased">
       <body className="min-h-screen bg-background font-sans">
         <ThemeProvider >
           <LanguageProvider>
@@ -112,6 +122,7 @@ export default function RootLayout({
             <TooltipProvider>
               {children}
             </TooltipProvider>
+            <PwaManager />
           </LanguageProvider>
         </ThemeProvider>
       </body>

@@ -64,6 +64,8 @@ const Page = () => {
     activeLoans: 0,
     unpaidFines: 0,
     consolidatedCash: 0,
+    recentActivityTotal: 0,
+    recentActivityLimit: 5,
     isLoading: true,
   });
   type RecentActivity = {
@@ -96,6 +98,8 @@ const Page = () => {
             activeLoans: data.activeLoans,
             unpaidFines: data.unpaidFines,
             consolidatedCash: data.consolidatedCash,
+            recentActivityTotal: Math.max(data.recentActivityTotal ?? 0, data.recentActivity.length),
+            recentActivityLimit: data.recentActivityLimit ?? 5,
             isLoading: false,
           });
           setRecentActivities(data.recentActivity);
@@ -178,31 +182,23 @@ const Page = () => {
   const totalUserLiabilities = financialData.activeLoans + financialData.unpaidFines;
 
   const trendData = useMemo(() => {
-    const map = new Map<string, { name: string; amount: number; title: string; actor: string; groupName: string }>();
-    recentActivities.forEach((act) => {
-      const dateKey = new Date(act.happenedAt).toISOString().slice(0, 10);
-      const label = new Date(act.happenedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-      const existing = map.get(dateKey);
-      const entry = {
-        name: label,
+    return [...recentActivities].reverse().map((act) => {
+      const happenedAt = new Date(act.happenedAt)
+      return {
+        id: act.id,
+        name: happenedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        happenedAtLabel: happenedAt.toLocaleString("en-US", {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        }),
         amount: Number(act.amount),
         title: act.title || act.type,
         actor: act.actor || "System",
         groupName: act.groupName,
-      };
-        if (existing) {
-          existing.amount += entry.amount;
-          if (!existing.title.includes(entry.title)) {
-            existing.title = `${existing.title}, ${entry.title}`
-          }
-          if (!existing.groupName.includes(entry.groupName)) {
-            existing.groupName = `${existing.groupName}, ${entry.groupName}`
-          }
-        } else {
-        map.set(dateKey, entry);
       }
-    });
-    return Array.from(map.values()).reverse();
+    })
   }, [recentActivities]);
 
   return (
@@ -314,6 +310,12 @@ const Page = () => {
                 <div>
                   <h3 className="text-lg font-bold tracking-tight text-foreground">{tt("Workspace Ledger Activity", "Shughuli za Daftari la Kazi")}</h3>
                   <p className="text-xs text-muted-foreground">{tt("Consolidated flow across all joined groups", "Mtiririko uliounganishwa katika vikundi vyote ulivyojiunga")}</p>
+                  <p className="mt-1 text-xs font-medium text-foreground">
+                    {tt(
+                      `Showing ${recentActivities.length} of ${financialData.recentActivityTotal} existing transactions (latest ${financialData.recentActivityLimit} maximum)`,
+                      `Inaonyesha miamala ${recentActivities.length} kati ya ${financialData.recentActivityTotal} iliyopo (miamala ${financialData.recentActivityLimit} ya mwisho kwa kiwango cha juu)`,
+                    )}
+                  </p>
                 </div>
                 <div className="flex items-center gap-1 border border-border bg-background px-2.5 py-1 rounded-full text-xs font-medium text-muted-foreground">
                   <Activity className="h-3.5 w-3.5" />
@@ -341,7 +343,7 @@ const Page = () => {
                               <div className="rounded-xl border border-border/80 bg-popover/95 p-3.5 shadow-md backdrop-blur-md text-xs space-y-1">
                                 <p className="font-bold text-foreground">{data.title}</p>
                                 <p className="text-[10px] text-primary font-semibold">{data.actor}</p>
-                                <p className="text-muted-foreground">{data.groupName} • {data.name}</p>
+                                <p className="text-muted-foreground">{data.groupName} • {data.happenedAtLabel}</p>
                                 <p className="font-extrabold text-foreground">{formatTzs(data.amount)}</p>
                               </div>
                             );

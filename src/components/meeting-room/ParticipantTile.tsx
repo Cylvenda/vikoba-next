@@ -1,6 +1,11 @@
 "use client"
 
-import { VideoTrack, isTrackReference, type TrackReferenceOrPlaceholder } from "@livekit/components-react"
+import {
+  VideoTrack,
+  isTrackReference,
+  useFacingMode,
+  type TrackReferenceOrPlaceholder,
+} from "@livekit/components-react"
 import { Hand, Mic, MicOff, MonitorUp, Video, VideoOff } from "lucide-react"
 import { Track } from "livekit-client"
 import type { MeetingParticipantSignalState } from "@/components/meeting-room/types"
@@ -37,6 +42,10 @@ export function ParticipantTile({
   const tt = (en: string, sw: string) => language === "sw" ? sw : en
   const participant = trackRef.participant
   const isScreenShare = trackRef.source === Track.Source.ScreenShare
+  const facingMode = useFacingMode(trackRef)
+  const localCameraFacingMode = participant.isLocal && trackRef.source === Track.Source.Camera
+    ? facingMode
+    : undefined
   const showVideo = isTrackReference(trackRef) && trackRef.publication.isSubscribed
   const label = getParticipantLabel(trackRef)
   const isFilmstrip = layout === "filmstrip"
@@ -46,6 +55,7 @@ export function ParticipantTile({
 
   return (
     <article
+      data-lk-facing-mode={localCameraFacingMode}
       className={[
         "group relative overflow-hidden rounded-md border bg-card shadow-sm transition-all",
         isFilmstrip
