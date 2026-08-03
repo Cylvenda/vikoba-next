@@ -24,8 +24,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   ResponsiveContainer,
-  AreaChart,
-  Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   Tooltip,
@@ -135,14 +135,16 @@ export default function GroupPage() {
 
   const trendData = useMemo(() => {
     if (!snapshot?.recentActivity) return [];
-    return [...snapshot.recentActivity].reverse().map((item) => {
+    return [...snapshot.recentActivity].reverse().map((item, index) => {
       const happenedAt = new Date(item.happenedAt)
+      const dateLabel = happenedAt.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      })
       return {
         id: item.id,
-        name: happenedAt.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        }),
+        name: dateLabel,
+        chartKey: `${dateLabel}|${item.id || index}`,
         happenedAtLabel: happenedAt.toLocaleString("en-US", {
           month: "short",
           day: "numeric",
@@ -313,36 +315,17 @@ export default function GroupPage() {
               <div className="h-[280px] w-full">
                 {isMounted && snapshot && trendData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart
+                    <BarChart
                       data={trendData}
                       margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                     >
-                      <defs>
-                        <linearGradient
-                          id="colorAmount"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop
-                            offset="5%"
-                            stopColor="var(--chart-3)"
-                            stopOpacity={0.25}
-                          />
-                          <stop
-                            offset="95%"
-                            stopColor="var(--chart-3)"
-                            stopOpacity={0}
-                          />
-                        </linearGradient>
-                      </defs>
                       <XAxis
-                        dataKey="name"
+                        dataKey="chartKey"
                         stroke="#888888"
                         fontSize={11}
                         tickLine={false}
                         axisLine={false}
+                        tickFormatter={(value) => String(value).split("|")[0]}
                       />
                       <YAxis
                         stroke="#888888"
@@ -375,15 +358,12 @@ export default function GroupPage() {
                           return null;
                         }}
                       />
-                      <Area
-                        type="monotone"
+                      <Bar
                         dataKey="amount"
-                        stroke="var(--chart-3)"
-                        strokeWidth={2.5}
-                        fillOpacity={1}
-                        fill="url(#colorAmount)"
+                        fill="var(--chart-3)"
+                        radius={[8, 8, 0, 0]}
                       />
-                    </AreaChart>
+                    </BarChart>
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">

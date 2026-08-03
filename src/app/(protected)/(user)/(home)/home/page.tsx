@@ -28,8 +28,8 @@ import {
 } from "lucide-react";
 import {
   ResponsiveContainer,
-  AreaChart,
-  Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   Tooltip,
@@ -65,7 +65,7 @@ const Page = () => {
     unpaidFines: 0,
     consolidatedCash: 0,
     recentActivityTotal: 0,
-    recentActivityLimit: 5,
+    recentActivityLimit: 10,
     isLoading: true,
   });
   type RecentActivity = {
@@ -99,7 +99,7 @@ const Page = () => {
             unpaidFines: data.unpaidFines,
             consolidatedCash: data.consolidatedCash,
             recentActivityTotal: Math.max(data.recentActivityTotal ?? 0, data.recentActivity.length),
-            recentActivityLimit: data.recentActivityLimit ?? 5,
+            recentActivityLimit: data.recentActivityLimit ?? 10,
             isLoading: false,
           });
           setRecentActivities(data.recentActivity);
@@ -182,11 +182,13 @@ const Page = () => {
   const totalUserLiabilities = financialData.activeLoans + financialData.unpaidFines;
 
   const trendData = useMemo(() => {
-    return [...recentActivities].reverse().map((act) => {
+    return [...recentActivities].reverse().map((act, index) => {
       const happenedAt = new Date(act.happenedAt)
+      const dateLabel = happenedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })
       return {
         id: act.id,
-        name: happenedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        name: dateLabel,
+        chartKey: `${dateLabel}|${act.id || index}`,
         happenedAtLabel: happenedAt.toLocaleString("en-US", {
           month: "short",
           day: "numeric",
@@ -326,14 +328,8 @@ const Page = () => {
                <div className="h-[220px] sm:h-[260px] md:h-[280px] w-full">
                 {isMounted && !financialData.isLoading && trendData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="colorConsolidated" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="var(--chart-3)" stopOpacity={0.25} />
-                          <stop offset="95%" stopColor="var(--chart-3)" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <XAxis dataKey="name" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={true} />
+                    <BarChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <XAxis dataKey="chartKey" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={true} tickFormatter={(value) => String(value).split("|")[0]} />
                       <YAxis stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={true} tickFormatter={(val) => `${val / 1000}k`} />
                       <Tooltip
                         content={({ active, payload }) => {
@@ -351,8 +347,8 @@ const Page = () => {
                           return null;
                         }}
                       />
-                      <Area type="monotone" dataKey="amount" stroke="var(--chart-3)" strokeWidth={2.5} fillOpacity={1} fill="url(#colorConsolidated)" />
-                    </AreaChart>
+                      <Bar dataKey="amount" fill="var(--chart-3)" radius={[8, 8, 0, 0]} />
+                    </BarChart>
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
