@@ -11,20 +11,23 @@ import { useAuthUserStore } from "@/store/auth/userAuth.store";
 import { useState } from "react";
 import { authUserService } from "@/api/services/auth.service";
 import { LoginFormSchema } from "@/components/schema/user-form-schema";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { Spinner } from "@/components/ui/spinner";
 import { useLanguage } from "@/components/language/language-provider";
+import { CheckCircle2 } from "lucide-react";
 
 type LoginFormValues = z.infer<typeof LoginFormSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const { fetchUser } = useAuthUserStore();
   const { language } = useLanguage();
   const isSwahili = language === "sw";
   const tt = (en: string, sw: string) => (isSwahili ? sw : en);
+  const accountCreated = searchParams.get("registered") === "1";
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(LoginFormSchema),
@@ -71,6 +74,25 @@ export default function LoginPage() {
         title={tt("Welcome Back", "Karibu Tena")}
         description={tt("Login to your Community Hub account to continue", "Ingia kwenye akaunti yako ya Community Hub ili uendelee")}
       >
+        {accountCreated && (
+          <div className="mt-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-700 dark:text-emerald-300">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
+              <div className="space-y-1">
+                <p className="font-bold">
+                  {tt("Account created successfully.", "Akaunti imeundwa kwa mafanikio.")}
+                </p>
+                <p>
+                  {tt(
+                    "Before signing in, please verify your account using the activation link we sent to your email inbox.",
+                    "Kabla ya kuingia, tafadhali hakiki akaunti yako kwa kutumia kiungo cha uanzishaji tulichotuma kwenye kikasha chako cha barua pepe.",
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
           {/* EMAIL */}
           <FieldInput

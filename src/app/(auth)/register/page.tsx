@@ -37,8 +37,7 @@ const Register = () => {
       const res = await authUserService.userRegister(data);
 
       if (res.status === 201) {
-        toast.success(tt("Account created successfully. Check your email to activate your account.", "Akaunti imeundwa. Angalia barua pepe yako ili kuiwezesha."));
-        router.push("/login");
+        router.push("/login?registered=1");
       }
     } catch (error: unknown) {
       const errorMessage = (
