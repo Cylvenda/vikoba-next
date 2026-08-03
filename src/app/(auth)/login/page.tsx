@@ -16,10 +16,11 @@ import { toast } from "react-toastify";
 import { Spinner } from "@/components/ui/spinner";
 import { useLanguage } from "@/components/language/language-provider";
 import { CheckCircle2 } from "lucide-react";
+import { Suspense } from "react";
 
 type LoginFormValues = z.infer<typeof LoginFormSchema>;
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
@@ -137,5 +138,13 @@ export default function LoginPage() {
         </form>
       </FormInput>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

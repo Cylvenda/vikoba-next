@@ -1,7 +1,9 @@
 {
   "name": "frontend",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "releaseDate": "2026-08-03",
+  "environment": "Production",
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
     "pwa:build-sw": "tsc -p tsconfig.sw.json",
